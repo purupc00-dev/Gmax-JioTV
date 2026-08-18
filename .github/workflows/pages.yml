@@ -1,0 +1,92 @@
+name: Build Jio TV Website
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+
+  schedule:
+    - cron: "17 * * * *"
+
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # ------------------------------------------------------
+      # Checkout repository
+      # ------------------------------------------------------
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+
+      # ------------------------------------------------------
+      # Setup Python
+      # ------------------------------------------------------
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+
+      # ------------------------------------------------------
+      # Build channel catalogue
+      # ------------------------------------------------------
+
+      - name: Build channels.json
+        run: |
+          python scripts/build_channels.py
+
+
+      # ------------------------------------------------------
+      # Prepare GitHub Pages
+      # ------------------------------------------------------
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+
+      # ------------------------------------------------------
+      # Upload website
+      # ------------------------------------------------------
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./site
+
+
+  deploy:
+
+    needs: build
+
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
