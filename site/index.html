@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="theme-color"
+    content="#0a0d18"
+  >
+
+  <title>Gmax-JioTV</title>
+
+  <link rel="stylesheet" href="./style.css">
+
+  <!-- Shaka Player -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/shaka-player@5.1.0/dist/shaka-player.compiled.js"
+    defer
+  ></script>
+</head>
+
+<body>
+
+  <div class="page">
+
+    <!-- HEADER -->
+    <header class="header">
+
+      <div class="brand">
+
+        <div class="brand-icon">
+          📺
+        </div>
+
+        <div>
+          <div class="brand-title">
+            Gmax-JioTV
+          </div>
+
+          <div class="brand-subtitle">
+            Live TV
+          </div>
+        </div>
+
+      </div>
+
+      <div class="header-right">
+
+        <span id="channel-count">
+          0 channels
+        </span>
+
+        <span class="live-pill">
+          ● LIVE
+        </span>
+
+      </div>
+
+    </header>
+
+
+    <!-- PLAYER -->
+    <section
+      id="player-section"
+      class="player-section hidden"
+    >
+
+      <div class="player-topbar">
+
+        <div>
+
+          <div class="playing-label">
+            NOW PLAYING
+          </div>
+
+          <h2 id="playing-title">
+            Select a channel
+          </h2>
+
+          <div
+            id="playing-meta"
+            class="playing-meta"
+          ></div>
+
+        </div>
+
+        <button
+          id="close-player"
+          class="close-button"
+          type="button"
+        >
+          Close
+        </button>
+
+      </div>
+
+
+      <div class="video-container">
+
+        <video
+          id="video"
+          controls
+          playsinline
+          preload="metadata"
+        ></video>
+
+        <div
+          id="player-loading"
+          class="player-overlay hidden"
+        >
+          <div class="spinner"></div>
+          <span>Loading stream...</span>
+        </div>
+
+        <div
+          id="player-empty"
+          class="player-empty"
+        >
+          <div class="empty-icon">
+            📺
+          </div>
+
+          <div class="empty-title">
+            Select a channel
+          </div>
+
+          <div class="empty-subtitle">
+            Your selected channel will appear here.
+          </div>
+        </div>
+
+      </div>
+
+
+      <div
+        id="player-error"
+        class="player-error hidden"
+      ></div>
+
+    </section>
+
+
+    <!-- SEARCH -->
+    <section class="toolbar">
+
+      <div class="search-wrapper">
+
+        <span class="search-icon">
+          🔎
+        </span>
+
+        <input
+          id="search-input"
+          type="search"
+          autocomplete="off"
+          placeholder="Search channels..."
+        >
+
+      </div>
+
+    </section>
+
+
+    <!-- CATEGORIES -->
+    <section class="category-section">
+
+      <div class="section-label">
+        CATEGORIES
+      </div>
+
+      <div
+        id="category-list"
+        class="category-list"
+      ></div>
+
+    </section>
+
+
+    <!-- CHANNEL SECTION -->
+    <section class="channels-section">
+
+      <div class="section-heading-row">
+
+        <div>
+
+          <div class="section-kicker">
+            JIO TV
+          </div>
+
+          <h2>
+            Live Channels
+          </h2>
+
+        </div>
+
+        <div
+          id="results-count"
+          class="results-count"
+        >
+          0 channels
+        </div>
+
+      </div>
+
+
+      <div
+        id="channels-grid"
+        class="channels-grid"
+      ></div>
+
+
+      <div
+        id="load-more"
+        class="load-more hidden"
+      >
+        <button
+          id="load-more-button"
+          type="button"
+        >
+          LOAD MORE CHANNELS
+        </button>
+      </div>
+
+    </section>
+
+
+    <!-- FOOTER -->
+    <footer class="footer">
+
+      <span>
+        Gmax-JioTV
+      </span>
+
+      <span>
+        Powered by GmaxHub
+      </span>
+
+    </footer>
+
+  </div>
+
+
+  <script src="./app.js"></script>
+
+</body>
+</html>
