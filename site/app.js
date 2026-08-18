@@ -5788,50 +5788,20 @@ function parseM3U(text) {
 ========================================================= */
 
 async function loadChannels() {
-
   try {
-    let loadedData = null;
+    const response = await fetch(CHANNELS_URL, { cache: "no-store" });
 
-    // Try to fetch dynamic M3U files first
-    const DYNAMIC_M3U_URLS = [
-      "../jtvplus6.m3u",
-      "../jtvplus7.m3u",
-      "../jtvplus8.m3u"
-    ];
-
-    for (const url of DYNAMIC_M3U_URLS) {
-      try {
-        const response = await fetch(url, { cache: "no-store" });
-        if (response.ok) {
-          const text = await response.text();
-          loadedData = parseM3U(text);
-          if (loadedData.length > 0) {
-            console.log(`Successfully loaded dynamic channels from ${url}`);
-            break;
-          }
-        }
-      } catch (e) {
-        console.warn(`Failed to fetch dynamic M3U from ${url}`, e);
-      }
+    if (!response.ok) {
+      throw new Error(`channels.json returned HTTP ${response.status}`);
     }
 
-    // Fallback to static channels.json
-    if (!loadedData || loadedData.length === 0) {
-      console.log("Falling back to static channels.json");
-      const response = await fetch(CHANNELS_URL, { cache: "no-store" });
-      
-      if (!response.ok) {
-        throw new Error(`channels.json returned HTTP ${response.status}`);
-      }
+    const data = await response.json();
 
-      loadedData = await response.json();
-      
-      if (!Array.isArray(loadedData)) {
-        throw new Error("channels.json is not an array.");
-      }
+    if (!Array.isArray(data)) {
+      throw new Error("channels.json is not an array.");
     }
 
-    allChannels = loadedData.filter(
+    allChannels = data.filter(
       channel => channel && (channel.name || channel.stream_url || channel.url)
     );
 
@@ -5845,12 +5815,9 @@ async function loadChannels() {
     openRequestedChannel();
 
   } catch (error) {
-
     console.error("Channel loading failed:", error);
-
     channelCount.textContent = "Failed to load";
     resultsCount.textContent = "0 channels";
-
     channelsGrid.innerHTML = `
       <div class="empty-grid">
         <strong>Failed to load Jio TV channels</strong>
@@ -5858,11 +5825,8 @@ async function loadChannels() {
         <span>${escapeHtml(error instanceof Error ? error.message : String(error))}</span>
       </div>
     `;
-
   }
-
 }
-
 
 /* =========================================================
    START
