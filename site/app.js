@@ -931,29 +931,150 @@ async function playDash(
   );
 
 
-  // ClearKey from jtvplus6.m3u (key_id + key)
+  /*
+   * =========================================================
+   * HDNEA AUTH
+   * Add the same cookie/token to MPD,
+   * audio segments and video segments.
+   * =========================================================
+   */
+
+  let hdneaCookie = null;
+
+
+  if (
+    currentChannel &&
+    currentChannel.cookie &&
+    currentChannel.cookie.includes(
+      "__hdnea__="
+    )
+  ) {
+
+    hdneaCookie =
+      currentChannel.cookie;
+
+  }
+
+
+  /*
+   * =========================================================
+   * SHAKA REQUEST FILTER
+   * =========================================================
+   */
+
+  if (
+    hdneaCookie
+  ) {
+
+    const networkingEngine =
+      shakaPlayer.getNetworkingEngine();
+
+
+    if (
+      networkingEngine
+    ) {
+
+      networkingEngine.registerRequestFilter(
+        (requestType, request) => {
+
+          const isManifest =
+            requestType ===
+            shaka.net.NetworkingEngine.RequestType.MANIFEST;
+
+
+          const isSegment =
+            requestType ===
+            shaka.net.NetworkingEngine.RequestType.SEGMENT;
+
+
+          if (
+            isManifest ||
+            isSegment
+          ) {
+
+            request.uris =
+              request.uris.map(
+                uri => {
+
+                  if (
+                    !uri ||
+                    uri.includes(
+                      "__hdnea__="
+                    )
+                  ) {
+
+                    return uri;
+
+                  }
+
+
+                  const separator =
+                    uri.includes(
+                      "?"
+                    )
+                      ? "&"
+                      : "?";
+
+
+                  return (
+                    uri +
+                    separator +
+                    hdneaCookie
+                  );
+
+                }
+              );
+
+          }
+
+        }
+      );
+
+    }
+
+  }
+
+
+  /*
+   * =========================================================
+   * CLEARKEY DRM
+   * =========================================================
+   */
+
   if (
     currentChannel &&
     currentChannel.key_id &&
     currentChannel.key
   ) {
 
-    const drmConfig = {
-      drm: {
-        clearKeys: {},
-      },
-    };
+    const clearKeys = {};
 
-    drmConfig.drm.clearKeys[
+
+    clearKeys[
       currentChannel.key_id
-    ] = currentChannel.key;
+    ] =
+      currentChannel.key;
 
-    shakaPlayer.configure(
-      drmConfig
-    );
+
+    shakaPlayer.configure({
+
+      drm: {
+
+        clearKeys:
+          clearKeys
+
+      }
+
+    });
 
   }
 
+
+  /*
+   * =========================================================
+   * LOAD MPD
+   * =========================================================
+   */
 
   await shakaPlayer.load(
     streamUrl
@@ -969,6 +1090,8 @@ async function playDash(
   );
 
 }
+
+
 
 
 /* =========================================================
