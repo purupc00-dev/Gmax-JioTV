@@ -1,3 +1,4 @@
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -18,9 +19,17 @@ ATTR_RE = re.compile(
 
 
 def parse_attributes(line: str) -> dict[str, str]:
-    return dict(
-        ATTR_RE.findall(line)
-    )
+    return dict(ATTR_RE.findall(line))
+
+
+# ============================================================
+# STABLE ID
+# ============================================================
+
+def make_stable_id(name: str, stream_url: str) -> str:
+    value = f"{name}|{stream_url}".encode("utf-8")
+    digest = hashlib.sha1(value).hexdigest()[:12]
+    return digest
 
 
 # ============================================================
@@ -29,7 +38,7 @@ def parse_attributes(line: str) -> dict[str, str]:
 
 def parse_m3u(path: Path) -> list[dict]:
 
-    channels = []
+    channels: list[dict] = []
 
     try:
         text = path.read_text(
@@ -40,44 +49,32 @@ def parse_m3u(path: Path) -> list[dict]:
         print(f"[WARN] Failed reading {path}: {exc}")
         return channels
 
-
     current = None
 
+    for raw_line in text.splitlines():
 
-    for raw in text.splitlines():
-
-        line = raw.strip()
+        line = raw_line.strip()
 
         if not line:
             continue
 
-
         # ----------------------------------------------------
-        # EXTINF
+        # EXTINF metadata
         # ----------------------------------------------------
 
         if line.startswith("#EXTINF:"):
 
-            attrs = parse_attributes(
-                line
-            )
+            attrs = parse_attributes(line)
 
             comma = line.rfind(",")
 
             if comma >= 0:
-                name = (
-                    line[
-                        comma + 1:
-                    ]
-                    .strip()
-                )
+                name = line[comma + 1:].strip()
             else:
                 name = "Unknown Channel"
 
-
             if attrs.get("tvg-name"):
                 name = attrs["tvg-name"]
-
 
             current = {
                 "id": (
@@ -118,14 +115,13 @@ def parse_m3u(path: Path) -> list[dict]:
 
                 "stream_url": "",
 
-                "source_file": path.name
+                "source_file": path.name,
             }
 
             continue
 
-
         # ----------------------------------------------------
-        # STREAM URL
+        # Stream URL
         # ----------------------------------------------------
 
         if (
@@ -141,23 +137,17 @@ def parse_m3u(path: Path) -> list[dict]:
 
             if current["stream_url"]:
 
-                # Generate a stable ID if tvg-id is missing.
+                # Generate stable ID when tvg-id is missing.
                 if not current["id"]:
 
-                    current["id"] = (
-                        f"{path.stem}-"
-                        f"{abs(hash(
-                            current['name']
-                            + current['stream_url']
-                        ))}"
+                    current["id"] = make_stable_id(
+                        current["name"],
+                        current["stream_url"]
                     )
 
-                channels.append(
-                    current
-                )
+                channels.append(current)
 
             current = None
-
 
     return channels
 
@@ -168,16 +158,14 @@ def parse_m3u(path: Path) -> list[dict]:
 
 def find_playlists() -> list[Path]:
 
-    files = []
+    files: list[Path] = []
 
     for path in ROOT.glob("*.m3u"):
 
-        # Skip anything that isn't a real file.
         if not path.is_file():
             continue
 
         files.append(path)
-
 
     return sorted(
         files,
@@ -196,20 +184,17 @@ def main():
         exist_ok=True
     )
 
-
-   playlist_files = find_playlists()
+    playlist_files = find_playlists()
 
     print(
         f"[JioTV] Found "
         f"{len(playlist_files)} playlist files"
     )
 
+    all_channels: list[dict] = []
 
-    all_channels = []
-
-    # URL-level dedupe.
-    seen_urls = set()
-
+    # URL-level deduplication.
+    seen_urls: set[str] = set()
 
     for playlist in playlist_files:
 
@@ -218,13 +203,11 @@ def main():
             f"{playlist.name}"
         )
 
-
-       parsed = parse_m3u(playlist)
+        parsed = parse_m3u(playlist)
 
         print(
             f"         {len(parsed)} channels"
         )
-
 
         for channel in parsed:
 
@@ -237,17 +220,12 @@ def main():
             if not url:
                 continue
 
-
             if url in seen_urls:
                 continue
 
-
             seen_urls.add(url)
 
-            all_channels.append(
-                channel
-            )
-
+            all_channels.append(channel)
 
     # --------------------------------------------------------
     # Sort
@@ -265,7 +243,6 @@ def main():
         )
     )
 
-
     # --------------------------------------------------------
     # Write JSON
     # --------------------------------------------------------
@@ -282,12 +259,10 @@ def main():
             indent=2
         )
 
-
     print(
         f"[JioTV] Generated "
         f"{len(all_channels)} unique channels"
     )
-
 
     print(
         f"[JioTV] Output: {OUTPUT}"
