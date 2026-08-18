@@ -9,6 +9,20 @@ const CHANNELS_URL = "./channels.json";
 
 const CHANNELS_PER_PAGE = 60;
 
+/*
+ * Keep playback approximately this far behind
+ * the current live edge.
+ */
+const LIVE_DELAY_SECONDS = 15;
+
+/*
+ * Give Shaka some breathing room.
+ * This is buffering, not a fake playback timer.
+ */
+const BUFFERING_GOAL_SECONDS = 25;
+const REBUFFERING_GOAL_SECONDS = 6;
+const BUFFER_BEHIND_SECONDS = 45;
+
 
 /* =========================================================
    STATE
@@ -26,18 +40,30 @@ let shakaPlayer = null;
 
 let currentChannel = null;
 
-let playerUiStartTime = 0;
+let playerUiShell = null;
 
-let customPlayerControls = null;
+let playerControls = null;
 
 let qualityMenu = null;
 
 let playerUiTimer = null;
 
+let liveStatusTimer = null;
+
 let infiniteScrollObserver = null;
 
 let infiniteScrollBusy = false;
 
+let lastStreamUrl = "";
+
+let lastStreamType = "";
+
+let isPlayerRetrying = false;
+
+
+/* =========================================================
+   FAVORITES
+========================================================= */
 
 const favorites =
   new Set(
@@ -246,6 +272,181 @@ function saveFavorites() {
 }
 
 
+function getChannelLogo(channel) {
+
+  return (
+    channel?.logo ||
+    channel?.tvg_logo ||
+    ""
+  );
+
+}
+
+
+function getChannelId(channel) {
+
+  return String(
+    channel?.id ||
+    channel?.tvgId ||
+    ""
+  );
+
+}
+
+
+/* =========================================================
+   LIVE HELPERS
+========================================================= */
+
+function getLiveSeekRange() {
+
+  if (
+    !shakaPlayer ||
+    typeof shakaPlayer.seekRange !==
+      "function"
+  ) {
+
+    return null;
+
+  }
+
+
+  try {
+
+    const range =
+      shakaPlayer.seekRange();
+
+
+    if (
+      !range ||
+      !Number.isFinite(
+        range.end
+      )
+    ) {
+
+      return null;
+
+    }
+
+
+    return range;
+
+  } catch (
+    error
+  ) {
+
+    return null;
+
+  }
+
+}
+
+
+function getCurrentLiveLag() {
+
+  const range =
+    getLiveSeekRange();
+
+
+  if (
+    !range ||
+    !Number.isFinite(
+      video.currentTime
+    )
+  ) {
+
+    return null;
+
+  }
+
+
+  return Math.max(
+    0,
+    range.end -
+      video.currentTime
+  );
+
+}
+
+
+function getTargetLiveTime() {
+
+  const range =
+    getLiveSeekRange();
+
+
+  if (
+    !range
+  ) {
+
+    return null;
+
+  }
+
+
+  return Math.max(
+    range.start,
+    range.end -
+      LIVE_DELAY_SECONDS
+  );
+
+}
+
+
+function seekToConfiguredLivePosition() {
+
+  const target =
+    getTargetLiveTime();
+
+
+  if (
+    target ===
+    null
+  ) {
+
+    return false;
+
+  }
+
+
+  try {
+
+    /*
+     * Shaka's seek() keeps the same
+     * current stream, just moves playback
+     * back to our 15-second safety position.
+     */
+
+    shakaPlayer.seek(
+      target
+    );
+
+    return true;
+
+  } catch (
+    error
+  ) {
+
+    try {
+
+      video.currentTime =
+        target;
+
+      return true;
+
+    } catch (
+      fallbackError
+    ) {
+
+      return false;
+
+    }
+
+  }
+
+}
+
+
 /* =========================================================
    FAVORITES
 ========================================================= */
@@ -322,16 +523,15 @@ function buildCategories() {
   const sorted =
     [
       ...categories
-    ]
-      .sort(
-        (
-          a,
-          b
-        ) =>
-          String(a).localeCompare(
-            String(b)
-          )
-      );
+    ].sort(
+      (
+        a,
+        b
+      ) =>
+        String(a).localeCompare(
+          String(b)
+        )
+    );
 
 
   categoryList.innerHTML =
@@ -406,6 +606,33 @@ function createCategoryButton(
 
       visibleCount =
         CHANNELS_PER_PAGE;
+
+
+      if (
+        infiniteScrollObserver
+      ) {
+
+        infiniteScrollObserver.disconnect();
+
+        infiniteScrollObserver =
+          null;
+
+      }
+
+
+      const oldSentinel =
+        document.getElementById(
+          "gmax-infinite-scroll-sentinel"
+        );
+
+
+      if (
+        oldSentinel
+      ) {
+
+        oldSentinel.remove();
+
+      }
 
 
       document
@@ -559,9 +786,7 @@ function renderChannels() {
     `;
 
 
-    loadMore.classList.add(
-      "hidden"
-    );
+    hideLoadMore();
 
 
     return;
@@ -595,15 +820,7 @@ function renderChannels() {
   );
 
 
-  /*
-   * Infinite scrolling replaces
-   * the old LOAD MORE button.
-   */
-
-  loadMore.classList.add(
-    "hidden"
-  );
-
+  hideLoadMore();
 
   ensureInfiniteScrollObserver();
 
@@ -629,9 +846,10 @@ function createChannelCard(
 
 
   const id =
+    getChannelId(
+      channel
+    ) ||
     String(
-      channel.id ||
-      channel.tvgId ||
       Math.random()
     );
 
@@ -643,9 +861,9 @@ function createChannelCard(
 
 
   const logo =
-    channel.logo ||
-    channel.tvg_logo ||
-    "";
+    getChannelLogo(
+      channel
+    );
 
 
   const group =
@@ -783,10 +1001,14 @@ function createChannelCard(
 
 
 /* =========================================================
-   PLAYER
+   PLAYER DESTROY
 ========================================================= */
 
 async function destroyPlayer() {
+
+  stopLiveStatusTimer();
+
+  hidePlayerErrorOverlay();
 
   if (
     shakaPlayer
@@ -813,17 +1035,51 @@ async function destroyPlayer() {
 
   }
 
+
+  if (
+    playerUiShell
+  ) {
+
+    playerUiShell.classList.remove(
+      "gmax-controls-hidden"
+    );
+
+  }
+
 }
 
+
+/* =========================================================
+   ORIGINAL PLAYER MESSAGE FUNCTIONS
+========================================================= */
 
 function showPlayerLoading(
   state
 ) {
 
-  playerLoading.classList.toggle(
-    "hidden",
-    !state
-  );
+  if (
+    playerLoading
+  ) {
+
+    playerLoading.classList.toggle(
+      "hidden",
+      !state
+    );
+
+  }
+
+
+  if (
+    state
+  ) {
+
+    showPlayerSpinner();
+
+  } else {
+
+    hidePlayerSpinner();
+
+  }
 
 }
 
@@ -840,6 +1096,11 @@ function showPlayerError(
     "hidden"
   );
 
+
+  showPlayerErrorOverlay(
+    message
+  );
+
 }
 
 
@@ -852,6 +1113,9 @@ function clearPlayerError() {
   playerError.classList.add(
     "hidden"
   );
+
+
+  hidePlayerErrorOverlay();
 
 }
 
@@ -880,8 +1144,8 @@ async function openChannel(
 
 
   /*
-   * Append __hdnea__ to the
-   * initial MPD URL.
+   * Keep the existing HDNEA
+   * behavior on the MPD URL.
    */
 
   if (
@@ -913,9 +1177,20 @@ async function openChannel(
       "This channel does not contain a playable stream URL."
     );
 
+
     return;
 
   }
+
+
+  lastStreamUrl =
+    streamUrl;
+
+
+  lastStreamType =
+    streamType(
+      channel
+    );
 
 
   playerSection.classList.remove(
@@ -976,16 +1251,10 @@ async function openChannel(
   await destroyPlayer();
 
 
-  const type =
-    streamType(
-      channel
-    );
-
-
   try {
 
     if (
-      type ===
+      lastStreamType ===
       "dash"
     ) {
 
@@ -994,7 +1263,7 @@ async function openChannel(
       );
 
     } else if (
-      type ===
+      lastStreamType ===
       "hls"
     ) {
 
@@ -1023,7 +1292,9 @@ async function openChannel(
     showPlayerError(
       error instanceof Error
         ? error.message
-        : String(error)
+        : String(
+            error
+          )
     );
 
   } finally {
@@ -1071,6 +1342,25 @@ async function playDash(
     new shaka.Player();
 
 
+  /*
+   * Increase buffer targets so the player
+   * has more breathing room.
+   */
+
+  shakaPlayer.configure({
+    streaming: {
+      bufferingGoal:
+        BUFFERING_GOAL_SECONDS,
+
+      rebufferingGoal:
+        REBUFFERING_GOAL_SECONDS,
+
+      bufferBehind:
+        BUFFER_BEHIND_SECONDS
+    }
+  });
+
+
   await shakaPlayer.attach(
     video
   );
@@ -1089,11 +1379,14 @@ async function playDash(
   );
 
 
-  /* =========================================================
-     HDNEA AUTH
-     Keep same token on MPD,
-     audio and video segments.
-  ========================================================= */
+  /*
+   * =========================================================
+   * HDNEA AUTH
+   *
+   * Keep the existing mechanics:
+   * same token on MPD and segments.
+   * =========================================================
+   */
 
   let hdneaCookie =
     null;
@@ -1189,9 +1482,11 @@ async function playDash(
   }
 
 
-  /* =========================================================
-     CLEARKEY DRM
-  ========================================================= */
+  /*
+   * =========================================================
+   * CLEARKEY
+   * =========================================================
+   */
 
   if (
     currentChannel &&
@@ -1218,9 +1513,11 @@ async function playDash(
   }
 
 
-  /* =========================================================
-     LOAD MPD
-  ========================================================= */
+  /*
+   * =========================================================
+   * LOAD MPD
+   * =========================================================
+   */
 
   await shakaPlayer.load(
     streamUrl
@@ -1228,26 +1525,24 @@ async function playDash(
 
 
   /*
-   * IMPORTANT:
-   * Keep real live position.
-   * Only our UI timer starts at 00:00.
+   * Don't show the stream's huge internal
+   * timeline. Set playback to a controlled
+   * live position approximately 15 seconds
+   * behind the current live edge.
    */
 
-  playerUiStartTime =
-    Number.isFinite(
-      video.currentTime
-    )
-      ? video.currentTime
-      : 0;
+  seekToConfiguredLivePosition();
 
 
   video.controls =
     false;
 
 
-  setupCustomPlayerControls();
+  setupCinematicPlayer();
 
   updateQualityOptions();
+
+  startLiveStatusTimer();
 
   updatePlayerUi();
 
@@ -1268,7 +1563,11 @@ async function playHls(
 ) {
 
   /*
-   * Native HLS
+   * Native HLS.
+   *
+   * Native HLS cannot expose the same
+   * Shaka quality-track API, but we can
+   * still use the same cinematic controls.
    */
 
   if (
@@ -1285,17 +1584,22 @@ async function playHls(
       false;
 
 
-    playerUiStartTime =
-      Number.isFinite(
-        video.currentTime
-      )
-        ? video.currentTime
-        : 0;
-
-
-    setupCustomPlayerControls();
+    setupCinematicPlayer();
 
     updateQualityOptions();
+
+    startLiveStatusTimer();
+
+
+    await waitForVideoReady();
+
+
+    /*
+     * Native HLS seek-to-live-safety-position.
+     */
+
+    seekNativeHlsToDelayedLive();
+
 
     updatePlayerUi();
 
@@ -1311,7 +1615,7 @@ async function playHls(
 
 
   /*
-   * Shaka HLS
+   * Shaka HLS.
    */
 
   if (
@@ -1321,6 +1625,20 @@ async function playHls(
 
     shakaPlayer =
       new shaka.Player();
+
+
+    shakaPlayer.configure({
+      streaming: {
+        bufferingGoal:
+          BUFFERING_GOAL_SECONDS,
+
+        rebufferingGoal:
+          REBUFFERING_GOAL_SECONDS,
+
+        bufferBehind:
+          BUFFER_BEHIND_SECONDS
+      }
+    });
 
 
     await shakaPlayer.attach(
@@ -1342,9 +1660,7 @@ async function playHls(
 
 
     /*
-     * If the HLS stream also provides
-     * the channel cookie, apply it to
-     * manifest + segments.
+     * Keep HDNEA behavior for Shaka HLS too.
      */
 
     if (
@@ -1436,21 +1752,18 @@ async function playHls(
     );
 
 
-    playerUiStartTime =
-      Number.isFinite(
-        video.currentTime
-      )
-        ? video.currentTime
-        : 0;
+    seekToConfiguredLivePosition();
 
 
     video.controls =
       false;
 
 
-    setupCustomPlayerControls();
+    setupCinematicPlayer();
 
     updateQualityOptions();
+
+    startLiveStatusTimer();
 
     updatePlayerUi();
 
@@ -1473,86 +1786,155 @@ async function playHls(
 
 
 /* =========================================================
-   CUSTOM PLAYER UI
+   NATIVE HLS SEEK
 ========================================================= */
 
-function ensurePlayerShell() {
+function seekNativeHlsToDelayedLive() {
 
-  if (
-    !video
+  try {
+
+    const duration =
+      video.duration;
+
+
+    if (
+      !Number.isFinite(
+        duration
+      ) ||
+      duration <=
+        0
+    ) {
+
+      return false;
+
+    }
+
+
+    /*
+     * For native HLS/VOD-like rolling buffers,
+     * move 15 seconds away from the current edge
+     * when the browser exposes a finite duration.
+     */
+
+    const target =
+      Math.max(
+        0,
+        duration -
+          LIVE_DELAY_SECONDS
+      );
+
+
+    video.currentTime =
+      target;
+
+
+    return true;
+
+  } catch (
+    error
   ) {
 
-    return null;
+    return false;
 
   }
 
-
-  let shell =
-    video.closest(
-      ".gmax-player-shell"
-    );
+}
 
 
-  if (
-    shell
-  ) {
+function waitForVideoReady() {
 
-    return shell;
+  return new Promise(
+    resolve => {
 
-  }
+      if (
+        video.readyState >=
+        2
+      ) {
 
+        resolve();
 
-  const parent =
-    video.parentElement;
+        return;
 
-
-  if (
-    !parent
-  ) {
-
-    return null;
-
-  }
+      }
 
 
-  shell =
-    document.createElement(
-      "div"
-    );
+      let settled =
+        false;
 
 
-  shell.className =
-    "gmax-player-shell";
+      const finish =
+        () => {
+
+          if (
+            settled
+          ) {
+
+            return;
+
+          }
 
 
-  parent.insertBefore(
-    shell,
-    video
+          settled =
+            true;
+
+
+          video.removeEventListener(
+            "loadedmetadata",
+            finish
+          );
+
+
+          video.removeEventListener(
+            "canplay",
+            finish
+          );
+
+
+          resolve();
+
+        };
+
+
+      video.addEventListener(
+        "loadedmetadata",
+        finish,
+        {
+          once:
+            true
+        }
+      );
+
+
+      video.addEventListener(
+        "canplay",
+        finish,
+        {
+          once:
+            true
+        }
+      );
+
+
+      setTimeout(
+        finish,
+        5000
+      );
+
+    }
   );
-
-
-  shell.appendChild(
-    video
-  );
-
-
-  injectPlayerStyles();
-
-
-  return shell;
 
 }
 
 
 /* =========================================================
-   PLAYER STYLES
+   PLAYER STYLE INJECTION
 ========================================================= */
 
-function injectPlayerStyles() {
+function injectCinematicPlayerStyles() {
 
   if (
     document.getElementById(
-      "gmax-iptv-player-styles"
+      "gmax-cinematic-player-styles"
     )
   ) {
 
@@ -1568,78 +1950,430 @@ function injectPlayerStyles() {
 
 
   style.id =
-    "gmax-iptv-player-styles";
+    "gmax-cinematic-player-styles";
 
 
   style.textContent = `
 
     .gmax-player-shell {
 
-      position: relative;
+      position:
+        relative;
 
-      width: 100%;
+      width:
+        100%;
 
-      aspect-ratio: 16 / 9;
+      aspect-ratio:
+        16 / 9;
 
-      min-height: 240px;
+      min-height:
+        280px;
 
-      background: #000;
+      background:
+        #000;
 
-      overflow: hidden;
+      overflow:
+        hidden;
 
-      border-radius: 16px;
+      border-radius:
+        18px;
 
       box-shadow:
-        0 24px 80px
+        0
+        30px
+        90px
         rgba(
           0,
           0,
           0,
-          .45
+          .55
         );
 
-      user-select: none;
+      isolation:
+        isolate;
+
+      user-select:
+        none;
 
     }
 
 
     .gmax-player-shell video {
 
-      display: block;
+      position:
+        absolute;
 
-      width: 100%;
+      inset:
+        0;
 
-      height: 100%;
+      width:
+        100%;
 
-      object-fit: contain;
+      height:
+        100%;
 
-      background: #000;
+      object-fit:
+        contain;
+
+      background:
+        #000;
+
+    }
+
+
+    .gmax-player-gradient {
+
+      position:
+        absolute;
+
+      inset:
+        auto
+        0
+        0;
+
+      height:
+        210px;
+
+      pointer-events:
+        none;
+
+      background:
+        linear-gradient(
+          to bottom,
+          transparent 0%,
+          rgba(
+            0,
+            0,
+            0,
+            .08
+          ) 20%,
+          rgba(
+            0,
+            0,
+            0,
+            .82
+          ) 100%
+        );
+
+      z-index:
+        3;
+
+    }
+
+
+    .gmax-player-top {
+
+      position:
+        absolute;
+
+      top:
+        0;
+
+      left:
+        0;
+
+      right:
+        0;
+
+      padding:
+        20px;
+
+      display:
+        flex;
+
+      align-items:
+        flex-start;
+
+      gap:
+        12px;
+
+      z-index:
+        6;
+
+      background:
+        linear-gradient(
+          to bottom,
+          rgba(
+            0,
+            0,
+            0,
+            .7
+          ),
+          transparent
+        );
+
+      pointer-events:
+        none;
+
+    }
+
+
+    .gmax-now-playing {
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      gap:
+        12px;
+
+      min-width:
+        0;
+
+    }
+
+
+    .gmax-channel-art {
+
+      width:
+        54px;
+
+      height:
+        54px;
+
+      border-radius:
+        12px;
+
+      object-fit:
+        contain;
+
+      background:
+        rgba(
+          255,
+          255,
+          255,
+          .08
+        );
+
+      padding:
+        5px;
+
+      border:
+        1px
+        solid
+        rgba(
+          255,
+          255,
+          255,
+          .1
+        );
+
+      flex:
+        0
+        0
+        auto;
+
+    }
+
+
+    .gmax-now-copy {
+
+      min-width:
+        0;
+
+    }
+
+
+    .gmax-now-label {
+
+      font:
+        800
+        10px/1
+        system-ui,
+        sans-serif;
+
+      letter-spacing:
+        .12em;
+
+      text-transform:
+        uppercase;
+
+      color:
+        #ff2b83;
+
+      margin-bottom:
+        6px;
+
+    }
+
+
+    .gmax-now-title {
+
+      color:
+        #fff;
+
+      font:
+        800
+        clamp(
+          15px,
+          2vw,
+          22px
+        )/1.2
+        system-ui,
+        sans-serif;
+
+      white-space:
+        nowrap;
+
+      overflow:
+        hidden;
+
+      text-overflow:
+        ellipsis;
+
+      max-width:
+        min(
+          55vw,
+          520px
+        );
+
+    }
+
+
+    .gmax-now-meta {
+
+      color:
+        rgba(
+          255,
+          255,
+          255,
+          .65
+        );
+
+      font:
+        500
+        11px/1.3
+        system-ui,
+        sans-serif;
+
+      margin-top:
+        4px;
+
+    }
+
+
+    .gmax-live-badge {
+
+      margin-left:
+        auto;
+
+      pointer-events:
+        auto;
+
+      display:
+        inline-flex;
+
+      align-items:
+        center;
+
+      gap:
+        7px;
+
+      padding:
+        8px
+        11px;
+
+      border-radius:
+        999px;
+
+      color:
+        #fff;
+
+      background:
+        rgba(
+          229,
+          9,
+          20,
+          .95
+        );
+
+      font:
+        900
+        10px/1
+        system-ui,
+        sans-serif;
+
+      letter-spacing:
+        .08em;
+
+      box-shadow:
+        0
+        8px
+        28px
+        rgba(
+          229,
+          9,
+          20,
+          .35
+        );
+
+    }
+
+
+    .gmax-live-dot {
+
+      width:
+        7px;
+
+      height:
+        7px;
+
+      border-radius:
+        50%;
+
+      background:
+        #fff;
+
+      box-shadow:
+        0
+        0
+        0
+        5px
+        rgba(
+          255,
+          255,
+          255,
+          .08
+        );
 
     }
 
 
     .gmax-player-controls {
 
-      position: absolute;
+      position:
+        absolute;
 
-      left: 0;
+      left:
+        0;
 
-      right: 0;
+      right:
+        0;
 
-      bottom: 0;
+      bottom:
+        0;
+
+      z-index:
+        8;
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      gap:
+        9px;
 
       padding:
-        34px
+        70px
         18px
-        14px;
+        16px;
 
-      display: flex;
-
-      align-items: center;
-
-      gap: 10px;
-
-      color: #fff;
+      color:
+        #fff;
 
       background:
         linear-gradient(
@@ -1648,141 +2382,187 @@ function injectPlayerStyles() {
             0,
             0,
             0,
-            .88
+            .92
           )
         );
 
-      opacity: 1;
-
       transition:
         opacity
+        .2s ease,
+        transform
         .2s ease;
-
-      z-index: 20;
 
     }
 
 
     .gmax-player-shell.gmax-controls-hidden
-      .gmax-player-controls {
-
-      opacity: 0;
-
-      pointer-events: none;
-
-    }
-
-
-    .gmax-player-btn {
-
-      width: 36px;
-
-      height: 36px;
-
-      border: 0;
-
-      border-radius: 10px;
-
-      background:
-        rgba(
-          255,
-          255,
-          255,
-          .09
-        );
-
-      color: #fff;
-
-      cursor: pointer;
-
-      display: grid;
-
-      place-items: center;
-
-      font-size: 16px;
-
-      transition:
-        background
-        .15s ease,
-        transform
-        .15s ease;
-
-      flex:
-        0 0 auto;
-
-    }
-
-
-    .gmax-player-btn:hover {
-
-      background:
-        rgba(
-          255,
-          255,
-          255,
-          .18
-        );
-
-      transform:
-        translateY(-1px);
-
-    }
-
-
-    .gmax-player-time {
-
-      min-width: 64px;
-
-      font:
-        600
-        13px/1
-        system-ui,
-        sans-serif;
-
-      letter-spacing:
-        .02em;
+      .gmax-player-controls,
+    .gmax-player-shell.gmax-controls-hidden
+      .gmax-player-top {
 
       opacity:
-        .92;
+        0;
+
+      pointer-events:
+        none;
 
     }
 
 
-    .gmax-live-pill {
+    .gmax-player-button {
 
-      font:
-        800
-        11px/1
-        system-ui,
-        sans-serif;
+      width:
+        38px;
 
-      letter-spacing:
-        .08em;
+      height:
+        38px;
 
-      padding:
-        6px
-        8px;
+      border:
+        0;
 
       border-radius:
-        999px;
+        11px;
+
+      display:
+        grid;
+
+      place-items:
+        center;
 
       background:
         rgba(
-          229,
-          9,
-          20,
-          .96
+          255,
+          255,
+          255,
+          .1
         );
 
       color:
         #fff;
+
+      cursor:
+        pointer;
+
+      font:
+        700
+        15px/1
+        system-ui,
+        sans-serif;
+
+      transition:
+        .15s
+        ease;
+
+      flex:
+        0
+        0
+        auto;
+
+    }
+
+
+    .gmax-player-button:hover {
+
+      background:
+        rgba(
+          255,
+          43,
+          131,
+          .28
+        );
+
+      transform:
+        translateY(
+          -1px
+        );
 
     }
 
 
     .gmax-player-spacer {
 
-      flex: 1;
+      flex:
+        1;
+
+    }
+
+
+    .gmax-live-lag {
+
+      color:
+        rgba(
+          255,
+          255,
+          255,
+          .88
+        );
+
+      font:
+        700
+        12px/1
+        system-ui,
+        sans-serif;
+
+      white-space:
+        nowrap;
+
+    }
+
+
+    .gmax-go-live {
+
+      border:
+        1px
+        solid
+        rgba(
+          255,
+          43,
+          131,
+          .5
+        );
+
+      background:
+        rgba(
+          255,
+          43,
+          131,
+          .12
+        );
+
+      color:
+        #fff;
+
+      padding:
+        9px
+        12px;
+
+      border-radius:
+        10px;
+
+      font:
+        800
+        10px/1
+        system-ui,
+        sans-serif;
+
+      letter-spacing:
+        .06em;
+
+      cursor:
+        pointer;
+
+    }
+
+
+    .gmax-go-live:hover {
+
+      background:
+        rgba(
+          255,
+          43,
+          131,
+          .28
+        );
 
     }
 
@@ -1790,10 +2570,10 @@ function injectPlayerStyles() {
     .gmax-volume {
 
       width:
-        90px;
+        86px;
 
       accent-color:
-        #fff;
+        #ff2b83;
 
       cursor:
         pointer;
@@ -1818,13 +2598,13 @@ function injectPlayerStyles() {
         0;
 
       bottom:
-        48px;
+        50px;
 
-      min-width:
-        150px;
+      width:
+        180px;
 
       max-height:
-        260px;
+        280px;
 
       overflow-y:
         auto;
@@ -1832,47 +2612,48 @@ function injectPlayerStyles() {
       padding:
         7px;
 
-      border:
-        1px solid
-        rgba(
-          255,
-          255,
-          255,
-          .12
-        );
-
-      border-radius:
-        12px;
+      display:
+        none;
 
       background:
         rgba(
-          18,
-          18,
+          15,
+          15,
           18,
           .97
         );
 
+      border:
+        1px
+        solid
+        rgba(
+          255,
+          255,
+          255,
+          .11
+        );
+
+      border-radius:
+        14px;
+
       box-shadow:
         0
         20px
-        50px
+        60px
         rgba(
           0,
           0,
           0,
-          .55
+          .65
         );
-
-      display:
-        none;
 
       backdrop-filter:
         blur(
-          14px
+          18px
         );
 
       z-index:
-        50;
+        30;
 
     }
 
@@ -1887,6 +2668,9 @@ function injectPlayerStyles() {
 
     .gmax-quality-item {
 
+      display:
+        block;
+
       width:
         100%;
 
@@ -1894,27 +2678,32 @@ function injectPlayerStyles() {
         0;
 
       border-radius:
-        8px;
-
-      padding:
-        9px
-        10px;
+        9px;
 
       background:
         transparent;
 
       color:
-        #ddd;
+        rgba(
+          255,
+          255,
+          255,
+          .76
+        );
 
       text-align:
         left;
+
+      padding:
+        10px
+        11px;
 
       cursor:
         pointer;
 
       font:
-        600
-        12px
+        700
+        12px/1
         system-ui,
         sans-serif;
 
@@ -1924,28 +2713,561 @@ function injectPlayerStyles() {
     .gmax-quality-item:hover,
     .gmax-quality-item.active {
 
+      color:
+        #fff;
+
       background:
+        rgba(
+          255,
+          43,
+          131,
+          .16
+        );
+
+    }
+
+
+    .gmax-spinner {
+
+      position:
+        absolute;
+
+      left:
+        50%;
+
+      top:
+        50%;
+
+      width:
+        46px;
+
+      height:
+        46px;
+
+      margin:
+        -23px
+        0
+        0
+        -23px;
+
+      border:
+        3px
+        solid
         rgba(
           255,
           255,
           255,
-          .1
+          .18
+        );
+
+      border-top-color:
+        #ff2b83;
+
+      border-radius:
+        50%;
+
+      animation:
+        gmaxSpin
+        .8s
+        linear
+        infinite;
+
+      z-index:
+        10;
+
+    }
+
+
+    @keyframes gmaxSpin {
+
+      to {
+
+        transform:
+          rotate(
+            360deg
+          );
+
+      }
+
+    }
+
+
+    .gmax-player-error {
+
+      position:
+        absolute;
+
+      inset:
+        0;
+
+      display:
+        none;
+
+      align-items:
+        center;
+
+      justify-content:
+        center;
+
+      flex-direction:
+        column;
+
+      gap:
+        10px;
+
+      text-align:
+        center;
+
+      padding:
+        24px;
+
+      background:
+        radial-gradient(
+          circle at center,
+          rgba(
+            60,
+            10,
+            35,
+            .75
+          ),
+          rgba(
+            0,
+            0,
+            0,
+            .96
+          )
         );
 
       color:
         #fff;
 
+      z-index:
+        20;
+
+    }
+
+
+    .gmax-player-error.open {
+
+      display:
+        flex;
+
+    }
+
+
+    .gmax-error-title {
+
+      font:
+        800
+        20px/1.2
+        system-ui,
+        sans-serif;
+
+    }
+
+
+    .gmax-error-message {
+
+      max-width:
+        520px;
+
+      color:
+        rgba(
+          255,
+          255,
+          255,
+          .6
+        );
+
+      font:
+        500
+        12px/1.5
+        system-ui,
+        sans-serif;
+
+    }
+
+
+    .gmax-retry-button {
+
+      margin-top:
+        7px;
+
+      border:
+        0;
+
+      border-radius:
+        10px;
+
+      background:
+        #ff2b83;
+
+      color:
+        #fff;
+
+      padding:
+        11px
+        16px;
+
+      cursor:
+        pointer;
+
+      font:
+        800
+        11px/1
+        system-ui,
+        sans-serif;
+
+    }
+
+
+    .gmax-player-info {
+
+      margin-top:
+        16px;
+
+      display:
+        grid;
+
+      gap:
+        16px;
+
+    }
+
+
+    .gmax-player-info-main {
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      gap:
+        13px;
+
+    }
+
+
+    .gmax-info-logo {
+
+      width:
+        52px;
+
+      height:
+        52px;
+
+      border-radius:
+        12px;
+
+      object-fit:
+        contain;
+
+      background:
+        rgba(
+          255,
+          255,
+          255,
+          .05
+        );
+
+      padding:
+        5px;
+
+    }
+
+
+    .gmax-info-label {
+
+      color:
+        #ff2b83;
+
+      font:
+        900
+        10px/1
+        system-ui,
+        sans-serif;
+
+      letter-spacing:
+        .1em;
+
+      text-transform:
+        uppercase;
+
+      margin-bottom:
+        5px;
+
+    }
+
+
+    .gmax-info-title {
+
+      color:
+        #fff;
+
+      font:
+        900
+        20px/1.2
+        system-ui,
+        sans-serif;
+
+    }
+
+
+    .gmax-info-meta {
+
+      margin-top:
+        4px;
+
+      color:
+        rgba(
+          255,
+          255,
+          255,
+          .5
+        );
+
+      font:
+        500
+        12px/1.3
+        system-ui,
+        sans-serif;
+
+    }
+
+
+    .gmax-related-title {
+
+      color:
+        #fff;
+
+      font:
+        900
+        17px/1.2
+        system-ui,
+        sans-serif;
+
+      margin-bottom:
+        9px;
+
+    }
+
+
+    .gmax-related-row {
+
+      display:
+        flex;
+
+      gap:
+        11px;
+
+      overflow-x:
+        auto;
+
+      scrollbar-width:
+        thin;
+
+      padding-bottom:
+        4px;
+
+    }
+
+
+    .gmax-related-card {
+
+      flex:
+        0
+        0
+        155px;
+
+      min-height:
+        92px;
+
+      border:
+        1px
+        solid
+        rgba(
+          255,
+          255,
+          255,
+          .07
+        );
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(
+            255,
+            255,
+            255,
+            .06
+          ),
+          rgba(
+            255,
+            255,
+            255,
+            .025
+          )
+        );
+
+      border-radius:
+        12px;
+
+      overflow:
+        hidden;
+
+      cursor:
+        pointer;
+
+      transition:
+        .18s
+        ease;
+
+    }
+
+
+    .gmax-related-card:hover {
+
+      transform:
+        translateY(
+          -2px
+        );
+
+      border-color:
+        rgba(
+          255,
+          43,
+          131,
+          .35
+        );
+
+    }
+
+
+    .gmax-related-image {
+
+      width:
+        100%;
+
+      height:
+        55px;
+
+      object-fit:
+        contain;
+
+      background:
+        #0b0b0e;
+
+      padding:
+        8px;
+
+    }
+
+
+    .gmax-related-name {
+
+      padding:
+        7px
+        9px;
+
+      color:
+        rgba(
+          255,
+          255,
+          255,
+          .9
+        );
+
+      font:
+        800
+        11px/1.2
+        system-ui,
+        sans-serif;
+
+      white-space:
+        nowrap;
+
+      overflow:
+        hidden;
+
+      text-overflow:
+        ellipsis;
+
     }
 
 
     @media (
-      max-width: 700px
+      max-width:
+        700px
     ) {
 
       .gmax-player-shell {
 
         border-radius:
           10px;
+
+        min-height:
+          210px;
+
+      }
+
+
+      .gmax-player-top {
+
+        padding:
+          10px;
+
+      }
+
+
+      .gmax-channel-art {
+
+        width:
+          42px;
+
+        height:
+          42px;
+
+        border-radius:
+          9px;
+
+      }
+
+
+      .gmax-now-title {
+
+        max-width:
+          48vw;
+
+      }
+
+
+      .gmax-now-meta {
+
+        display:
+          none;
+
+      }
+
+
+      .gmax-live-badge {
+
+        padding:
+          7px
+          9px;
+
+      }
+
+
+      .gmax-player-controls {
+
+        gap:
+          6px;
+
+        padding:
+          58px
+          9px
+          9px;
 
       }
 
@@ -1958,26 +3280,38 @@ function injectPlayerStyles() {
       }
 
 
-      .gmax-player-controls {
+      .gmax-live-lag {
 
-        padding:
-          28px
-          10px
-          9px;
-
-        gap:
-          7px;
+        display:
+          none;
 
       }
 
 
-      .gmax-player-btn {
+      .gmax-player-button {
 
         width:
           34px;
 
         height:
           34px;
+
+      }
+
+
+      .gmax-go-live {
+
+        padding:
+          8px
+          9px;
+
+      }
+
+
+      .gmax-related-card {
+
+        flex-basis:
+          135px;
 
       }
 
@@ -1994,126 +3328,241 @@ function injectPlayerStyles() {
 
 
 /* =========================================================
-   TIME FORMAT
+   CINEMATIC PLAYER SETUP
 ========================================================= */
 
-function formatPlayerTime(
-  seconds
-) {
+function setupCinematicPlayer() {
 
-  const safe =
-    Math.max(
-      0,
-      Math.floor(
-        Number.isFinite(
-          seconds
-        )
-          ? seconds
-          : 0
-      )
+  injectCinematicPlayerStyles();
+
+
+  let shell =
+    video.closest(
+      ".gmax-player-shell"
     );
-
-
-  const hours =
-    Math.floor(
-      safe /
-      3600
-    );
-
-
-  const minutes =
-    Math.floor(
-      (
-        safe %
-        3600
-      ) /
-      60
-    );
-
-
-  const secs =
-    safe %
-    60;
-
-
-  if (
-    hours >
-    0
-  ) {
-
-    return (
-      String(
-        hours
-      ).padStart(
-        2,
-        "0"
-      ) +
-      ":" +
-      String(
-        minutes
-      ).padStart(
-        2,
-        "0"
-      ) +
-      ":" +
-      String(
-        secs
-      ).padStart(
-        2,
-        "0"
-      )
-    );
-
-  }
-
-
-  return (
-    String(
-      minutes
-    ).padStart(
-      2,
-      "0"
-    ) +
-    ":" +
-    String(
-      secs
-    ).padStart(
-      2,
-      "0"
-    )
-  );
-
-}
-
-
-/* =========================================================
-   SETUP CUSTOM CONTROLS
-========================================================= */
-
-function setupCustomPlayerControls() {
-
-  const shell =
-    ensurePlayerShell();
 
 
   if (
     !shell
   ) {
 
-    return;
+    const parent =
+      video.parentElement;
+
+
+    if (
+      !parent
+    ) {
+
+      return;
+
+    }
+
+
+    shell =
+      document.createElement(
+        "div"
+      );
+
+
+    shell.className =
+      "gmax-player-shell";
+
+
+    parent.insertBefore(
+      shell,
+      video
+    );
+
+
+    shell.appendChild(
+      video
+    );
 
   }
 
+
+  playerUiShell =
+    shell;
+
+
+  /*
+   * Make sure we only create the
+   * controls once.
+   */
 
   if (
-    customPlayerControls
+    !playerControls
   ) {
 
-    updatePlayerUi();
-
-    return;
+    createPlayerControls(
+      shell
+    );
 
   }
+
+
+  updatePlayerIdentity();
+
+  buildRelatedChannels();
+
+  hidePlayerErrorOverlay();
+
+}
+
+
+/* =========================================================
+   CREATE CONTROLS
+========================================================= */
+
+function createPlayerControls(
+  shell
+) {
+
+  const gradient =
+    document.createElement(
+      "div"
+    );
+
+
+  gradient.className =
+    "gmax-player-gradient";
+
+
+  shell.appendChild(
+    gradient
+  );
+
+
+  const top =
+    document.createElement(
+      "div"
+    );
+
+
+  top.className =
+    "gmax-player-top";
+
+
+  top.innerHTML = `
+
+    <div class="gmax-now-playing">
+
+      <img
+        class="gmax-channel-art"
+        data-role="channel-art"
+        alt=""
+      >
+
+      <div class="gmax-now-copy">
+
+        <div
+          class="gmax-now-label"
+        >
+          NOW PLAYING
+        </div>
+
+        <div
+          class="gmax-now-title"
+          data-role="channel-title"
+        >
+          Live TV
+        </div>
+
+        <div
+          class="gmax-now-meta"
+          data-role="channel-meta"
+        >
+          JIO TV
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div
+      class="gmax-live-badge"
+      title="Live"
+    >
+      <span
+        class="gmax-live-dot"
+      ></span>
+
+      LIVE
+
+    </div>
+
+  `;
+
+
+  shell.appendChild(
+    top
+  );
+
+
+  const spinner =
+    document.createElement(
+      "div"
+    );
+
+
+  spinner.className =
+    "gmax-spinner";
+
+
+  spinner.dataset.role =
+    "spinner";
+
+
+  shell.appendChild(
+    spinner
+  );
+
+
+  const errorOverlay =
+    document.createElement(
+      "div"
+    );
+
+
+  errorOverlay.className =
+    "gmax-player-error";
+
+
+  errorOverlay.dataset.role =
+    "error";
+
+
+  errorOverlay.innerHTML = `
+
+    <div
+      class="gmax-error-title"
+    >
+      Playback problem
+    </div>
+
+    <div
+      class="gmax-error-message"
+      data-role="error-message"
+    >
+      The channel could not be played.
+    </div>
+
+    <button
+      class="gmax-retry-button"
+      data-action="retry"
+      type="button"
+    >
+      RECONNECT
+    </button>
+
+  `;
+
+
+  shell.appendChild(
+    errorOverlay
+  );
 
 
   const controls =
@@ -2129,7 +3578,7 @@ function setupCustomPlayerControls() {
   controls.innerHTML = `
 
     <button
-      class="gmax-player-btn"
+      class="gmax-player-button"
       data-action="play"
       type="button"
       title="Play / Pause"
@@ -2139,7 +3588,7 @@ function setupCustomPlayerControls() {
 
 
     <button
-      class="gmax-player-btn"
+      class="gmax-player-button"
       data-action="mute"
       type="button"
       title="Mute"
@@ -2161,24 +3610,26 @@ function setupCustomPlayerControls() {
 
 
     <span
-      class="gmax-player-time"
-      data-role="time"
+      class="gmax-live-lag"
+      data-role="live-lag"
     >
-      00:00
+      LIVE • -15s
     </span>
 
 
-    <span
-      class="gmax-live-pill"
+    <button
+      class="gmax-go-live"
+      data-action="go-live"
+      type="button"
+      title="Return to the live safety position"
     >
-      LIVE
-    </span>
+      GO LIVE
+    </button>
 
 
     <span
       class="gmax-player-spacer"
-    >
-    </span>
+    ></span>
 
 
     <div
@@ -2186,7 +3637,7 @@ function setupCustomPlayerControls() {
     >
 
       <button
-        class="gmax-player-btn"
+        class="gmax-player-button"
         data-action="quality"
         type="button"
         title="Quality"
@@ -2198,14 +3649,13 @@ function setupCustomPlayerControls() {
       <div
         class="gmax-quality-menu"
         data-role="quality-menu"
-      >
-      </div>
+      ></div>
 
     </div>
 
 
     <button
-      class="gmax-player-btn"
+      class="gmax-player-button"
       data-action="fullscreen"
       type="button"
       title="Fullscreen"
@@ -2221,7 +3671,7 @@ function setupCustomPlayerControls() {
   );
 
 
-  customPlayerControls =
+  playerControls =
     controls;
 
 
@@ -2255,9 +3705,21 @@ function setupCustomPlayerControls() {
     );
 
 
+  const goLiveButton =
+    controls.querySelector(
+      '[data-action="go-live"]'
+    );
+
+
   const fullscreenButton =
     controls.querySelector(
       '[data-action="fullscreen"]'
+    );
+
+
+  const retryButton =
+    errorOverlay.querySelector(
+      '[data-action="retry"]'
     );
 
 
@@ -2332,6 +3794,30 @@ function setupCustomPlayerControls() {
   );
 
 
+  goLiveButton.addEventListener(
+    "click",
+    event => {
+
+      event.stopPropagation();
+
+
+      if (
+        seekToConfiguredLivePosition()
+      ) {
+
+        video.play().catch(
+          () => {}
+        );
+
+      }
+
+
+      updatePlayerUi();
+
+    }
+  );
+
+
   qualityButton.addEventListener(
     "click",
     event => {
@@ -2354,25 +3840,41 @@ function setupCustomPlayerControls() {
       event.stopPropagation();
 
 
+      toggleFullscreen();
+
+    }
+  );
+
+
+  retryButton.addEventListener(
+    "click",
+    event => {
+
+      event.stopPropagation();
+
+
+      retryCurrentChannel();
+
+    }
+  );
+
+
+  shell.addEventListener(
+    "dblclick",
+    event => {
+
       if (
-        document.fullscreenElement
+        event.target.closest(
+          ".gmax-player-controls"
+        )
       ) {
 
-        document
-          .exitFullscreen()
-          .catch(
-            () => {}
-          );
-
-      } else {
-
-        shell
-          .requestFullscreen()
-          .catch(
-            () => {}
-          );
+        return;
 
       }
+
+
+      toggleFullscreen();
 
     }
   );
@@ -2383,25 +3885,28 @@ function setupCustomPlayerControls() {
     event => {
 
       if (
-        event.target ===
+        event.target !==
         video
       ) {
 
-        if (
-          video.paused
-        ) {
+        return;
 
-          video
-            .play()
-            .catch(
-              () => {}
-            );
+      }
 
-        } else {
 
-          video.pause();
+      if (
+        video.paused
+      ) {
 
-        }
+        video
+          .play()
+          .catch(
+            () => {}
+          );
+
+      } else {
+
+        video.pause();
 
       }
 
@@ -2413,8 +3918,11 @@ function setupCustomPlayerControls() {
     "play",
     "pause",
     "timeupdate",
+    "loadedmetadata",
     "volumechange",
-    "loadedmetadata"
+    "durationchange",
+    "progress",
+    "canplay"
   ].forEach(
     eventName => {
 
@@ -2431,54 +3939,32 @@ function setupCustomPlayerControls() {
     "mousemove",
     () => {
 
-      shell.classList.remove(
-        "gmax-controls-hidden"
-      );
-
-
-      clearTimeout(
-        playerUiTimer
-      );
-
-
-      playerUiTimer =
-        setTimeout(
-          () => {
-
-            if (
-              !video.paused
-            ) {
-
-              shell.classList.add(
-                "gmax-controls-hidden"
-              );
-
-            }
-
-          },
-          2500
-        );
+      showPlayerControlsTemporarily();
 
     }
   );
 
 
-  qualityMenu.addEventListener(
+  shell.addEventListener(
+    "touchstart",
+    () => {
+
+      showPlayerControlsTemporarily();
+
+    },
+    {
+      passive:
+        true
+    }
+  );
+
+
+  document.addEventListener(
     "click",
     event => {
 
-      event.stopPropagation();
-
-
-      const item =
-        event.target.closest(
-          "[data-quality-index]"
-        );
-
-
       if (
-        !item ||
-        !shakaPlayer
+        !qualityMenu
       ) {
 
         return;
@@ -2486,85 +3972,14 @@ function setupCustomPlayerControls() {
       }
 
 
-      const index =
-        item.dataset.qualityIndex;
-
-
       if (
-        index ===
-        "auto"
+        !event.target.closest(
+          ".gmax-quality-wrap"
+        )
       ) {
 
-        shakaPlayer.configure({
-          abr: {
-            enabled:
-              true
-          }
-        });
-
-
-      } else {
-
-        const trackIndex =
-          Number(
-            index
-          );
-
-
-        const tracks =
-          shakaPlayer.getVariantTracks();
-
-
-        const track =
-          tracks[
-            trackIndex
-          ];
-
-
-        if (
-          track
-        ) {
-
-          shakaPlayer.configure({
-            abr: {
-              enabled:
-                false
-            }
-          });
-
-
-          shakaPlayer.selectVariantTrack(
-            track,
-            true,
-            0
-          );
-
-        }
-
-      }
-
-
-      qualityMenu.classList.remove(
-        "open"
-      );
-
-
-      updateQualityOptions();
-
-    }
-  );
-
-
-  shell.addEventListener(
-    "mouseleave",
-    () => {
-
-      if (
-        !video.paused
-      ) {
-
-        shell.classList.add(
-          "gmax-controls-hidden"
+        qualityMenu.classList.remove(
+          "open"
         );
 
       }
@@ -2572,11 +3987,997 @@ function setupCustomPlayerControls() {
     }
   );
 
+
+  window.addEventListener(
+    "keydown",
+    handlePlayerKeyboard
+  );
+
 }
 
 
 /* =========================================================
-   QUALITY OPTIONS
+   PLAYER IDENTITY
+========================================================= */
+
+function updatePlayerIdentity() {
+
+  if (
+    !playerUiShell ||
+    !currentChannel
+  ) {
+
+    return;
+
+  }
+
+
+  const art =
+    playerUiShell.querySelector(
+      '[data-role="channel-art"]'
+    );
+
+
+  const title =
+    playerUiShell.querySelector(
+      '[data-role="channel-title"]'
+    );
+
+
+  const meta =
+    playerUiShell.querySelector(
+      '[data-role="channel-meta"]'
+    );
+
+
+  const logo =
+    getChannelLogo(
+      currentChannel
+    );
+
+
+  if (
+    art
+  ) {
+
+    if (
+      logo
+    ) {
+
+      art.src =
+        logo;
+
+      art.style.display =
+        "block";
+
+    } else {
+
+      art.removeAttribute(
+        "src"
+      );
+
+      art.style.display =
+        "none";
+
+    }
+
+  }
+
+
+  if (
+    title
+  ) {
+
+    title.textContent =
+      currentChannel.name ||
+      "Live TV";
+
+  }
+
+
+  if (
+    meta
+  ) {
+
+    meta.textContent =
+      [
+        "JIO TV",
+        currentChannel.country ||
+          "INDIA",
+        getCategory(
+          currentChannel
+        )
+      ]
+        .filter(
+          Boolean
+        )
+        .join(
+          " • "
+        );
+
+  }
+
+}
+
+
+/* =========================================================
+   RELATED CHANNELS
+========================================================= */
+
+function buildRelatedChannels() {
+
+  if (
+    !playerSection ||
+    !currentChannel
+  ) {
+
+    return;
+
+  }
+
+
+  let info =
+    playerSection.querySelector(
+      ".gmax-player-info"
+    );
+
+
+  if (
+    !info
+  ) {
+
+    info =
+      document.createElement(
+        "div"
+      );
+
+
+    info.className =
+      "gmax-player-info";
+
+
+    playerSection.appendChild(
+      info
+    );
+
+  }
+
+
+  const logo =
+    getChannelLogo(
+      currentChannel
+    );
+
+
+  const related =
+    allChannels
+      .filter(
+        channel =>
+          getChannelId(
+            channel
+          ) !==
+          getChannelId(
+            currentChannel
+          )
+      )
+      .filter(
+        channel =>
+          normalize(
+            getCategory(
+              channel
+            )
+          ) ===
+            normalize(
+              getCategory(
+                currentChannel
+              )
+            )
+      )
+      .slice(
+        0,
+        12
+      );
+
+
+  info.innerHTML = `
+
+    <div
+      class="gmax-player-info-main"
+    >
+
+      ${
+        logo
+          ? `
+            <img
+              class="gmax-info-logo"
+              src="${escapeHtml(
+                logo
+              )}"
+              alt=""
+              referrerpolicy="no-referrer"
+            >
+          `
+          : ""
+      }
+
+
+      <div>
+
+        <div
+          class="gmax-info-label"
+        >
+          NOW PLAYING
+        </div>
+
+        <div
+          class="gmax-info-title"
+        >
+          ${escapeHtml(
+            currentChannel.name ||
+            "Live TV"
+          )}
+        </div>
+
+        <div
+          class="gmax-info-meta"
+        >
+          ${escapeHtml(
+            [
+              "JIO TV",
+              currentChannel.country ||
+                "INDIA",
+              getCategory(
+                currentChannel
+              )
+            ]
+              .filter(
+                Boolean
+              )
+              .join(
+                " • "
+              )
+          )}
+        </div>
+
+      </div>
+
+    </div>
+
+
+    ${
+      related.length
+        ? `
+          <div>
+
+            <div
+              class="gmax-related-title"
+            >
+              RELATED CHANNELS
+            </div>
+
+            <div
+              class="gmax-related-row"
+            >
+
+              ${related
+                .map(
+                  channel => {
+
+                    const channelLogo =
+                      getChannelLogo(
+                        channel
+                      );
+
+
+                    return `
+
+                      <div
+                        class="gmax-related-card"
+                        data-related-channel="${escapeHtml(
+                          getChannelId(
+                            channel
+                          )
+                        )}"
+                      >
+
+                        ${
+                          channelLogo
+                            ? `
+                              <img
+                                class="gmax-related-image"
+                                src="${escapeHtml(
+                                  channelLogo
+                                )}"
+                                alt=""
+                                loading="lazy"
+                                referrerpolicy="no-referrer"
+                              >
+                            `
+                            : `
+                              <div
+                                class="gmax-related-image"
+                                style="
+                                  display:grid;
+                                  place-items:center;
+                                  color:#777;
+                                  font-weight:800;
+                                "
+                              >
+                                TV
+                              </div>
+                            `
+                        }
+
+
+                        <div
+                          class="gmax-related-name"
+                        >
+                          ${escapeHtml(
+                            channel.name ||
+                            "Channel"
+                          )}
+                        </div>
+
+                      </div>
+
+                    `;
+
+                  }
+                )
+                .join(
+                  ""
+                )}
+
+            </div>
+
+          </div>
+        `
+        : ""
+    }
+
+  `;
+
+
+  info
+    .querySelectorAll(
+      "[data-related-channel]"
+    )
+    .forEach(
+      card => {
+
+        card.addEventListener(
+          "click",
+          () => {
+
+            const id =
+              card.dataset.relatedChannel;
+
+
+            const channel =
+              allChannels.find(
+                item =>
+                  getChannelId(
+                    item
+                  ) ===
+                  String(
+                    id
+                  )
+              );
+
+
+            if (
+              channel
+            ) {
+
+              openChannel(
+                channel
+              );
+
+            }
+
+          }
+        );
+
+      }
+    );
+
+}
+
+
+/* =========================================================
+   PLAYER CONTROLS
+========================================================= */
+
+function showPlayerControlsTemporarily() {
+
+  if (
+    !playerUiShell
+  ) {
+
+    return;
+
+  }
+
+
+  playerUiShell.classList.remove(
+    "gmax-controls-hidden"
+  );
+
+
+  clearTimeout(
+    playerUiTimer
+  );
+
+
+  playerUiTimer =
+    setTimeout(
+      () => {
+
+        if (
+          !video.paused
+        ) {
+
+          playerUiShell.classList.add(
+            "gmax-controls-hidden"
+          );
+
+        }
+
+      },
+      2800
+    );
+
+}
+
+
+function toggleFullscreen() {
+
+  if (
+    !playerUiShell
+  ) {
+
+    return;
+
+  }
+
+
+  if (
+    document.fullscreenElement
+  ) {
+
+    document
+      .exitFullscreen()
+      .catch(
+        () => {}
+      );
+
+  } else {
+
+    if (
+      playerUiShell.requestFullscreen
+    ) {
+
+      playerUiShell
+        .requestFullscreen()
+        .catch(
+          () => {}
+        );
+
+    }
+
+  }
+
+}
+
+
+/* =========================================================
+   KEYBOARD
+========================================================= */
+
+function handlePlayerKeyboard(
+  event
+) {
+
+  if (
+    !playerUiShell ||
+    playerSection.classList.contains(
+      "hidden"
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  const target =
+    event.target;
+
+
+  if (
+    target &&
+    (
+      target.tagName ===
+        "INPUT" ||
+      target.tagName ===
+        "TEXTAREA" ||
+      target.isContentEditable
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  const key =
+    String(
+      event.key
+    ).toLowerCase();
+
+
+  if (
+    key ===
+    " "
+  ) {
+
+    event.preventDefault();
+
+
+    if (
+      video.paused
+    ) {
+
+      video.play().catch(
+        () => {}
+      );
+
+    } else {
+
+      video.pause();
+
+    }
+
+
+    updatePlayerUi();
+
+  }
+
+
+  if (
+    key ===
+    "m"
+  ) {
+
+    video.muted =
+      !video.muted;
+
+
+    updatePlayerUi();
+
+  }
+
+
+  if (
+    key ===
+    "f"
+  ) {
+
+    toggleFullscreen();
+
+  }
+
+
+  if (
+    key ===
+    "g"
+  ) {
+
+    seekToConfiguredLivePosition();
+
+  }
+
+
+  if (
+    key ===
+    "arrowup"
+  ) {
+
+    event.preventDefault();
+
+
+    video.volume =
+      Math.min(
+        1,
+        video.volume +
+          0.05
+      );
+
+
+    video.muted =
+      false;
+
+
+    updatePlayerUi();
+
+  }
+
+
+  if (
+    key ===
+    "arrowdown"
+  ) {
+
+    event.preventDefault();
+
+
+    video.volume =
+      Math.max(
+        0,
+        video.volume -
+          0.05
+      );
+
+
+    updatePlayerUi();
+
+  }
+
+
+  showPlayerControlsTemporarily();
+
+}
+
+
+/* =========================================================
+   SPINNER
+========================================================= */
+
+function showPlayerSpinner() {
+
+  if (
+    !playerUiShell
+  ) {
+
+    return;
+
+  }
+
+
+  const spinner =
+    playerUiShell.querySelector(
+      '[data-role="spinner"]'
+    );
+
+
+  if (
+    spinner
+  ) {
+
+    spinner.style.display =
+      "block";
+
+  }
+
+}
+
+
+function hidePlayerSpinner() {
+
+  if (
+    !playerUiShell
+  ) {
+
+    return;
+
+  }
+
+
+  const spinner =
+    playerUiShell.querySelector(
+      '[data-role="spinner"]'
+    );
+
+
+  if (
+    spinner
+  ) {
+
+    spinner.style.display =
+      "none";
+
+  }
+
+}
+
+
+/* =========================================================
+   ERROR OVERLAY
+========================================================= */
+
+function showPlayerErrorOverlay(
+  message
+) {
+
+  if (
+    !playerUiShell
+  ) {
+
+    return;
+
+  }
+
+
+  const overlay =
+    playerUiShell.querySelector(
+      '[data-role="error"]'
+    );
+
+
+  if (
+    !overlay
+  ) {
+
+    return;
+
+  }
+
+
+  const messageElement =
+    overlay.querySelector(
+      '[data-role="error-message"]'
+    );
+
+
+  if (
+    messageElement
+  ) {
+
+    messageElement.textContent =
+      message ||
+      "The channel could not be played.";
+
+  }
+
+
+  overlay.classList.add(
+    "open"
+  );
+
+}
+
+
+function hidePlayerErrorOverlay() {
+
+  if (
+    !playerUiShell
+  ) {
+
+    return;
+
+  }
+
+
+  const overlay =
+    playerUiShell.querySelector(
+      '[data-role="error"]'
+    );
+
+
+  if (
+    overlay
+  ) {
+
+    overlay.classList.remove(
+      "open"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   RETRY
+========================================================= */
+
+async function retryCurrentChannel() {
+
+  if (
+    isPlayerRetrying ||
+    !currentChannel
+  ) {
+
+    return;
+
+  }
+
+
+  isPlayerRetrying =
+    true;
+
+
+  showPlayerLoading(
+    true
+  );
+
+
+  clearPlayerError();
+
+
+  try {
+
+    await destroyPlayer();
+
+
+    /*
+     * Rebuild the same channel
+     * without changing the channel data.
+     */
+
+    if (
+      lastStreamType ===
+      "dash"
+    ) {
+
+      await playDash(
+        lastStreamUrl
+      );
+
+    } else if (
+      lastStreamType ===
+      "hls"
+    ) {
+
+      await playHls(
+        lastStreamUrl
+      );
+
+    } else {
+
+      throw new Error(
+        "Unsupported stream format."
+      );
+
+    }
+
+  } catch (
+    error
+  ) {
+
+    showPlayerError(
+      error instanceof Error
+        ? error.message
+        : String(
+            error
+          )
+    );
+
+  } finally {
+
+    isPlayerRetrying =
+      false;
+
+
+    showPlayerLoading(
+      false
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   LIVE STATUS
+========================================================= */
+
+function startLiveStatusTimer() {
+
+  stopLiveStatusTimer();
+
+
+  liveStatusTimer =
+    setInterval(
+      () => {
+
+        updateLiveStatus();
+
+      },
+      1000
+    );
+
+
+  updateLiveStatus();
+
+}
+
+
+function stopLiveStatusTimer() {
+
+  if (
+    liveStatusTimer
+  ) {
+
+    clearInterval(
+      liveStatusTimer
+    );
+
+
+    liveStatusTimer =
+      null;
+
+  }
+
+}
+
+
+function updateLiveStatus() {
+
+  if (
+    !playerControls
+  ) {
+
+    return;
+
+  }
+
+
+  const lagElement =
+    playerControls.querySelector(
+      '[data-role="live-lag"]'
+    );
+
+
+  if (
+    !lagElement
+  ) {
+
+    return;
+
+  }
+
+
+  const lag =
+    getCurrentLiveLag();
+
+
+  if (
+    lag ===
+    null
+  ) {
+
+    lagElement.textContent =
+      `LIVE • -${LIVE_DELAY_SECONDS}s`;
+
+    return;
+
+  }
+
+
+  /*
+   * Round to whole seconds.
+   * This displays how far behind the
+   * currently published live edge playback is.
+   */
+
+  const rounded =
+    Math.max(
+      0,
+      Math.round(
+        lag
+      )
+    );
+
+
+  lagElement.textContent =
+    `LIVE • -${rounded}s`;
+
+}
+
+
+/* =========================================================
+   QUALITY
 ========================================================= */
 
 function updateQualityOptions() {
@@ -2597,15 +4998,24 @@ function updateQualityOptions() {
         "function"
   ) {
 
-    qualityMenu.innerHTML =
-      `
-        <button
-          class="gmax-quality-item active"
-          type="button"
-        >
-          Auto
-        </button>
-      `;
+    qualityMenu.innerHTML = `
+
+      <button
+        class="gmax-quality-item active"
+        type="button"
+      >
+        Auto
+      </button>
+
+      <button
+        class="gmax-quality-item"
+        type="button"
+        disabled
+      >
+        Native HLS
+      </button>
+
+    `;
 
 
     return;
@@ -2618,21 +5028,58 @@ function updateQualityOptions() {
       .getVariantTracks()
       .filter(
         track =>
+          track &&
           track.video &&
           track.height
       );
 
 
-  const unique =
-    [];
+  const bestByResolution =
+    new Map();
 
 
-  const seen =
-    new Set();
+  for (
+    const track of tracks
+  ) {
+
+    const height =
+      Number(
+        track.height
+      );
 
 
-  tracks
-    .sort(
+    const existing =
+      bestByResolution.get(
+        height
+      );
+
+
+    if (
+      !existing ||
+      Number(
+        track.bandwidth ||
+        0
+      ) >
+        Number(
+          existing.bandwidth ||
+          0
+        )
+    ) {
+
+      bestByResolution.set(
+        height,
+        track
+      );
+
+    }
+
+  }
+
+
+  const uniqueTracks =
+    [
+      ...bestByResolution.values()
+    ].sort(
       (
         a,
         b
@@ -2645,87 +5092,221 @@ function updateQualityOptions() {
           a.height ||
           0
         )
+    );
+
+
+  qualityMenu.innerHTML = `
+
+    <button
+      class="gmax-quality-item active"
+      data-quality="auto"
+      type="button"
+    >
+      Auto
+    </button>
+
+    ${
+      uniqueTracks
+        .map(
+          track => {
+
+            const fps =
+              Number(
+                track.frameRate ||
+                0
+              );
+
+
+            return `
+
+              <button
+                class="gmax-quality-item"
+                data-quality-track="${
+                  track.id
+                }"
+                type="button"
+              >
+                ${track.height}p${
+                  fps
+                    ? ` • ${Math.round(
+                        fps
+                      )}fps`
+                    : ""
+                }
+              </button>
+
+            `;
+
+          }
+        )
+        .join(
+          ""
+        )
+    }
+
+  `;
+
+
+  qualityMenu
+    .querySelectorAll(
+      "[data-quality]"
     )
     .forEach(
-      track => {
+      button => {
 
-        const label =
-          `${track.height}p${
-            track.frameRate
-              ? ` ${Math.round(
-                  track.frameRate
-                )}fps`
-              : ""
-          }`;
+        button.addEventListener(
+          "click",
+          event => {
+
+            event.stopPropagation();
 
 
-        if (
-          !seen.has(
-            label
-          )
-        ) {
+            if (
+              button.dataset.quality ===
+              "auto"
+            ) {
 
-          seen.add(
-            label
-          );
+              shakaPlayer.configure({
+                abr: {
+                  enabled:
+                    true
+                }
+              });
 
 
-          unique.push({
-            label,
-            index:
-              tracks.indexOf(
-                track
-              )
-          });
+              setActiveQualityButton(
+                button
+              );
 
-        }
+
+              qualityMenu.classList.remove(
+                "open"
+              );
+
+
+              return;
+
+            }
+
+          }
+        );
 
       }
     );
 
 
-  qualityMenu.innerHTML =
-    `
+  qualityMenu
+    .querySelectorAll(
+      "[data-quality-track]"
+    )
+    .forEach(
+      button => {
 
-      <button
-        class="gmax-quality-item active"
-        data-quality-index="auto"
-        type="button"
-      >
-        Auto
-      </button>
+        button.addEventListener(
+          "click",
+          event => {
 
-      ${
-        unique
-          .map(
-            item => `
-              <button
-                class="gmax-quality-item"
-                data-quality-index="${item.index}"
-                type="button"
-              >
-                ${item.label}
-              </button>
-            `
-          )
-          .join(
-            ""
-          )
+            event.stopPropagation();
+
+
+            const trackId =
+              Number(
+                button.dataset.qualityTrack
+              );
+
+
+            const selected =
+              tracks.find(
+                track =>
+                  Number(
+                    track.id
+                  ) ===
+                  trackId
+              );
+
+
+            if (
+              !selected
+            ) {
+
+              return;
+
+            }
+
+
+            shakaPlayer.configure({
+              abr: {
+                enabled:
+                  false
+              }
+            });
+
+
+            shakaPlayer.selectVariantTrack(
+              selected,
+              true,
+              0
+            );
+
+
+            setActiveQualityButton(
+              button
+            );
+
+
+            qualityMenu.classList.remove(
+              "open"
+            );
+
+          }
+        );
+
       }
+    );
 
-    `;
+}
+
+
+function setActiveQualityButton(
+  activeButton
+) {
+
+  if (
+    !qualityMenu
+  ) {
+
+    return;
+
+  }
+
+
+  qualityMenu
+    .querySelectorAll(
+      ".gmax-quality-item"
+    )
+    .forEach(
+      item => {
+
+        item.classList.toggle(
+          "active",
+          item ===
+            activeButton
+        );
+
+      }
+    );
 
 }
 
 
 /* =========================================================
-   PLAYER UI UPDATE
+   UI UPDATE
 ========================================================= */
 
 function updatePlayerUi() {
 
   if (
-    !customPlayerControls
+    !playerControls
   ) {
 
     return;
@@ -2734,26 +5315,20 @@ function updatePlayerUi() {
 
 
   const playButton =
-    customPlayerControls.querySelector(
+    playerControls.querySelector(
       '[data-action="play"]'
     );
 
 
   const muteButton =
-    customPlayerControls.querySelector(
+    playerControls.querySelector(
       '[data-action="mute"]'
     );
 
 
   const volumeInput =
-    customPlayerControls.querySelector(
+    playerControls.querySelector(
       '[data-action="volume"]'
-    );
-
-
-  const time =
-    customPlayerControls.querySelector(
-      '[data-role="time"]'
     );
 
 
@@ -2795,36 +5370,13 @@ function updatePlayerUi() {
   }
 
 
-  if (
-    time
-  ) {
-
-    const elapsed =
-      Math.max(
-        0,
-        (
-          Number.isFinite(
-            video.currentTime
-          )
-            ? video.currentTime
-            : 0
-        ) -
-          playerUiStartTime
-      );
-
-
-    time.textContent =
-      formatPlayerTime(
-        elapsed
-      );
-
-  }
+  updateLiveStatus();
 
 }
 
 
 /* =========================================================
-   INFINITE CHANNEL SCROLL
+   INFINITE SCROLL
 ========================================================= */
 
 function ensureInfiniteScrollObserver() {
@@ -2916,10 +5468,11 @@ function ensureInfiniteScrollObserver() {
 
       },
       {
-        root: null,
+        root:
+          null,
 
         rootMargin:
-          "900px 0px",
+          "1000px 0px",
 
         threshold:
           0
@@ -2935,109 +5488,34 @@ function ensureInfiniteScrollObserver() {
 
 
 /* =========================================================
-   CLOSE PLAYER
+   HIDE OLD LOAD MORE
 ========================================================= */
 
-closePlayerButton.addEventListener(
-  "click",
-  async () => {
+function hideLoadMore() {
 
-    await destroyPlayer();
+  if (
+    loadMore
+  ) {
 
-
-    video.pause();
-
-
-    video.removeAttribute(
-      "src"
-    );
-
-
-    video.load();
-
-
-    playerSection.classList.add(
+    loadMore.classList.add(
       "hidden"
     );
 
 
-    playerEmpty.classList.remove(
-      "hidden"
-    );
-
-
-    clearPlayerError();
-
-
-    currentChannel =
-      null;
-
-
-    playerUiStartTime =
-      0;
-
-
-    if (
-      customPlayerControls
-    ) {
-
-      const shell =
-        customPlayerControls.closest(
-          ".gmax-player-shell"
-        );
-
-
-      if (
-        shell
-      ) {
-
-        shell.classList.remove(
-          "gmax-controls-hidden"
-        );
-
-      }
-
-    }
-
-
-    const cleanUrl =
-      window.location.pathname;
-
-
-    history.replaceState(
-      null,
-      "",
-      cleanUrl
-    );
+    loadMore.style.display =
+      "none";
 
   }
-);
 
 
-/* =========================================================
-   OLD LOAD MORE BUTTON
-========================================================= */
+  if (
+    loadMoreButton
+  ) {
 
-/*
- * Infinite scroll now handles this.
- */
+    loadMoreButton.style.display =
+      "none";
 
-if (
-  loadMoreButton
-) {
-
-  loadMoreButton.style.display =
-    "none";
-
-}
-
-
-if (
-  loadMore
-) {
-
-  loadMore.style.display =
-    "none";
+  }
 
 }
 
@@ -3157,6 +5635,82 @@ function openRequestedChannel() {
   );
 
 }
+
+
+/* =========================================================
+   CLOSE PLAYER
+========================================================= */
+
+closePlayerButton.addEventListener(
+  "click",
+  async () => {
+
+    await destroyPlayer();
+
+
+    video.pause();
+
+
+    video.removeAttribute(
+      "src"
+    );
+
+
+    video.load();
+
+
+    playerSection.classList.add(
+      "hidden"
+    );
+
+
+    playerEmpty.classList.remove(
+      "hidden"
+    );
+
+
+    clearPlayerError();
+
+
+    currentChannel =
+      null;
+
+
+    lastStreamUrl =
+      "";
+
+
+    lastStreamType =
+      "";
+
+
+    const info =
+      playerSection.querySelector(
+        ".gmax-player-info"
+      );
+
+
+    if (
+      info
+    ) {
+
+      info.remove();
+
+    }
+
+
+    const cleanUrl =
+      window.location.pathname;
+
+
+    history.replaceState(
+      null,
+      "",
+      cleanUrl
+    );
+
+  }
+);
 
 
 /* =========================================================
@@ -3292,25 +5846,7 @@ document.addEventListener(
   "DOMContentLoaded",
   () => {
 
-    if (
-      loadMore
-    ) {
-
-      loadMore.style.display =
-        "none";
-
-    }
-
-
-    if (
-      loadMoreButton
-    ) {
-
-      loadMoreButton.style.display =
-        "none";
-
-    }
-
+    hideLoadMore();
 
     loadChannels();
 
