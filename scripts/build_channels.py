@@ -197,9 +197,7 @@ def main():
     )
 
 
-    playlist_files =
-        find_playlists()
-
+   playlist_files = find_playlists()
 
     print(
         f"[JioTV] Found "
@@ -221,11 +219,7 @@ def main():
         )
 
 
-        parsed =
-            parse_m3u(
-                playlist
-            )
-
+       parsed = parse_m3u(playlist)
 
         print(
             f"         {len(parsed)} channels"
