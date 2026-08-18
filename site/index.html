@@ -90,7 +90,7 @@
     </footer>
   </div>
 
-  <!-- INLINED APP LOGIC: Hides app.js from the Network Tab -->
+  <!-- INLINED APP LOGIC: Hides app.js from Network Tab & Only fetches channels.json -->
   <script>
     "use strict";
 
@@ -1082,78 +1082,12 @@
       history.replaceState(null, "", window.location.pathname);
     });
 
-    function parseM3U(text) {
-      const lines = text.split('\n');
-      const channels = [];
-      let currentChannel = {};
-
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-
-        if (line.startsWith('#EXTINF:')) {
-          currentChannel = {};
-          const idMatch = line.match(/tvg-id="([^"]+)"/);
-          if (idMatch) currentChannel.id = idMatch[1];
-          const nameMatch = line.match(/tvg-name="([^"]+)"/);
-          if (nameMatch) currentChannel.name = nameMatch[1];
-          const logoMatch = line.match(/tvg-logo="([^"]+)"/);
-          if (logoMatch) currentChannel.logo = logoMatch[1];
-          const groupMatch = line.match(/group-title="([^"]+)"/);
-          if (groupMatch) currentChannel.group = groupMatch[1];
-          if (!currentChannel.name && line.includes(',')) {
-            currentChannel.name = line.substring(line.indexOf(',') + 1).trim();
-          }
-        } else if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=')) {
-          const keyStr = line.split('=')[1];
-          if (keyStr && keyStr.includes(':')) {
-            const parts = keyStr.split(':');
-            currentChannel.key_id = parts[0].trim();
-            currentChannel.key = parts[1].trim();
-          }
-        } else if (line.startsWith('#EXTHTTP:')) {
-          try {
-            const jsonStr = line.substring(9);
-            const httpProps = JSON.parse(jsonStr);
-            if (httpProps.cookie) {
-              currentChannel.cookie = httpProps.cookie;
-            }
-          } catch (e) {
-            console.warn("Failed to parse EXTHTTP JSON", e);
-          }
-        } else if (!line.startsWith('#')) {
-          currentChannel.stream_url = line;
-          channels.push(currentChannel);
-          currentChannel = {};
-        }
-      }
-      return channels;
-    }
-
     async function loadChannels() {
       try {
-        let loadedData = null;
-        const DYNAMIC_M3U_URLS = ["../jtvplus6.m3u", "../jtvplus7.m3u", "../jtvplus8.m3u"];
-
-        for (const url of DYNAMIC_M3U_URLS) {
-          try {
-            const response = await fetch(url, { cache: "no-store" });
-            if (response.ok) {
-              const text = await response.text();
-              loadedData = parseM3U(text);
-              if (loadedData.length > 0) break;
-            }
-          } catch (e) {
-            console.warn(`Failed to fetch dynamic M3U from ${url}`, e);
-          }
-        }
-
-        if (!loadedData || loadedData.length === 0) {
-          const response = await fetch(CHANNELS_URL, { cache: "no-store" });
-          if (!response.ok) throw new Error(`channels.json returned HTTP ${response.status}`);
-          loadedData = await response.json();
-          if (!Array.isArray(loadedData)) throw new Error("channels.json is not an array.");
-        }
+        const response = await fetch(CHANNELS_URL, { cache: "no-store" });
+        if (!response.ok) throw new Error(`channels.json returned HTTP ${response.status}`);
+        const loadedData = await response.json();
+        if (!Array.isArray(loadedData)) throw new Error("channels.json is not an array.");
 
         allChannels = loadedData.filter(channel => channel && (channel.name || channel.stream_url || channel.url));
         filteredChannels = [...allChannels];
