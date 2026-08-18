@@ -743,15 +743,26 @@ async function openChannel(
     getStreamUrl(
       channel
     );
-  
-  // ============================================================
-  // FIX 403 ERROR: Append the __hdnea__ cookie to the MPD URL
-  // ============================================================
-  if (channel.cookie && channel.cookie.includes('__hdnea__=')) {
-      const separator = streamUrl.includes('?') ? '&' : '?';
-      streamUrl = `${streamUrl}${separator}${channel.cookie}`;
+
+
+  // Append __hdnea__ cookie to the MPD URL (from jtvplus6 / Geoplus)
+  if (
+    channel.cookie &&
+    channel.cookie.includes(
+      "__hdnea__="
+    )
+  ) {
+
+    const separator =
+      streamUrl.includes(
+        "?"
+      )
+        ? "&"
+        : "?";
+
+    streamUrl = `${streamUrl}${separator}${channel.cookie}`;
+
   }
-  // ============================================================
 
 
   if (!streamUrl) {
@@ -920,19 +931,28 @@ async function playDash(
   );
 
 
-  // ============================================================
-  // FIX DRM DECRYPTION: Inject the decryption keys
-  // ============================================================
-  if (currentChannel && currentChannel.key_id && currentChannel.key) {
-      const drmConfig = {
-          'drm': {
-              'clearKeys': {}
-          }
-      };
-      drmConfig.drm.clearKeys[currentChannel.key_id] = currentChannel.key;
-      shakaPlayer.configure(drmConfig);
+  // ClearKey from jtvplus6.m3u (key_id + key)
+  if (
+    currentChannel &&
+    currentChannel.key_id &&
+    currentChannel.key
+  ) {
+
+    const drmConfig = {
+      drm: {
+        clearKeys: {},
+      },
+    };
+
+    drmConfig.drm.clearKeys[
+      currentChannel.key_id
+    ] = currentChannel.key;
+
+    shakaPlayer.configure(
+      drmConfig
+    );
+
   }
-  // ============================================================
 
 
   await shakaPlayer.load(
