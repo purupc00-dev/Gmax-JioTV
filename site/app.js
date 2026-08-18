@@ -5,13 +5,6 @@
    CONFIG
 ========================================================= */
 
-// Dynamic M3U files generated at the root of the repo
-const DYNAMIC_M3U_URLS = [
-  "../jtvplus6.m3u",
-  "../jtvplus7.m3u"
-];
-
-// Fallback if M3U files fail to load
 const CHANNELS_URL = "./channels.json";
 
 const CHANNELS_PER_PAGE = 60;
@@ -5719,12 +5712,12 @@ closePlayerButton.addEventListener(
   }
 );
 
+
 /* =========================================================
    DYNAMIC M3U PARSER
 ========================================================= */
 
 function parseM3U(text) {
-
   const lines = text.split('\n');
   const channels = [];
   let currentChannel = {};
@@ -5762,8 +5755,9 @@ function parseM3U(text) {
       const keyStr = line.split('=')[1];
       if (keyStr && keyStr.includes(':')) {
         const parts = keyStr.split(':');
-        currentChannel.key_id = parts[0];
-        currentChannel.key = parts[1];
+        // Ensure whitespace is trimmed to prevent DRM crash
+        currentChannel.key_id = parts[0].trim();
+        currentChannel.key = parts[1].trim();
       }
     }
     else if (line.startsWith('#EXTHTTP:')) {
@@ -5798,7 +5792,13 @@ async function loadChannels() {
   try {
     let loadedData = null;
 
-    // 1. Try to fetch dynamic M3U files first (jtvplus 6, then 7) from root repo
+    // Try to fetch dynamic M3U files first
+    const DYNAMIC_M3U_URLS = [
+      "../jtvplus6.m3u",
+      "../jtvplus7.m3u",
+      "../jtvplus8.m3u"
+    ];
+
     for (const url of DYNAMIC_M3U_URLS) {
       try {
         const response = await fetch(url, { cache: "no-store" });
@@ -5815,16 +5815,19 @@ async function loadChannels() {
       }
     }
 
-    // 2. Fallback to channels.json if dynamic M3Us fail
+    // Fallback to static channels.json
     if (!loadedData || loadedData.length === 0) {
       console.log("Falling back to static channels.json");
       const response = await fetch(CHANNELS_URL, { cache: "no-store" });
+      
       if (!response.ok) {
-        throw new Error(`Failed to load any channels. HTTP ${response.status}`);
+        throw new Error(`channels.json returned HTTP ${response.status}`);
       }
+
       loadedData = await response.json();
+      
       if (!Array.isArray(loadedData)) {
-        throw new Error("Channel data is not an array.");
+        throw new Error("channels.json is not an array.");
       }
     }
 
@@ -5842,6 +5845,7 @@ async function loadChannels() {
     openRequestedChannel();
 
   } catch (error) {
+
     console.error("Channel loading failed:", error);
 
     channelCount.textContent = "Failed to load";
@@ -5854,7 +5858,9 @@ async function loadChannels() {
         <span>${escapeHtml(error instanceof Error ? error.message : String(error))}</span>
       </div>
     `;
+
   }
+
 }
 
 
