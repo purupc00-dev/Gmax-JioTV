@@ -4,9 +4,33 @@ import re
 from pathlib import Path
 
 
+# ============================================================
+# PATHS
+# ============================================================
+
 ROOT = Path(__file__).resolve().parent.parent
 SITE_DIR = ROOT / "site"
 OUTPUT = SITE_DIR / "channels.json"
+
+# IMPORTANT:
+# We intentionally use ONLY this curated playlist.
+PRIMARY_PLAYLIST = ROOT / "jtvplus6.m3u"
+
+
+# ============================================================
+# FINAL WEBSITE CATEGORIES
+# ============================================================
+
+CATEGORIES = [
+    "Entertainment",
+    "Movies",
+    "Sports",
+    "News",
+    "Kids",
+    "Music",
+    "Information",
+    "Religious",
+]
 
 
 # ============================================================
@@ -19,97 +43,378 @@ ATTR_RE = re.compile(
 
 
 def parse_attributes(line: str) -> dict[str, str]:
-    return dict(ATTR_RE.findall(line))
+    return dict(
+        ATTR_RE.findall(line)
+    )
 
 
 # ============================================================
-# STABLE ID
+# STABLE CHANNEL ID
 # ============================================================
 
-def make_stable_id(name: str, stream_url: str) -> str:
-    value = f"{name}|{stream_url}".encode("utf-8")
-    digest = hashlib.sha1(value).hexdigest()[:12]
-    return digest
+def make_stable_id(
+    name: str,
+    stream_url: str,
+) -> str:
+
+    value = (
+        f"{name}|{stream_url}"
+        .encode("utf-8")
+    )
+
+    return (
+        hashlib.sha1(value)
+        .hexdigest()[:12]
+    )
+
+
+# ============================================================
+# CATEGORY NORMALIZATION
+# ============================================================
+
+def normalize_category(
+    group: str,
+    name: str,
+) -> str:
+
+    text = (
+        f"{group} {name}"
+        .lower()
+    )
+
+    # --------------------------------------------------------
+    # SPORTS
+    # --------------------------------------------------------
+
+    sports_words = [
+        "sport",
+        "sports",
+        "cricket",
+        "football",
+        "fifa",
+        "tennis",
+        "kabaddi",
+        "wrestling",
+        "racing",
+        "motorsport",
+        "formula",
+        "nba",
+        "nfl",
+        "mlb",
+        "golf",
+    ]
+
+    if any(
+        word in text
+        for word in sports_words
+    ):
+        return "Sports"
+
+
+    # --------------------------------------------------------
+    # NEWS
+    # --------------------------------------------------------
+
+    news_words = [
+        "news",
+        "breaking",
+        "headline",
+        "current affairs",
+        "live news",
+        "business news",
+    ]
+
+    if any(
+        word in text
+        for word in news_words
+    ):
+        return "News"
+
+
+    # --------------------------------------------------------
+    # MOVIES
+    # --------------------------------------------------------
+
+    movie_words = [
+        "movie",
+        "movies",
+        "cinema",
+        "film",
+        "films",
+        "bollywood",
+        "hollywood",
+        "kollywood",
+        "mollywood",
+        "tollywood",
+        "picture",
+    ]
+
+    if any(
+        word in text
+        for word in movie_words
+    ):
+        return "Movies"
+
+
+    # --------------------------------------------------------
+    # KIDS
+    # --------------------------------------------------------
+
+    kids_words = [
+        "kid",
+        "kids",
+        "cartoon",
+        "animation",
+        "animated",
+        "junior",
+        "children",
+        "baby",
+        "nick",
+        "nickelodeon",
+        "hungama",
+    ]
+
+    if any(
+        word in text
+        for word in kids_words
+    ):
+        return "Kids"
+
+
+    # --------------------------------------------------------
+    # MUSIC
+    # --------------------------------------------------------
+
+    music_words = [
+        "music",
+        "mtv",
+        "radio",
+        "songs",
+        "song",
+        "beats",
+        "classic hits",
+        "fm ",
+    ]
+
+    if any(
+        word in text
+        for word in music_words
+    ):
+        return "Music"
+
+
+    # --------------------------------------------------------
+    # RELIGIOUS
+    # --------------------------------------------------------
+
+    religious_words = [
+        "relig",
+        "religious",
+        "devotional",
+        "spiritual",
+        "bhakti",
+        "temple",
+        "islam",
+        "islamic",
+        "quran",
+        "christian",
+        "church",
+        "gospel",
+        "hindu",
+        "sikh",
+        "jain",
+    ]
+
+    if any(
+        word in text
+        for word in religious_words
+    ):
+        return "Religious"
+
+
+    # --------------------------------------------------------
+    # INFORMATION
+    # --------------------------------------------------------
+
+    information_words = [
+        "information",
+        "infotainment",
+        "documentary",
+        "documentaries",
+        "education",
+        "educational",
+        "knowledge",
+        "science",
+        "technology",
+        "tech",
+        "history",
+        "nature",
+        "travel",
+        "lifestyle",
+        "business",
+        "finance",
+        "weather",
+        "food",
+        "cooking",
+        "health",
+    ]
+
+    if any(
+        word in text
+        for word in information_words
+    ):
+        return "Information"
+
+
+    # --------------------------------------------------------
+    # DEFAULT
+    # --------------------------------------------------------
+    #
+    # Anything that doesn't clearly belong to another
+    # category goes to Entertainment so we never create
+    # dozens of extra categories.
+    # --------------------------------------------------------
+
+    return "Entertainment"
 
 
 # ============================================================
 # M3U PARSER
 # ============================================================
 
-def parse_m3u(path: Path) -> list[dict]:
+def parse_m3u(
+    path: Path,
+) -> list[dict]:
 
     channels: list[dict] = []
 
     try:
+
         text = path.read_text(
             encoding="utf-8",
-            errors="ignore"
+            errors="ignore",
         )
+
     except Exception as exc:
-        print(f"[WARN] Failed reading {path}: {exc}")
+
+        print(
+            f"[ERROR] Failed reading "
+            f"{path.name}: {exc}"
+        )
+
         return channels
 
+
     current = None
+
 
     for raw_line in text.splitlines():
 
         line = raw_line.strip()
 
+
         if not line:
             continue
 
-        # ----------------------------------------------------
-        # EXTINF metadata
-        # ----------------------------------------------------
 
-        if line.startswith("#EXTINF:"):
+        # ====================================================
+        # EXTINF
+        # ====================================================
 
-            attrs = parse_attributes(line)
+        if line.startswith(
+            "#EXTINF:"
+        ):
 
-            comma = line.rfind(",")
+            attrs = parse_attributes(
+                line
+            )
 
-            if comma >= 0:
-                name = line[comma + 1:].strip()
+
+            comma_index = line.rfind(
+                ","
+            )
+
+
+            if comma_index != -1:
+
+                name = (
+                    line[
+                        comma_index + 1:
+                    ]
+                    .strip()
+                )
+
             else:
-                name = "Unknown Channel"
 
-            if attrs.get("tvg-name"):
-                name = attrs["tvg-name"]
+                name = (
+                    "Unknown Channel"
+                )
+
+
+            # Prefer tvg-name when available.
+            if attrs.get(
+                "tvg-name"
+            ):
+
+                name = (
+                    attrs["tvg-name"]
+                    .strip()
+                )
+
+
+            group = (
+                attrs.get(
+                    "group-title"
+                )
+                or "Entertainment"
+            )
+
 
             current = {
+
                 "id": (
-                    attrs.get("tvg-id")
+                    attrs.get(
+                        "tvg-id"
+                    )
                     or ""
                 ),
 
                 "name": name,
 
                 "logo": (
-                    attrs.get("tvg-logo")
-                    or attrs.get("logo")
+                    attrs.get(
+                        "tvg-logo"
+                    )
+                    or attrs.get(
+                        "logo"
+                    )
                     or ""
                 ),
 
-                "group": (
-                    attrs.get("group-title")
-                    or path.stem
-                ),
+                "group": group,
 
-                "category": (
-                    attrs.get("category")
-                    or attrs.get("group-title")
-                    or "Entertainment"
+                "category": normalize_category(
+                    group,
+                    name,
                 ),
 
                 "country": (
-                    attrs.get("tvg-country")
-                    or attrs.get("country")
+                    attrs.get(
+                        "tvg-country"
+                    )
+                    or attrs.get(
+                        "country"
+                    )
                     or "India"
                 ),
 
                 "language": (
-                    attrs.get("tvg-language")
-                    or attrs.get("language")
+                    attrs.get(
+                        "tvg-language"
+                    )
+                    or attrs.get(
+                        "language"
+                    )
                     or "Unknown"
                 ),
 
@@ -118,156 +423,257 @@ def parse_m3u(path: Path) -> list[dict]:
                 "source_file": path.name,
             }
 
+
             continue
 
-        # ----------------------------------------------------
-        # Stream URL
-        # ----------------------------------------------------
+
+        # ====================================================
+        # STREAM URL
+        # ====================================================
 
         if (
             current
             and not line.startswith("#")
             and (
-                line.startswith("http://")
-                or line.startswith("https://")
+                line.startswith(
+                    "http://"
+                )
+                or line.startswith(
+                    "https://"
+                )
             )
         ):
 
-            current["stream_url"] = line
+            current["stream_url"] = (
+                line
+            )
 
-            if current["stream_url"]:
 
-                # Generate stable ID when tvg-id is missing.
+            if current[
+                "stream_url"
+            ]:
+
+                # Create a stable ID if
+                # the playlist doesn't provide one.
                 if not current["id"]:
 
-                    current["id"] = make_stable_id(
-                        current["name"],
-                        current["stream_url"]
+                    current["id"] = (
+                        make_stable_id(
+                            current["name"],
+                            current[
+                                "stream_url"
+                            ],
+                        )
                     )
 
-                channels.append(current)
+
+                channels.append(
+                    current
+                )
+
 
             current = None
+
 
     return channels
 
 
 # ============================================================
-# SOURCE FILE SELECTION
-# ============================================================
-
-def find_playlists() -> list[Path]:
-
-    files: list[Path] = []
-
-    for path in ROOT.glob("*.m3u"):
-
-        if not path.is_file():
-            continue
-
-        files.append(path)
-
-    return sorted(
-        files,
-        key=lambda p: p.name.lower()
-    )
-
-
-# ============================================================
-# BUILD
+# MAIN BUILD
 # ============================================================
 
 def main():
+
+    print(
+        "========================================"
+    )
+
+    print(
+        "       Gmax-JioTV Channel Builder"
+    )
+
+    print(
+        "========================================"
+    )
+
+
+    # --------------------------------------------------------
+    # Check primary playlist
+    # --------------------------------------------------------
+
+    if not PRIMARY_PLAYLIST.exists():
+
+        raise FileNotFoundError(
+            "jtvplus6.m3u was not found "
+            "in the repository root."
+        )
+
+
+    print(
+        f"[JioTV] Using: "
+        f"{PRIMARY_PLAYLIST.name}"
+    )
+
+
+    # --------------------------------------------------------
+    # Parse playlist
+    # --------------------------------------------------------
+
+    channels = parse_m3u(
+        PRIMARY_PLAYLIST
+    )
+
+
+    print(
+        f"[JioTV] Parsed "
+        f"{len(channels)} channels"
+    )
+
+
+    # --------------------------------------------------------
+    # Deduplicate
+    #
+    # We preserve the FIRST occurrence.
+    # This means the original playlist
+    # ordering remains intact.
+    # --------------------------------------------------------
+
+    final_channels: list[dict] = []
+
+    seen_urls: set[str] = set()
+
+
+    for channel in channels:
+
+        url = (
+            channel
+            .get(
+                "stream_url",
+                ""
+            )
+            .strip()
+        )
+
+
+        if not url:
+            continue
+
+
+        if url in seen_urls:
+            continue
+
+
+        seen_urls.add(
+            url
+        )
+
+
+        final_channels.append(
+            channel
+        )
+
+
+    # --------------------------------------------------------
+    # Ensure output directory
+    # --------------------------------------------------------
 
     SITE_DIR.mkdir(
         parents=True,
         exist_ok=True
     )
 
-    playlist_files = find_playlists()
-
-    print(
-        f"[JioTV] Found "
-        f"{len(playlist_files)} playlist files"
-    )
-
-    all_channels: list[dict] = []
-
-    # URL-level deduplication.
-    seen_urls: set[str] = set()
-
-    for playlist in playlist_files:
-
-        print(
-            f"[JioTV] Reading "
-            f"{playlist.name}"
-        )
-
-        parsed = parse_m3u(playlist)
-
-        print(
-            f"         {len(parsed)} channels"
-        )
-
-        for channel in parsed:
-
-            url = (
-                channel
-                .get("stream_url", "")
-                .strip()
-            )
-
-            if not url:
-                continue
-
-            if url in seen_urls:
-                continue
-
-            seen_urls.add(url)
-
-            all_channels.append(channel)
-
-    # --------------------------------------------------------
-    # Sort
-    # --------------------------------------------------------
-
-    all_channels.sort(
-        key=lambda channel: (
-            str(
-                channel.get("category", "")
-            ).lower(),
-
-            str(
-                channel.get("name", "")
-            ).lower()
-        )
-    )
 
     # --------------------------------------------------------
     # Write JSON
+    #
+    # IMPORTANT:
+    # No alphabetical sorting here.
+    # We preserve jtvplus6.m3u order.
     # --------------------------------------------------------
 
     with OUTPUT.open(
         "w",
-        encoding="utf-8"
+        encoding="utf-8",
     ) as file:
 
         json.dump(
-            all_channels,
+            final_channels,
             file,
             ensure_ascii=False,
-            indent=2
+            indent=2,
         )
 
+
+    # --------------------------------------------------------
+    # Statistics
+    # --------------------------------------------------------
+
+    category_counts = {
+        category: 0
+        for category in CATEGORIES
+    }
+
+
+    for channel in final_channels:
+
+        category = (
+            channel.get(
+                "category"
+            )
+            or "Entertainment"
+        )
+
+
+        if category not in (
+            category_counts
+        ):
+
+            category = (
+                "Entertainment"
+            )
+
+
+        category_counts[
+            category
+        ] += 1
+
+
     print(
-        f"[JioTV] Generated "
-        f"{len(all_channels)} unique channels"
+        "----------------------------------------"
     )
 
     print(
-        f"[JioTV] Output: {OUTPUT}"
+        f"[JioTV] Final channels: "
+        f"{len(final_channels)}"
+    )
+
+    print(
+        "[JioTV] Categories:"
+    )
+
+
+    for category in CATEGORIES:
+
+        print(
+            f"  {category}: "
+            f"{category_counts[category]}"
+        )
+
+
+    print(
+        "----------------------------------------"
+    )
+
+    print(
+        f"[JioTV] Output: "
+        f"{OUTPUT}"
+    )
+
+    print(
+        "========================================"
     )
 
 
 if __name__ == "__main__":
+
     main()
