@@ -1,121 +1,196 @@
-import glob
-import json
 import os
 import re
+import json
+import glob
 
-OUTPUT_JSON_PATH = os.path.join("site", "channels.json")
-M3U_FILES = ["jtvplus6.m3u", "jtvplus7.m3u", "jtvplus8.m3u"]
+# Priority order: jtvplus6 is always #1, followed by other providers
+PRIORITY_ORDER = [
+    "jtvplus6.m3u",
+    "jtvplus8.m3u",
+    "jtvplus7.m3u",
+    "jtvplus5.m3u",
+    "jtvplus4.m3u",
+    "jtvplus3.m3u",
+    "jtvplus2.m3u",
+    "jtvplus.m3u",
+    "jtv6.m3u",
+    "jtv5.m3u",
+    "jtv4.m3u",
+    "jtv3.m3u",
+    "jtv2.m3u",
+    "jtv.m3u",
+    "Star.m3u",
+    "Star2.m3u",
+    "Star3.m3u",
+    "hotstar.m3u",
+    "sony.m3u",
+    "zee.m3u",
+    "voot.m3u",
+    "sun.m3u",
+    "waves.m3u",
+    "sports.m3u",
+    "pocket.m3u",
+    "mixiptv.m3u",
+    "Tnt.m3u"
+]
 
+def get_source_priority(filename):
+    basename = os.path.basename(filename)
+    if basename in PRIORITY_ORDER:
+        return PRIORITY_ORDER.index(basename)
+    return 999
+
+def normalize_name(name):
+    """Normalize channel name for grouping across different providers."""
+    if not name:
+        return ""
+    n = name.upper()
+    n = re.sub(r'\[.*?\]|\(.*?\)', '', n)  # Remove brackets
+    n = re.sub(r'\b(HD|FHD|SD|4K|1080P|720P|50FPS|HEVC|H265|RAW|JIO|TATA|AIRTEL)\b', '', n)
+    n = re.sub(r'[^A-Z0-9]', '', n)
+    return n.strip()
 
 def parse_m3u_file(file_path):
-  channels = {}
-  if not os.path.exists(file_path):
+    channels = []
+    if not os.path.exists(file_path):
+        return channels
+
+    with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+        content = f.read()
+
+    lines = content.splitlines()
+    current_meta = {}
+    kodiprops = {}
+    headers = {}
+
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+
+        if line.startswith("#EXTINF:"):
+            # Extract tags from #EXTINF
+            tvg_id = re.search(r'tvg-id="([^"]*)"', line)
+            tvg_name = re.search(r'tvg-name="([^"]*)"', line)
+            tvg_logo = re.search(r'tvg-logo="([^"]*)"', line)
+            group_title = re.search(r'group-title="([^"]*)"', line)
+            
+            # Extract display title after the comma
+            name_parts = line.split(",", 1)
+            display_name = name_parts[1].strip() if len(name_parts) > 1 else ""
+
+            current_meta = {
+                "id": tvg_id.group(1) if tvg_id else "",
+                "name": tvg_name.group(1) if tvg_name else display_name,
+                "display_name": display_name or (tvg_name.group(1) if tvg_name else "Unknown Channel"),
+                "logo": tvg_logo.group(1) if tvg_logo else "",
+                "group": group_title.group(1) if group_title else "General"
+            }
+
+        elif line.startswith("#KODIPROP:"):
+            prop_data = line.replace("#KODIPROP:", "").strip()
+            if "=" in prop_data:
+                k, v = prop_data.split("=", 1)
+                kodiprops[k.strip()] = v.strip()
+
+        elif line.startswith("#EXTVLCOPT:") or line.startswith("#EXTHTTP:"):
+            if "http-user-agent=" in line:
+                headers["User-Agent"] = line.split("http-user-agent=", 1)[1].strip()
+            elif "http-referrer=" in line:
+                headers["Referer"] = line.split("http-referrer=", 1)[1].strip()
+            elif line.startswith("#EXTHTTP:"):
+                try:
+                    h_json = json.loads(line.replace("#EXTHTTP:", "").strip())
+                    headers.update(h_json)
+                except Exception:
+                    pass
+
+        elif not line.startswith("#") and (line.startswith("http://") or line.startswith("https://")):
+            stream_url = line
+
+            # Parse DRM configuration
+            drm_type = kodiprops.get("inputstream.adaptive.license_type", "")
+            license_key = kodiprops.get("inputstream.adaptive.license_key", "")
+            
+            clearkey_dict = {}
+            if drm_type.lower() == "clearkey" or "clearkey" in license_key:
+                if ":" in license_key and not license_key.startswith("http"):
+                    parts = license_key.split(":")
+                    if len(parts) == 2:
+                        clearkey_dict = {parts[0].strip(): parts[1].strip()}
+                elif license_key.startswith("{"):
+                    try:
+                        clearkey_dict = json.loads(license_key)
+                    except Exception:
+                        pass
+
+            channels.append({
+                "info": current_meta,
+                "stream": {
+                    "provider": os.path.basename(file_path),
+                    "priority": get_source_priority(file_path),
+                    "url": stream_url,
+                    "type": "mpd" if ".mpd" in stream_url else ("hls" if ".m3u8" in stream_url else "auto"),
+                    "drm": {
+                        "type": drm_type,
+                        "license_key": license_key,
+                        "clearkey": clearkey_dict
+                    },
+                    "headers": headers.copy()
+                }
+            })
+
+            # Reset temporary storage
+            current_meta = {}
+            kodiprops = {}
+            headers = {}
+
     return channels
 
-  with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-    content = f.read()
+def merge_all_m3u():
+    m3u_files = glob.glob("*.m3u") + glob.glob("*.m3u8")
+    grouped_channels = {}
 
-  blocks = content.split("\n#EXTINF:")
-  for block in blocks[1:]:
-    lines = block.strip().split("\n")
-    if not lines:
-      continue
+    for file_path in m3u_files:
+        if file_path == "playlist.m3u":
+            continue
+        parsed_entries = parse_m3u_file(file_path)
+        for item in parsed_entries:
+            norm_key = normalize_name(item["info"]["name"] or item["info"]["display_name"])
+            if not norm_key:
+                norm_key = item["info"]["id"] or item["stream"]["url"]
 
-    extinf_line = lines[0]
-    channel = {}
+            if norm_key not in grouped_channels:
+                grouped_channels[norm_key] = {
+                    "id": item["info"]["id"] or norm_key.lower(),
+                    "name": item["info"]["display_name"],
+                    "logo": item["info"]["logo"],
+                    "group": item["info"]["group"],
+                    "sources": []
+                }
 
-    id_match = re.search(r'tvg-id="([^"]*)"', extinf_line)
-    name_match = re.search(r'tvg-name="([^"]*)"', extinf_line)
-    logo_match = re.search(r'tvg-logo="([^"]*)"', extinf_line)
-    group_match = re.search(r'group-title="([^"]*)"', extinf_line)
+            # Update logo or group if previously missing
+            if not grouped_channels[norm_key]["logo"] and item["info"]["logo"]:
+                grouped_channels[norm_key]["logo"] = item["info"]["logo"]
 
-    ch_id = id_match.group(1) if id_match else ""
-    ch_name = (
-        name_match.group(1)
-        if name_match
-        else extinf_line.split(",")[-1].strip()
-    )
-    ch_logo = logo_match.group(1) if logo_match else ""
-    ch_group = group_match.group(1) if group_match else "Entertainment"
+            grouped_channels[norm_key]["sources"].append(item["stream"])
 
-    channel["id"] = ch_id
-    channel["name"] = ch_name
-    channel["logo"] = ch_logo
-    channel["group"] = ch_group
-    channel["category"] = ch_group
+    final_channel_list = []
+    for key, chan in grouped_channels.items():
+        # Sort sources so jtvplus6 and lowest priority index come first
+        chan["sources"].sort(key=lambda s: s["priority"])
+        final_channel_list.append(chan)
 
-    for line in lines[1:]:
-      line_str = line.strip()
-      if line_str.startswith("#KODIPROP:inputstream.adaptive.license_key="):
-        key_val = line_str.split("=", 1)[1].strip()
-        if ":" in key_val:
-          k_id, k_val = key_val.split(":", 1)
-          channel["key_id"] = k_id.strip()
-          channel["key"] = k_val.strip()
-      elif line_str.startswith("#EXTHTTP:"):
-        try:
-          http_json = json.loads(line_str[9:])
-          if "cookie" in http_json:
-            channel["cookie"] = http_json["cookie"]
-        except Exception:
-          pass
-      elif not line_str.startswith("#") and line_str.startswith("http"):
-        channel["stream_url"] = line_str
+    # Sort channels by Group/Category and Name
+    final_channel_list.sort(key=lambda x: (x["group"], x["name"]))
 
-    identifier = ch_id or ch_name
-    if identifier and "stream_url" in channel:
-      channels[identifier] = channel
+    # Output to site/channels.json
+    os.makedirs("site", exist_ok=True)
+    with open("site/channels.json", "w", encoding="utf-8") as f:
+        json.dump(final_channel_list, f, indent=2, ensure_ascii=False)
 
-  return channels
-
-
-def main():
-  print("Parsing playlists...")
-  p6 = parse_m3u_file("jtvplus6.m3u")
-  p7 = parse_m3u_file("jtvplus7.m3u")
-  p8 = parse_m3u_file("jtvplus8.m3u")
-
-  all_keys = set(list(p6.keys()) + list(p7.keys()) + list(p8.keys()))
-  merged_channels = []
-
-  for k in all_keys:
-    # Use jtvplus6 as primary, fallback to 7 or 8 if missing
-    base = p6.get(k) or p7.get(k) or p8.get(k)
-    if not base:
-      continue
-
-    # Add fallback servers so your app has access to 7 and 8
-    fallbacks = []
-    if k in p7 and p7[k].get("stream_url") != base.get("stream_url"):
-      fallbacks.append({
-          "server": "jtvplus7",
-          "stream_url": p7[k].get("stream_url"),
-          "cookie": p7[k].get("cookie"),
-          "key_id": p7[k].get("key_id"),
-          "key": p7[k].get("key"),
-      })
-    if k in p8 and p8[k].get("stream_url") != base.get("stream_url"):
-      fallbacks.append({
-          "server": "jtvplus8",
-          "stream_url": p8[k].get("stream_url"),
-          "cookie": p8[k].get("cookie"),
-          "key_id": p8[k].get("key_id"),
-          "key": p8[k].get("key"),
-      })
-
-    base["fallbacks"] = fallbacks
-    merged_channels.append(base)
-
-  os.makedirs("site", exist_ok=True)
-  with open(OUTPUT_JSON_PATH, "w", encoding="utf-8") as f:
-    # Set indent=None if you want a small 1-line file, or indent=2 for readable JSON
-    json.dump(merged_channels, f, indent=2, ensure_ascii=False)
-
-  print(
-      f"Merged {len(merged_channels)} unique channels from jtvplus 6, 7, and"
-      " 8."
-  )
-
+    print(f"Successfully processed {len(m3u_files)} files.")
+    print(f"Merged into {len(final_channel_list)} unique channels with fallback sources in site/channels.json")
 
 if __name__ == "__main__":
-  main()
+    merge_all_m3u()
