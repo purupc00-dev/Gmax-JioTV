@@ -1,74 +1,73 @@
-import json
-import re
-import os
+#!/usr/bin/env python3
+"""Refresh paired source M3Us, then rebuild site/channels.json.
 
-# The M3U files to process
-M3U_FILES = ['jtvplus6.m3u', 'jtvplus7.m3u', 'jtvplus8.m3u']
-OUTPUT_JSON = 'site/channels.json'
+A source updater is executed only when a Python file and an M3U with the same
+stem exist in the repository, e.g. sony.py -> sony.m3u. Utility scripts are
+not executed unless they have a matching M3U. Failed source updaters are
+reported but do not prevent a merge of the successfully refreshed playlists.
+"""
 
-def parse_m3u(file_path):
-    channels = []
-    if not os.path.exists(file_path):
-        return channels
+import subprocess
+import sys
+from pathlib import Path
 
-    with open(file_path, 'r', encoding='utf-8') as f:
-        content = f.read()
+ROOT = Path(__file__).resolve().parent
+SELF_NAMES = {"update_json.py", "merge_m3u.py"}
+TIMEOUT_SECONDS = 180
 
-    blocks = content.split('\n#EXTINF:')
-    for block in blocks[1:]:
-        lines = block.strip().split('\n')
-        if not lines: continue
 
-        extinf_line = lines[0]
-        channel = {}
+def discover_pairs():
+    pairs = []
+    m3u_names = {path.stem.lower() for path in ROOT.glob("*.m3u")}
+    for script in sorted(ROOT.glob("*.py"), key=lambda p: p.name.lower()):
+        if script.name.lower() in {name.lower() for name in SELF_NAMES}:
+            continue
+        if script.stem.lower() in m3u_names:
+            pairs.append(script)
+    return pairs
 
-        # Extract attributes using regex
-        id_match = re.search(r'tvg-id="([^"]+)"', extinf_line)
-        name_match = re.search(r'tvg-name="([^"]+)"', extinf_line)
-        logo_match = re.search(r'tvg-logo="([^"]+)"', extinf_line)
-        group_match = re.search(r'group-title="([^"]+)"', extinf_line)
 
-        channel['id'] = id_match.group(1) if id_match else ""
-        channel['name'] = name_match.group(1) if name_match else extinf_line.split(',')[-1].strip()
-        channel['logo'] = logo_match.group(1) if logo_match else ""
-        channel['group'] = group_match.group(1) if group_match else ""
+def run_updater(script: Path):
+    print(f"[UPDATE] {script.name}")
+    try:
+        result = subprocess.run(
+            [sys.executable, str(script)],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            timeout=TIMEOUT_SECONDS,
+        )
+        if result.stdout.strip():
+            print(result.stdout.strip())
+        if result.returncode != 0:
+            if result.stderr.strip():
+                print(result.stderr.strip())
+            print(f"[WARN] {script.name} failed with exit code {result.returncode}; continuing.")
+            return False
+        return True
+    except Exception as exc:
+        print(f"[WARN] {script.name} failed: {exc}; continuing.")
+        return False
 
-        for line in lines[1:]:
-            if line.startswith('#KODIPROP:inputstream.adaptive.license_key='):
-                key_str = line.split('=', 1)[1].strip()
-                if ':' in key_str:
-                    channel['key_id'], channel['key'] = key_str.split(':', 1)
-                    channel['key_id'] = channel['key_id'].strip()
-                    channel['key'] = channel['key'].strip()
-            elif line.startswith('#EXTHTTP:'):
-                try:
-                    http_json = json.loads(line[9:])
-                    if 'cookie' in http_json:
-                        channel['cookie'] = http_json['cookie']
-                except:
-                    pass
-            elif not line.startswith('#') and line.strip().startswith('http'):
-                channel['stream_url'] = line.strip()
 
-        if 'stream_url' in channel:
-            channels.append(channel)
+def main():
+    pairs = discover_pairs()
+    print(f"Found {len(pairs)} paired source updaters.")
+    for script in pairs:
+        run_updater(script)
 
-    return channels
+    # Import after source updaters have completed so the merger sees fresh M3Us.
+    from merge_m3u import merge_channels, OUTPUT_JSON_PATH
+    m3u_files, channels = merge_channels()
+    OUTPUT_JSON_PATH.parent.mkdir(parents=True, exist_ok=True)
+    import json
+    OUTPUT_JSON_PATH.write_text(
+        json.dumps(channels, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
 
-all_channels = []
-for m3u in M3U_FILES:
-    all_channels.extend(parse_m3u(m3u))
+    print(f"[MERGE] {len(channels)} channels from {len(m3u_files)} M3Us -> {OUTPUT_JSON_PATH}")
 
-# Remove duplicates based on channel name
-unique_channels = []
-seen = set()
-for c in all_channels:
-    if c.get('name') not in seen:
-        seen.add(c.get('name'))
-        unique_channels.append(c)
 
-# Write the final JSON to the site folder
-with open(OUTPUT_JSON, 'w', encoding='utf-8') as f:
-    json.dump(unique_channels, f, indent=2)
-
-print(f"Success! Updated {OUTPUT_JSON} with {len(unique_channels)} channels.")
+if __name__ == "__main__":
+    main()
