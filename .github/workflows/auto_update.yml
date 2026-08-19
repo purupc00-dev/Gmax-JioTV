@@ -1,38 +1,35 @@
-name: Rebuild Channels JSON
+name: Auto Update Channels JSON
 
 on:
+  schedule:
+    # Refresh every 15 minutes so keys/cookies stay valid
+    - cron: '*/15 * * * *'
+  push:
+    paths:
+      - '*.m3u'
   workflow_dispatch:
-
-permissions:
-  contents: write
 
 jobs:
   update-json:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
+        uses: actions/checkout@v3
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: '3.x'
 
-      - name: Install dependencies
+      - name: Run Update Script
+        run: python update_json.py
+
+      - name: Commit and Push Changes
         run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
-      - name: Rebuild channels.json from every M3U already in the repo
-        run: python -c "from merge_m3u import main; main()"
-
-      - name: Commit channels JSON
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           git add site/channels.json
-          git diff --cached --quiet && echo "No changes" && exit 0
-          git commit -m "Rebuild channels JSON"
-          git push origin HEAD:main
+          git diff --quiet && git diff --staged --quiet || git commit -m "Auto-update channels.json from M3U"
+          git push
