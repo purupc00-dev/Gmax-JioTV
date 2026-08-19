@@ -1,623 +1,762 @@
 "use strict";
 
 /* =========================================================
-   GMAX JIOTV PLAYER
-   ========================================================= */
+   CONFIG
+========================================================= */
 
 const CHANNELS_URL = "./channels.json";
 
 const CHANNELS_PER_PAGE = 60;
-const CHANNEL_REFRESH_MS = 10 * 60 * 1000;
 
+/*
+ * Keep playback approximately this far behind
+ * the current live edge.
+ */
 const LIVE_DELAY_SECONDS = 15;
 
+/*
+ * Give Shaka some breathing room.
+ * This is buffering, not a fake playback timer.
+ */
 const BUFFERING_GOAL_SECONDS = 25;
 const REBUFFERING_GOAL_SECONDS = 6;
 const BUFFER_BEHIND_SECONDS = 45;
 
-const RETRY_DELAY_MS = 1200;
-const MAX_FULL_RETRY_CYCLES = 2;
-
-/*
- * Preferred fallback order.
- *
- * First:
- *   JioTV 6
- *   JioTV 7
- *   JioTV 8
- *
- * Then:
- *   Star
- *   Sony
- *   Voot
- *   Sports
- *   etc.
- */
-const SOURCE_PRIORITY = [
-  "jtvplus6",
-  "jtvplus7",
-  "jtvplus8"
-];
 
 /* =========================================================
    STATE
-   ========================================================= */
+========================================================= */
 
 let allChannels = [];
+
 let filteredChannels = [];
 
 let activeCategory = "ALL";
-let visibleCount = CHANNELS_PER_PAGE;
 
-let currentChannel = null;
+let visibleCount = CHANNELS_PER_PAGE;
 
 let shakaPlayer = null;
 
-let currentSource = null;
-let playbackCandidates = [];
-let playbackIndex = 0;
-let retryCycle = 0;
+let currentChannel = null;
 
-let isOpeningChannel = false;
-let isRetrying = false;
+let playerUiShell = null;
 
-let playerShell = null;
 let playerControls = null;
+
 let qualityMenu = null;
 
 let playerUiTimer = null;
+
 let liveStatusTimer = null;
-let refreshTimer = null;
 
 let infiniteScrollObserver = null;
+
 let infiniteScrollBusy = false;
 
-let selectedFitMode =
-  localStorage.getItem("gmax-player-fit-mode") || "normal";
+let lastStreamUrl = "";
+
+let lastStreamType = "";
+
+let isPlayerRetrying = false;
+
+// NEW: Tracks our current fallback stream
+let currentFallbackIndex = 0;
+
 
 /* =========================================================
    FAVORITES
-   ========================================================= */
+========================================================= */
 
-const favorites = new Set(
-  JSON.parse(
-    localStorage.getItem("gmax-jiotv-favorites") || "[]"
-  )
-);
+const favorites =
+  new Set(
+    JSON.parse(
+      localStorage.getItem(
+        "gmax-jiotv-favorites"
+      ) || "[]"
+    )
+  );
+
 
 /* =========================================================
    DOM
-   ========================================================= */
+========================================================= */
 
 const channelsGrid =
-  document.getElementById("channels-grid");
+  document.getElementById(
+    "channels-grid"
+  );
 
 const categoryList =
-  document.getElementById("category-list");
+  document.getElementById(
+    "category-list"
+  );
 
 const searchInput =
-  document.getElementById("search-input");
+  document.getElementById(
+    "search-input"
+  );
 
 const channelCount =
-  document.getElementById("channel-count");
+  document.getElementById(
+    "channel-count"
+  );
 
 const resultsCount =
-  document.getElementById("results-count");
+  document.getElementById(
+    "results-count"
+  );
 
 const loadMore =
-  document.getElementById("load-more");
+  document.getElementById(
+    "load-more"
+  );
 
 const loadMoreButton =
-  document.getElementById("load-more-button");
+  document.getElementById(
+    "load-more-button"
+  );
 
 const playerSection =
-  document.getElementById("player-section");
+  document.getElementById(
+    "player-section"
+  );
 
 const video =
-  document.getElementById("video");
+  document.getElementById(
+    "video"
+  );
 
 const playingTitle =
-  document.getElementById("playing-title");
+  document.getElementById(
+    "playing-title"
+  );
 
 const playingMeta =
-  document.getElementById("playing-meta");
+  document.getElementById(
+    "playing-meta"
+  );
 
 const playerLoading =
-  document.getElementById("player-loading");
-
-const playerLoadingText =
-  document.getElementById("player-loading-text") ||
-  playerLoading?.querySelector("span");
+  document.getElementById(
+    "player-loading"
+  );
 
 const playerEmpty =
-  document.getElementById("player-empty");
+  document.getElementById(
+    "player-empty"
+  );
 
 const playerError =
-  document.getElementById("player-error");
+  document.getElementById(
+    "player-error"
+  );
 
 const closePlayerButton =
-  document.getElementById("close-player");
+  document.getElementById(
+    "close-player"
+  );
+
 
 /* =========================================================
-   BASIC HELPERS
-   ========================================================= */
+   HELPERS
+========================================================= */
 
 function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+
+  return String(
+    value ?? ""
+  )
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+
 }
+
 
 function normalize(value) {
-  return String(value ?? "")
+
+  return String(
+    value ?? ""
+  )
     .trim()
     .toLowerCase();
+
 }
 
-function getChannelId(channel) {
-  return String(
-    channel?.id ??
-    channel?.tvgId ??
-    channel?.tvg_id ??
-    channel?.name ??
+
+function streamType(channel) {
+
+  const url =
+    String(
+      channel?.stream_url ||
+      channel?.url ||
+      ""
+    ).toLowerCase();
+
+
+  if (
+    url.includes(
+      ".mpd"
+    )
+  ) {
+
+    return "dash";
+
+  }
+
+
+  if (
+    url.includes(
+      ".m3u8"
+    )
+  ) {
+
+    return "hls";
+
+  }
+
+
+  return "unknown";
+
+}
+
+
+function getStreamUrl(channel) {
+
+  return (
+    channel?.stream_url ||
+    channel?.url ||
     ""
   );
+
 }
 
-function getChannelName(channel) {
+
+function getCategory(channel) {
+
   return (
-    channel?.name ||
-    channel?.tvg_name ||
-    "Unknown Channel"
+    channel?.category ||
+    channel?.group ||
+    "Entertainment"
   );
+
 }
+
+
+function saveFavorites() {
+
+  localStorage.setItem(
+    "gmax-jiotv-favorites",
+    JSON.stringify(
+      [
+        ...favorites
+      ]
+    )
+  );
+
+}
+
 
 function getChannelLogo(channel) {
+
   return (
     channel?.logo ||
     channel?.tvg_logo ||
     ""
   );
+
 }
 
-function getCategory(channel) {
-  return (
-    channel?.category ||
-    channel?.group ||
-    channel?.groupTitle ||
-    "Entertainment"
-  );
-}
 
-function getStreamUrl(source) {
-  return (
-    source?.stream_url ||
-    source?.url ||
+function getChannelId(channel) {
+
+  return String(
+    channel?.id ||
+    channel?.tvgId ||
     ""
   );
+
 }
 
-function getStreamType(source) {
-  const url = String(
-    getStreamUrl(source)
-  ).toLowerCase();
 
-  if (url.includes(".mpd")) {
-    return "dash";
+// NEW: Fetch correct stream config based on fallback iteration
+function getActiveStreamConfig() {
+  let url = getStreamUrl(currentChannel);
+  let cookie = currentChannel.cookie;
+  let kid = currentChannel.key_id;
+  let key = currentChannel.key;
+
+  if (currentFallbackIndex > 0 && currentChannel.fallbacks && currentChannel.fallbacks[currentFallbackIndex - 1]) {
+    const fb = currentChannel.fallbacks[currentFallbackIndex - 1];
+    url = fb.stream_url || url;
+    cookie = fb.cookie || cookie;
+    kid = fb.key_id || kid;
+    key = fb.key || key;
   }
-
-  if (url.includes(".m3u8")) {
-    return "hls";
-  }
-
-  return "unknown";
+  return { url, cookie, kid, key };
 }
 
 /* =========================================================
-   COOKIE / URL HELPERS
-   ========================================================= */
+   LIVE HELPERS
+========================================================= */
 
-function addCookieToUrl(url, cookie) {
-  if (!url || !cookie) {
-    return url;
-  }
+function getLiveSeekRange() {
 
   if (
-    url.includes("__hdnea__=") ||
-    url.includes(cookie)
+    !shakaPlayer ||
+    typeof shakaPlayer.seekRange !==
+      "function"
   ) {
-    return url;
+
+    return null;
+
   }
 
-  const separator =
-    url.includes("?") ? "&" : "?";
 
-  return `${url}${separator}${cookie}`;
+  try {
+
+    const range =
+      shakaPlayer.seekRange();
+
+
+    if (
+      !range ||
+      !Number.isFinite(
+        range.end
+      )
+    ) {
+
+      return null;
+
+    }
+
+
+    return range;
+
+  } catch (
+    error
+  ) {
+
+    return null;
+
+  }
+
 }
 
-function cleanSource(source) {
-  if (!source) {
+
+function getCurrentLiveLag() {
+
+  const range =
+    getLiveSeekRange();
+
+
+  if (
+    !range ||
+    !Number.isFinite(
+      video.currentTime
+    )
+  ) {
+
     return null;
+
   }
 
-  const streamUrl =
-    getStreamUrl(source);
 
-  if (!streamUrl) {
-    return null;
-  }
-
-  return {
-    server:
-      source.server ||
-      source.source ||
-      source.name ||
-      "Unknown",
-
-    m3u:
-      source.m3u ||
-      "",
-
-    stream_url:
-      streamUrl,
-
-    cookie:
-      source.cookie ||
-      "",
-
-    key_id:
-      source.key_id ||
-      "",
-
-    key:
-      source.key ||
-      "",
-
-    referrer:
-      source.referrer ||
-      source.referer ||
-      "",
-
-    user_agent:
-      source.user_agent ||
-      ""
-  };
-}
-
-/* =========================================================
-   SOURCE PRIORITY
-   ========================================================= */
-
-function sourceRank(source) {
-  const server = normalize(
-    source?.server || ""
+  return Math.max(
+    0,
+    range.end -
+      video.currentTime
   );
 
-  const index =
-    SOURCE_PRIORITY.findIndex(
-      item =>
-        normalize(item) === server
+}
+
+
+function getTargetLiveTime() {
+
+  const range =
+    getLiveSeekRange();
+
+
+  if (
+    !range
+  ) {
+
+    return null;
+
+  }
+
+
+  return Math.max(
+    range.start,
+    range.end -
+      LIVE_DELAY_SECONDS
+  );
+
+}
+
+
+function seekToConfiguredLivePosition() {
+
+  const target =
+    getTargetLiveTime();
+
+
+  if (
+    target ===
+    null
+  ) {
+
+    return false;
+
+  }
+
+
+  try {
+
+    shakaPlayer.seek(
+      target
     );
 
-  if (index >= 0) {
-    return index;
-  }
+    return true;
 
-  return 1000;
-}
-
-function sourceSort(a, b) {
-  const rankA = sourceRank(a);
-  const rankB = sourceRank(b);
-
-  if (rankA !== rankB) {
-    return rankA - rankB;
-  }
-
-  return String(a.server || "")
-    .localeCompare(
-      String(b.server || "")
-    );
-}
-
-/* =========================================================
-   BUILD ALL PLAYBACK CANDIDATES
-   ========================================================= */
-
-function buildPlaybackCandidates(channel) {
-  const candidates = [];
-
-  /*
-   * 1. New format:
-   *
-   * channel.sources = [
-   *   { server, stream_url, ... }
-   * ]
-   */
-  if (
-    Array.isArray(channel?.sources)
+  } catch (
+    error
   ) {
-    for (
-      const source of channel.sources
+
+    try {
+
+      video.currentTime =
+        target;
+
+      return true;
+
+    } catch (
+      fallbackError
     ) {
-      const cleaned =
-        cleanSource(source);
 
-      if (cleaned) {
-        candidates.push(cleaned);
-      }
-    }
-  }
+      return false;
 
-  /*
-   * 2. Older format:
-   *
-   * channel.stream_url = ...
-   */
-  if (
-    channel?.stream_url ||
-    channel?.url
-  ) {
-    const primary =
-      cleanSource({
-        server:
-          channel.source_m3u ||
-          "jtvplus6",
-
-        m3u:
-          channel.source_m3u ||
-          "",
-
-        stream_url:
-          channel.stream_url ||
-          channel.url,
-
-        cookie:
-          channel.cookie,
-
-        key_id:
-          channel.key_id,
-
-        key:
-          channel.key,
-
-        referrer:
-          channel.referrer ||
-          channel.referer,
-
-        user_agent:
-          channel.user_agent
-      });
-
-    if (primary) {
-      candidates.push(primary);
-    }
-  }
-
-  /*
-   * 3. Older fallbacks array.
-   */
-  if (
-    Array.isArray(channel?.fallbacks)
-  ) {
-    for (
-      const fallback of channel.fallbacks
-    ) {
-      const cleaned =
-        cleanSource(fallback);
-
-      if (cleaned) {
-        candidates.push(cleaned);
-      }
-    }
-  }
-
-  /*
-   * Remove duplicates.
-   */
-  const unique = [];
-  const seen = new Set();
-
-  for (
-    const source of candidates
-  ) {
-    const key = [
-      normalize(source.server),
-      getStreamUrl(source)
-    ].join("|");
-
-    if (seen.has(key)) {
-      continue;
     }
 
-    seen.add(key);
-    unique.push(source);
   }
 
-  /*
-   * Preferred order:
-   *
-   * 6 → 7 → 8 → all other M3Us
-   */
-  unique.sort(sourceSort);
-
-  return unique;
 }
+
 
 /* =========================================================
    FAVORITES
-   ========================================================= */
+========================================================= */
 
-function saveFavorites() {
-  localStorage.setItem(
-    "gmax-jiotv-favorites",
-    JSON.stringify(
-      [...favorites]
+function toggleFavorite(
+  channelId
+) {
+
+  const key =
+    String(
+      channelId
+    );
+
+
+  if (
+    favorites.has(
+      key
     )
-  );
-}
+  ) {
 
-function toggleFavorite(id) {
-  const key = String(id);
+    favorites.delete(
+      key
+    );
 
-  if (favorites.has(key)) {
-    favorites.delete(key);
   } else {
-    favorites.add(key);
+
+    favorites.add(
+      key
+    );
+
   }
 
+
   saveFavorites();
+
   renderChannels();
+
 }
+
 
 /* =========================================================
    CATEGORIES
-   ========================================================= */
+========================================================= */
 
 function buildCategories() {
-  const categories = new Set();
+
+  const categories =
+    new Set();
+
 
   for (
     const channel of allChannels
   ) {
-    const category =
-      getCategory(channel);
 
-    if (category) {
-      categories.add(category);
+    const category =
+      getCategory(
+        channel
+      );
+
+
+    if (
+      category
+    ) {
+
+      categories.add(
+        category
+      );
+
     }
+
   }
 
+
   const sorted =
-    [...categories].sort(
-      (a, b) =>
+    [
+      ...categories
+    ].sort(
+      (
+        a,
+        b
+      ) =>
         String(a).localeCompare(
           String(b)
         )
     );
 
-  categoryList.innerHTML = "";
 
-  categoryList.appendChild(
+  categoryList.innerHTML =
+    "";
+
+
+  const allButton =
     createCategoryButton(
       "ALL",
-      activeCategory === "ALL"
-    )
+      true
+    );
+
+
+  categoryList.appendChild(
+    allButton
   );
+
 
   for (
     const category of sorted
   ) {
+
     categoryList.appendChild(
       createCategoryButton(
         category,
-        normalize(category) ===
-          normalize(activeCategory)
+        false
       )
     );
+
   }
+
 }
+
 
 function createCategoryButton(
   category,
   active
 ) {
+
   const button =
     document.createElement(
       "button"
     );
 
-  button.type = "button";
+
+  button.type =
+    "button";
+
 
   button.className =
     "category-button" +
-    (active ? " active" : "");
+    (
+      active
+        ? " active"
+        : ""
+    );
+
 
   button.textContent =
-    String(category);
+    String(
+      category
+    );
+
 
   button.addEventListener(
     "click",
     () => {
-      activeCategory = category;
+
+      activeCategory =
+        category;
+
+
       visibleCount =
         CHANNELS_PER_PAGE;
+
 
       if (
         infiniteScrollObserver
       ) {
+
         infiniteScrollObserver.disconnect();
-        infiniteScrollObserver = null;
+
+        infiniteScrollObserver =
+          null;
+
       }
+
 
       const oldSentinel =
         document.getElementById(
           "gmax-infinite-scroll-sentinel"
         );
 
-      if (oldSentinel) {
+
+      if (
+        oldSentinel
+      ) {
+
         oldSentinel.remove();
+
       }
 
-      buildCategories();
+
+      document
+        .querySelectorAll(
+          ".category-button"
+        )
+        .forEach(
+          item => {
+
+            item.classList.toggle(
+              "active",
+              item.textContent ===
+                String(
+                  category
+                )
+            );
+
+          }
+        );
+
+
       applyFilters();
+
     }
   );
 
+
   return button;
+
 }
 
+
 /* =========================================================
-   FILTERS
-   ========================================================= */
+   FILTERING
+========================================================= */
 
 function applyFilters() {
+
   const query =
     normalize(
       searchInput.value
     );
 
+
   filteredChannels =
     allChannels.filter(
       channel => {
+
         const category =
-          getCategory(channel);
+          getCategory(
+            channel
+          );
+
 
         const matchesCategory =
-          activeCategory === "ALL" ||
-          normalize(category) ===
-            normalize(activeCategory);
+          activeCategory ===
+            "ALL" ||
+          normalize(
+            category
+          ) ===
+            normalize(
+              activeCategory
+            );
 
-        if (!matchesCategory) {
+
+        if (
+          !matchesCategory
+        ) {
+
           return false;
+
         }
 
-        if (!query) {
+
+        if (
+          !query
+        ) {
+
           return true;
+
         }
 
-        const searchable = [
-          channel?.name,
-          channel?.id,
-          channel?.group,
-          channel?.category,
-          channel?.language,
-          channel?.country
-        ]
-          .map(normalize)
-          .join(" ");
+
+        const searchable =
+          [
+            channel.name,
+            channel.id,
+            channel.group,
+            channel.category,
+            channel.language,
+            channel.country
+          ]
+            .map(
+              normalize
+            )
+            .join(
+              " "
+            );
+
 
         return searchable.includes(
           query
         );
+
       }
     );
 
+
   resultsCount.textContent =
     `${filteredChannels.length.toLocaleString()} channels`;
+
 
   visibleCount =
     Math.min(
@@ -625,17 +764,17 @@ function applyFilters() {
       filteredChannels.length
     );
 
+
   renderChannels();
+
 }
 
+
 /* =========================================================
-   CHANNEL RENDER
-   ========================================================= */
+   CHANNEL RENDERING
+========================================================= */
 
 function renderChannels() {
-  if (!channelsGrid) {
-    return;
-  }
 
   const visible =
     filteredChannels.slice(
@@ -643,79 +782,143 @@ function renderChannels() {
       visibleCount
     );
 
-  channelsGrid.innerHTML = "";
 
-  if (!visible.length) {
+  channelsGrid.innerHTML =
+    "";
+
+
+  if (
+    visible.length ===
+    0
+  ) {
+
     channelsGrid.innerHTML = `
       <div class="empty-grid">
         No channels found.
       </div>
     `;
 
+
     hideLoadMore();
+
+
     return;
+
   }
+
 
   const fragment =
     document.createDocumentFragment();
 
+
   for (
     const channel of visible
   ) {
+
+    const card =
+      createChannelCard(
+        channel
+      );
+
+
     fragment.appendChild(
-      createChannelCard(channel)
+      card
     );
+
   }
+
 
   channelsGrid.appendChild(
     fragment
   );
 
+
   hideLoadMore();
 
-  setupInfiniteScroll();
+  ensureInfiniteScrollObserver();
+
 }
 
-function createChannelCard(channel) {
+
+/* =========================================================
+   CHANNEL CARD
+========================================================= */
+
+function createChannelCard(
+  channel
+) {
+
   const card =
     document.createElement(
       "article"
     );
 
+
   card.className =
     "channel-card";
 
+
   const id =
-    getChannelId(channel);
+    getChannelId(
+      channel
+    ) ||
+    String(
+      Math.random()
+    );
+
 
   const favorite =
-    favorites.has(id);
+    favorites.has(
+      id
+    );
+
 
   const logo =
-    getChannelLogo(channel);
+    getChannelLogo(
+      channel
+    );
+
 
   const group =
-    getCategory(channel);
+    channel.group ||
+    channel.groupTitle ||
+    getCategory(
+      channel
+    );
+
 
   card.innerHTML = `
+
     <button
       class="favorite-button ${
-        favorite ? "active" : ""
+        favorite
+          ? "active"
+          : ""
       }"
       type="button"
       aria-label="Favorite"
     >
-      ${favorite ? "♥" : "♡"}
+      ${
+        favorite
+          ? "♥"
+          : "♡"
+      }
     </button>
 
+
     <div class="channel-logo-wrap">
+
       ${
         logo
           ? `
             <img
               class="channel-logo"
-              src="${escapeHtml(logo)}"
-              alt="${escapeHtml(getChannelName(channel))}"
+              src="${escapeHtml(
+                logo
+              )}"
+              alt="${escapeHtml(
+                channel.name
+              )}"
               loading="lazy"
               referrerpolicy="no-referrer"
               onerror="
@@ -726,6 +929,7 @@ function createChannelCard(channel) {
           `
           : ""
       }
+
 
       <div
         class="channel-fallback"
@@ -739,813 +943,2457 @@ function createChannelCard(channel) {
       >
         TV
       </div>
+
     </div>
 
+
     <div class="channel-info">
+
       <div class="channel-name">
         ${escapeHtml(
-          getChannelName(channel)
+          channel.name ||
+          "Unknown Channel"
         )}
       </div>
 
+
       <div class="channel-meta">
-        LIVE •
+        JIO TV
+        •
         ${escapeHtml(
-          channel?.country ||
+          channel.country ||
           "INDIA"
         )}
         •
-        ${escapeHtml(group)}
+        ${escapeHtml(
+          group
+        )}
       </div>
+
     </div>
+
   `;
+
 
   const favoriteButton =
     card.querySelector(
       ".favorite-button"
     );
 
+
   favoriteButton.addEventListener(
     "click",
     event => {
+
       event.stopPropagation();
-      toggleFavorite(id);
+
+
+      toggleFavorite(
+        id
+      );
+
     }
   );
+
 
   card.addEventListener(
     "click",
     () => {
-      openChannel(channel);
+
+      openChannel(
+        channel, 0
+      );
+
     }
   );
+
 
   return card;
+
 }
+
 
 /* =========================================================
-   INFINITE SCROLL
-   ========================================================= */
+   PLAYER DESTROY
+========================================================= */
 
-function setupInfiniteScroll() {
-  if (
-    infiniteScrollObserver
-  ) {
-    infiniteScrollObserver.disconnect();
-    infiniteScrollObserver = null;
-  }
+async function destroyPlayer() {
 
-  const oldSentinel =
-    document.getElementById(
-      "gmax-infinite-scroll-sentinel"
-    );
+  stopLiveStatusTimer();
 
-  if (oldSentinel) {
-    oldSentinel.remove();
-  }
+  hidePlayerErrorOverlay();
 
   if (
-    visibleCount >=
-    filteredChannels.length
+    shakaPlayer
   ) {
-    return;
-  }
 
-  const sentinel =
-    document.createElement(
-      "div"
-    );
-
-  sentinel.id =
-    "gmax-infinite-scroll-sentinel";
-
-  sentinel.style.height = "1px";
-
-  channelsGrid.parentElement.appendChild(
-    sentinel
-  );
-
-  infiniteScrollObserver =
-    new IntersectionObserver(
-      entries => {
-        const entry =
-          entries[0];
-
-        if (
-          !entry.isIntersecting ||
-          infiniteScrollBusy
-        ) {
-          return;
-        }
-
-        if (
-          visibleCount >=
-          filteredChannels.length
-        ) {
-          return;
-        }
-
-        infiniteScrollBusy = true;
-
-        visibleCount +=
-          CHANNELS_PER_PAGE;
-
-        renderChannels();
-
-        requestAnimationFrame(
-          () => {
-            infiniteScrollBusy = false;
-          }
-        );
-      },
-      {
-        root: null,
-        rootMargin:
-          "1000px 0px",
-        threshold: 0
-      }
-    );
-
-  infiniteScrollObserver.observe(
-    sentinel
-  );
-}
-
-function hideLoadMore() {
-  if (loadMore) {
-    loadMore.classList.add(
-      "hidden"
-    );
-
-    loadMore.style.display =
-      "none";
-  }
-
-  if (loadMoreButton) {
-    loadMoreButton.style.display =
-      "none";
-  }
-}
-
-/* =========================================================
-   LIVE HELPERS
-   ========================================================= */
-
-function getLiveSeekRange() {
-  if (
-    !shakaPlayer ||
-    typeof shakaPlayer.seekRange !==
-      "function"
-  ) {
-    return null;
-  }
-
-  try {
-    const range =
-      shakaPlayer.seekRange();
-
-    if (
-      !range ||
-      !Number.isFinite(
-        range.end
-      )
-    ) {
-      return null;
-    }
-
-    return range;
-  } catch {
-    return null;
-  }
-}
-
-function getLiveLag() {
-  const range =
-    getLiveSeekRange();
-
-  if (
-    !range ||
-    !Number.isFinite(
-      video.currentTime
-    )
-  ) {
-    return null;
-  }
-
-  return Math.max(
-    0,
-    range.end -
-      video.currentTime
-  );
-}
-
-function getTargetLiveTime() {
-  const range =
-    getLiveSeekRange();
-
-  if (!range) {
-    return null;
-  }
-
-  return Math.max(
-    range.start,
-    range.end -
-      LIVE_DELAY_SECONDS
-  );
-}
-
-function seekToConfiguredLivePosition() {
-  const target =
-    getTargetLiveTime();
-
-  if (target === null) {
-    return false;
-  }
-
-  try {
-    shakaPlayer.seek(
-      target
-    );
-
-    return true;
-  } catch {
     try {
-      video.currentTime =
-        target;
 
-      return true;
-    } catch {
-      return false;
+      await shakaPlayer.destroy();
+
+    } catch (
+      error
+    ) {
+
+      console.warn(
+        "Shaka destroy failed:",
+        error
+      );
+
     }
+
+
+    shakaPlayer =
+      null;
+
   }
+
+
+  if (
+    playerUiShell
+  ) {
+
+    playerUiShell.classList.remove(
+      "gmax-controls-hidden"
+    );
+
+  }
+
 }
+
 
 /* =========================================================
-   PLAYER UI
-   ========================================================= */
+   ORIGINAL PLAYER MESSAGE FUNCTIONS
+========================================================= */
 
-function setLoadingText(text) {
-  if (
-    playerLoadingText
-  ) {
-    playerLoadingText.textContent =
-      text;
-  }
-}
-
-function showLoading(
-  show,
-  text = "Connecting…"
+function showPlayerLoading(
+  state
 ) {
-  if (!playerLoading) {
-    return;
-  }
 
-  playerLoading.classList.toggle(
-    "hidden",
-    !show
-  );
+  if (
+    playerLoading
+  ) {
 
-  if (show) {
-    setLoadingText(text);
-  }
-}
-
-function showPlayerError(message) {
-  /*
-   * DO NOT expose technical
-   * Shaka / HTTP errors.
-   */
-  const safeMessage =
-    message ||
-    "The channel could not be played.";
-
-  if (playerError) {
-    playerError.textContent =
-      safeMessage;
-
-    playerError.classList.remove(
-      "hidden"
+    playerLoading.classList.toggle(
+      "hidden",
+      !state
     );
+
   }
 
-  if (playerShell) {
-    const overlay =
-      playerShell.querySelector(
-        '[data-role="error"]'
-      );
 
-    if (overlay) {
-      const text =
-        overlay.querySelector(
-          '[data-role="error-message"]'
-        );
+  if (
+    state
+  ) {
 
-      if (text) {
-        text.textContent =
-          safeMessage;
-      }
+    showPlayerSpinner();
 
-      overlay.classList.add(
-        "open"
-      );
-    }
+  } else {
+
+    hidePlayerSpinner();
+
+  }
+
+}
+
+// NEW: SILENT RECONNECT SYSTEM
+async function handleStreamError(err) {
+  console.warn("Silent Reconnect Triggered:", err);
+  if (currentChannel && currentChannel.fallbacks && currentFallbackIndex < currentChannel.fallbacks.length) {
+    const nextIdx = currentFallbackIndex + 1;
+    const loadingSpan = document.querySelector("#player-loading span");
+    if (loadingSpan) loadingSpan.textContent = `Loading source ${nextIdx + 1}...`;
+    showPlayerLoading(true);
+    await openChannel(currentChannel, nextIdx);
+  } else {
+    // Loop back to main if all fail
+    console.log("All fallbacks exhausted. Reconnecting to primary...");
+    const loadingSpan = document.querySelector("#player-loading span");
+    if (loadingSpan) loadingSpan.textContent = `Reconnecting to primary...`;
+    showPlayerLoading(true);
+    setTimeout(() => { openChannel(currentChannel, 0); }, 3000);
   }
 }
+
+function showPlayerError(
+  message
+) {
+  // HIDDEN: Forward to silent reconnect
+  handleStreamError(message);
+}
+
 
 function clearPlayerError() {
-  if (playerError) {
-    playerError.textContent =
-      "";
 
-    playerError.classList.add(
-      "hidden"
-    );
-  }
+  playerError.textContent =
+    "";
 
-  if (playerShell) {
-    const overlay =
-      playerShell.querySelector(
-        '[data-role="error"]'
-      );
 
-    if (overlay) {
-      overlay.classList.remove(
-        "open"
-      );
-    }
-  }
+  playerError.classList.add(
+    "hidden"
+  );
+
+
+  hidePlayerErrorOverlay();
+
 }
 
-/* =========================================================
-   PLAYER STYLES
-   ========================================================= */
 
-function injectPlayerStyles() {
+/* =========================================================
+   OPEN CHANNEL
+========================================================= */
+
+async function openChannel(
+  channel, fallbackIdx = 0
+) {
+
+  currentChannel =
+    channel;
+
+  currentFallbackIndex = fallbackIdx;
+
+  const id =
+    channel.id ||
+    channel.tvgId;
+
+
+  const config = getActiveStreamConfig();
+
+  let streamUrl = config.url;
+
   if (
-    document.getElementById(
-      "gmax-player-styles"
+    config.cookie &&
+    config.cookie.includes(
+      "__hdnea__="
     )
   ) {
-    return;
+
+    const separator =
+      streamUrl.includes(
+        "?"
+      )
+        ? "&"
+        : "?";
+
+
+    streamUrl =
+      `${streamUrl}${separator}${config.cookie}`;
+
   }
+
+
+  if (
+    !streamUrl
+  ) {
+
+    showPlayerError(
+      "This channel does not contain a playable stream URL."
+    );
+
+
+    return;
+
+  }
+
+
+  lastStreamUrl =
+    streamUrl;
+
+
+  lastStreamType =
+    streamType(
+      { stream_url: streamUrl }
+    );
+
+
+  playerSection.classList.remove(
+    "hidden"
+  );
+
+
+  playerEmpty.classList.add(
+    "hidden"
+  );
+
+
+  playingTitle.textContent =
+    channel.name ||
+    "Channel";
+
+
+  playingMeta.textContent =
+    [
+      "JIO TV",
+      channel.country ||
+        "INDIA",
+      getCategory(
+        channel
+      )
+    ]
+      .filter(
+        Boolean
+      )
+      .join(
+        " • "
+      );
+
+
+  clearPlayerError();
+
+  const loadText = document.querySelector("#player-loading span");
+  if (loadText) {
+    loadText.textContent = fallbackIdx === 0 ? "Loading stream..." : `Loading source ${fallbackIdx + 1}...`;
+  }
+
+  showPlayerLoading(
+    true
+  );
+
+
+  history.replaceState(
+    null,
+    "",
+    `?id=${encodeURIComponent(
+      id || ""
+    )}`
+  );
+
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+
+  await destroyPlayer();
+
+
+  try {
+
+    if (
+      lastStreamType ===
+      "dash"
+    ) {
+
+      await playDash(
+        streamUrl, config.cookie, config.kid, config.key
+      );
+
+    } else if (
+      lastStreamType ===
+      "hls"
+    ) {
+
+      await playHls(
+        streamUrl, config.cookie
+      );
+
+    } else {
+
+      throw new Error(
+        `Unsupported stream format:\n${streamUrl}`
+      );
+
+    }
+
+  } catch (
+    error
+  ) {
+
+    console.error(
+      "Playback failed:",
+      error
+    );
+
+
+    showPlayerError(
+      error instanceof Error
+        ? error.message
+        : String(
+            error
+          )
+    );
+
+  } finally {
+
+    showPlayerLoading(
+      false
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   DASH
+========================================================= */
+
+async function playDash(
+  streamUrl, hdneaCookie, keyId, keyVal
+) {
+
+  if (
+    !window.shaka
+  ) {
+
+    throw new Error(
+      "Shaka Player has not loaded yet."
+    );
+
+  }
+
+
+  if (
+    !shaka.Player.isBrowserSupported()
+  ) {
+
+    throw new Error(
+      "This browser does not support Shaka Player."
+    );
+
+  }
+
+
+  shakaPlayer =
+    new shaka.Player();
+
+
+  shakaPlayer.configure({
+    streaming: {
+      bufferingGoal:
+        BUFFERING_GOAL_SECONDS,
+
+      rebufferingGoal:
+        REBUFFERING_GOAL_SECONDS,
+
+      bufferBehind:
+        BUFFER_BEHIND_SECONDS
+    }
+  });
+
+
+  await shakaPlayer.attach(
+    video
+  );
+
+
+  shakaPlayer.addEventListener(
+    "error",
+    event => {
+
+      console.error(
+        "Shaka error:",
+        event.detail
+      );
+      handleStreamError(event.detail);
+
+    }
+  );
+
+  if (
+    hdneaCookie &&
+    hdneaCookie.includes(
+      "__hdnea__="
+    )
+  ) {
+
+    const networkingEngine =
+      shakaPlayer.getNetworkingEngine();
+
+
+    if (
+      networkingEngine
+    ) {
+
+      networkingEngine.registerRequestFilter(
+        (
+          requestType,
+          request
+        ) => {
+
+          const isManifest =
+            requestType ===
+            shaka.net.NetworkingEngine.RequestType.MANIFEST;
+
+
+          const isSegment =
+            requestType ===
+            shaka.net.NetworkingEngine.RequestType.SEGMENT;
+
+
+          if (
+            isManifest ||
+            isSegment
+          ) {
+
+            request.uris =
+              request.uris.map(
+                uri => {
+
+                  if (
+                    !uri ||
+                    uri.includes(
+                      "__hdnea__="
+                    )
+                  ) {
+
+                    return uri;
+
+                  }
+
+
+                  const separator =
+                    uri.includes(
+                      "?"
+                    )
+                      ? "&"
+                      : "?";
+
+
+                  return (
+                    uri +
+                    separator +
+                    hdneaCookie
+                  );
+
+                }
+              );
+
+          }
+
+        }
+      );
+
+    }
+
+  }
+
+  if (
+    keyId &&
+    keyVal
+  ) {
+
+    const clearKeys =
+      {};
+
+
+    clearKeys[
+      keyId
+    ] =
+      keyVal;
+
+
+    shakaPlayer.configure({
+      drm: {
+        clearKeys
+      }
+    });
+
+  }
+
+  await shakaPlayer.load(
+    streamUrl
+  );
+
+  seekToConfiguredLivePosition();
+
+
+  video.controls =
+    false;
+
+
+  setupCinematicPlayer();
+
+  updateQualityOptions();
+
+  startLiveStatusTimer();
+
+  updatePlayerUi();
+
+
+  await video.play().catch(
+    () => {}
+  );
+
+}
+
+
+/* =========================================================
+   HLS
+========================================================= */
+
+async function playHls(
+  streamUrl, hdneaCookie
+) {
+
+  if (
+    video.canPlayType(
+      "application/vnd.apple.mpegurl"
+    )
+  ) {
+
+    video.src =
+      streamUrl;
+
+
+    video.controls =
+      false;
+
+
+    setupCinematicPlayer();
+
+    updateQualityOptions();
+
+    startLiveStatusTimer();
+
+
+    await waitForVideoReady();
+
+
+    seekNativeHlsToDelayedLive();
+
+
+    updatePlayerUi();
+
+    video.addEventListener("error", () => handleStreamError(video.error));
+
+    await video.play().catch(
+      () => {}
+    );
+
+
+    return;
+
+  }
+
+
+  if (
+    window.shaka &&
+    shaka.Player.isBrowserSupported()
+  ) {
+
+    shakaPlayer =
+      new shaka.Player();
+
+
+    shakaPlayer.configure({
+      streaming: {
+        bufferingGoal:
+          BUFFERING_GOAL_SECONDS,
+
+        rebufferingGoal:
+          REBUFFERING_GOAL_SECONDS,
+
+        bufferBehind:
+          BUFFER_BEHIND_SECONDS
+      }
+    });
+
+
+    await shakaPlayer.attach(
+      video
+    );
+
+
+    shakaPlayer.addEventListener(
+      "error",
+      event => {
+
+        console.error(
+          "Shaka HLS error:",
+          event.detail
+        );
+        handleStreamError(event.detail);
+
+      }
+    );
+
+    if (
+      hdneaCookie &&
+      hdneaCookie.includes(
+        "__hdnea__="
+      )
+    ) {
+
+      const networkingEngine =
+        shakaPlayer.getNetworkingEngine();
+
+
+      if (
+        networkingEngine
+      ) {
+
+        networkingEngine.registerRequestFilter(
+          (
+            requestType,
+            request
+          ) => {
+
+            const isManifest =
+              requestType ===
+              shaka.net.NetworkingEngine.RequestType.MANIFEST;
+
+
+            const isSegment =
+              requestType ===
+              shaka.net.NetworkingEngine.RequestType.SEGMENT;
+
+
+            if (
+              isManifest ||
+              isSegment
+            ) {
+
+              request.uris =
+                request.uris.map(
+                  uri => {
+
+                    if (
+                      !uri ||
+                      uri.includes(
+                        "__hdnea__="
+                      )
+                    ) {
+
+                      return uri;
+
+                    }
+
+
+                    const separator =
+                      uri.includes(
+                        "?"
+                      )
+                        ? "&"
+                        : "?";
+
+
+                    return (
+                      uri +
+                      separator +
+                      hdneaCookie
+                    );
+
+                  }
+                );
+
+            }
+
+          }
+        );
+
+      }
+
+    }
+
+
+    await shakaPlayer.load(
+      streamUrl
+    );
+
+
+    seekToConfiguredLivePosition();
+
+
+    video.controls =
+      false;
+
+
+    setupCinematicPlayer();
+
+    updateQualityOptions();
+
+    startLiveStatusTimer();
+
+    updatePlayerUi();
+
+
+    await video.play().catch(
+      () => {}
+    );
+
+
+    return;
+
+  }
+
+
+  throw new Error(
+    "This browser cannot play HLS."
+  );
+
+}
+
+
+/* =========================================================
+   NATIVE HLS SEEK
+========================================================= */
+
+function seekNativeHlsToDelayedLive() {
+
+  try {
+
+    const duration =
+      video.duration;
+
+
+    if (
+      !Number.isFinite(
+        duration
+      ) ||
+      duration <=
+        0
+    ) {
+
+      return false;
+
+    }
+
+    const target =
+      Math.max(
+        0,
+        duration -
+          LIVE_DELAY_SECONDS
+      );
+
+
+    video.currentTime =
+      target;
+
+
+    return true;
+
+  } catch (
+    error
+  ) {
+
+    return false;
+
+  }
+
+}
+
+
+function waitForVideoReady() {
+
+  return new Promise(
+    resolve => {
+
+      if (
+        video.readyState >=
+        2
+      ) {
+
+        resolve();
+
+        return;
+
+      }
+
+
+      let settled =
+        false;
+
+
+      const finish =
+        () => {
+
+          if (
+            settled
+          ) {
+
+            return;
+
+          }
+
+
+          settled =
+            true;
+
+
+          video.removeEventListener(
+            "loadedmetadata",
+            finish
+          );
+
+
+          video.removeEventListener(
+            "canplay",
+            finish
+          );
+
+
+          resolve();
+
+        };
+
+
+      video.addEventListener(
+        "loadedmetadata",
+        finish,
+        {
+          once:
+            true
+        }
+      );
+
+
+      video.addEventListener(
+        "canplay",
+        finish,
+        {
+          once:
+            true
+        }
+      );
+
+
+      setTimeout(
+        finish,
+        5000
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   PLAYER STYLE INJECTION
+========================================================= */
+
+function injectCinematicPlayerStyles() {
+
+  if (
+    document.getElementById(
+      "gmax-cinematic-player-styles"
+    )
+  ) {
+
+    return;
+
+  }
+
 
   const style =
     document.createElement(
       "style"
     );
 
-  style.id =
-    "gmax-player-styles";
 
+  style.id =
+    "gmax-cinematic-player-styles";
+
+  // NEW: Android layout fix implemented inside the media query
   style.textContent = `
+
     .gmax-player-shell {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      min-height: 260px;
-      background: #000;
-      overflow: hidden;
-      border-radius: 18px;
-      isolation: isolate;
-      touch-action: manipulation;
+
+      position:
+        relative;
+
+      width:
+        100%;
+
+      aspect-ratio:
+        16 / 9;
+
+      min-height:
+        280px;
+
+      background:
+        #000;
+
+      overflow:
+        hidden;
+
+      border-radius:
+        18px;
+
+      box-shadow:
+        0
+        30px
+        90px
+        rgba(
+          0,
+          0,
+          0,
+          .55
+        );
+
+      isolation:
+        isolate;
+
+      user-select:
+        none;
+
     }
+
 
     .gmax-player-shell video {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      background: #000;
-      object-fit: contain;
+
+      position:
+        absolute;
+
+      inset:
+        0;
+
+      width:
+        100%;
+
+      height:
+        100%;
+
+      object-fit:
+        contain;
+
+      background:
+        #000;
+
     }
+
 
     .gmax-player-gradient {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 180px;
-      pointer-events: none;
+
+      position:
+        absolute;
+
+      inset:
+        auto
+        0
+        0;
+
+      height:
+        210px;
+
+      pointer-events:
+        none;
+
       background:
         linear-gradient(
           to bottom,
-          transparent,
-          rgba(0,0,0,.88)
+          transparent 0%,
+          rgba(
+            0,
+            0,
+            0,
+            .08
+          ) 20%,
+          rgba(
+            0,
+            0,
+            0,
+            .82
+          ) 100%
         );
-      z-index: 2;
+
+      z-index:
+        3;
+
     }
+
 
     .gmax-player-top {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 5;
-      padding: 16px;
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
+
+      position:
+        absolute;
+
+      top:
+        0;
+
+      left:
+        0;
+
+      right:
+        0;
+
+      padding:
+        20px;
+
+      display:
+        flex;
+
+      align-items:
+        flex-start;
+
+      gap:
+        12px;
+
+      z-index:
+        6;
+
       background:
         linear-gradient(
           to bottom,
-          rgba(0,0,0,.72),
+          rgba(
+            0,
+            0,
+            0,
+            .7
+          ),
           transparent
         );
-      pointer-events: none;
+
+      pointer-events:
+        none;
+
     }
+
 
     .gmax-now-playing {
-      display: flex;
-      gap: 10px;
-      min-width: 0;
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      gap:
+        12px;
+
+      min-width:
+        0;
+
     }
+
 
     .gmax-channel-art {
-      width: 44px;
-      height: 44px;
-      object-fit: contain;
-      border-radius: 10px;
-      background: rgba(255,255,255,.08);
-      padding: 4px;
+
+      width:
+        54px;
+
+      height:
+        54px;
+
+      border-radius:
+        12px;
+
+      object-fit:
+        contain;
+
+      background:
+        rgba(
+          255,
+          255,
+          255,
+          .08
+        );
+
+      padding:
+        5px;
+
+      border:
+        1px
+        solid
+        rgba(
+          255,
+          255,
+          255,
+          .1
+        );
+
+      flex:
+        0
+        0
+        auto;
+
     }
+
 
     .gmax-now-copy {
-      min-width: 0;
+
+      min-width:
+        0;
+
     }
+
 
     .gmax-now-label {
-      color: #ff2b83;
-      font: 900 9px/1 system-ui;
-      letter-spacing: .12em;
-      margin-bottom: 4px;
+
+      font:
+        800
+        10px/1
+        system-ui,
+        sans-serif;
+
+      letter-spacing:
+        .12em;
+
+      text-transform:
+        uppercase;
+
+      color:
+        #ff2b83;
+
+      margin-bottom:
+        6px;
+
     }
+
 
     .gmax-now-title {
-      color: #fff;
-      font: 800 16px/1.2 system-ui;
-      max-width: 55vw;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
+
+      color:
+        #fff;
+
+      font:
+        800
+        clamp(
+          15px,
+          2vw,
+          22px
+        )/1.2
+        system-ui,
+        sans-serif;
+
+      white-space:
+        nowrap;
+
+      overflow:
+        hidden;
+
+      text-overflow:
+        ellipsis;
+
+      max-width:
+        min(
+          55vw,
+          520px
+        );
+
     }
+
 
     .gmax-now-meta {
-      color: rgba(255,255,255,.65);
-      font: 500 10px/1.3 system-ui;
-      margin-top: 3px;
+
+      color:
+        rgba(
+          255,
+          255,
+          255,
+          .65
+        );
+
+      font:
+        500
+        11px/1.3
+        system-ui,
+        sans-serif;
+
+      margin-top:
+        4px;
+
     }
+
 
     .gmax-live-badge {
-      margin-left: auto;
-      color: #fff;
-      background: rgba(229,9,20,.95);
-      border-radius: 999px;
-      padding: 7px 10px;
-      font: 900 9px/1 system-ui;
-      pointer-events: none;
+
+      margin-left:
+        auto;
+
+      pointer-events:
+        auto;
+
+      display:
+        inline-flex;
+
+      align-items:
+        center;
+
+      gap:
+        7px;
+
+      padding:
+        8px
+        11px;
+
+      border-radius:
+        999px;
+
+      color:
+        #fff;
+
+      background:
+        rgba(
+          229,
+          9,
+          20,
+          .95
+        );
+
+      font:
+        900
+        10px/1
+        system-ui,
+        sans-serif;
+
+      letter-spacing:
+        .08em;
+
+      box-shadow:
+        0
+        8px
+        28px
+        rgba(
+          229,
+          9,
+          20,
+          .35
+        );
+
     }
 
+
+    .gmax-live-dot {
+
+      width:
+        7px;
+
+      height:
+        7px;
+
+      border-radius:
+        50%;
+
+      background:
+        #fff;
+
+      box-shadow:
+        0
+        0
+        0
+        5px
+        rgba(
+          255,
+          255,
+          255,
+          .08
+        );
+
+    }
+
+
     .gmax-player-controls {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 8;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+
+      position:
+        absolute;
+
+      left:
+        0;
+
+      right:
+        0;
+
+      bottom:
+        0;
+
+      z-index:
+        8;
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      gap:
+        9px;
+
       padding:
-        58px 14px
-        13px;
-      color: #fff;
+        70px
+        18px
+        16px;
+
+      color:
+        #fff;
+
       background:
         linear-gradient(
           transparent,
-          rgba(0,0,0,.94)
+          rgba(
+            0,
+            0,
+            0,
+            .92
+          )
         );
+
       transition:
-        opacity .2s,
-        transform .2s;
+        opacity
+        .2s ease,
+        transform
+        .2s ease;
+
     }
 
-    .gmax-player-shell
-      .gmax-player-controls {
-      opacity: 1;
-      transform: translateY(0);
+
+    .gmax-player-shell.gmax-controls-hidden
+      .gmax-player-controls,
+    .gmax-player-shell.gmax-controls-hidden
+      .gmax-player-top {
+
+      opacity:
+        0;
+
+      pointer-events:
+        none;
+
     }
 
-    .gmax-player-shell
-      .gmax-player-controls.hidden-controls {
-      opacity: 0;
-      transform: translateY(10px);
-      pointer-events: none;
-    }
 
     .gmax-player-button {
-      width: 38px;
-      height: 38px;
-      border: 0;
-      border-radius: 10px;
-      display: grid;
-      place-items: center;
-      background: rgba(255,255,255,.12);
-      color: #fff;
-      cursor: pointer;
-      font: 700 15px/1 system-ui;
-      flex: 0 0 auto;
-      -webkit-tap-highlight-color: transparent;
+
+      width:
+        38px;
+
+      height:
+        38px;
+
+      border:
+        0;
+
+      border-radius:
+        11px;
+
+      display:
+        grid;
+
+      place-items:
+        center;
+
+      background:
+        rgba(
+          255,
+          255,
+          255,
+          .1
+        );
+
+      color:
+        #fff;
+
+      cursor:
+        pointer;
+
+      font:
+        700
+        15px/1
+        system-ui,
+        sans-serif;
+
+      transition:
+        .15s
+        ease;
+
+      flex:
+        0
+        0
+        auto;
+
     }
 
-    .gmax-volume {
-      width: 78px;
-      max-width: 20vw;
+
+    .gmax-player-button:hover {
+
+      background:
+        rgba(
+          255,
+          43,
+          131,
+          .28
+        );
+
+      transform:
+        translateY(
+          -1px
+        );
+
     }
 
-    .gmax-live-lag {
-      color: rgba(255,255,255,.8);
-      font: 700 11px/1 system-ui;
-      white-space: nowrap;
-    }
 
     .gmax-player-spacer {
-      flex: 1;
+
+      flex:
+        1;
+
     }
+
+
+    .gmax-live-lag {
+
+      color:
+        rgba(
+          255,
+          255,
+          255,
+          .88
+        );
+
+      font:
+        700
+        12px/1
+        system-ui,
+        sans-serif;
+
+      white-space:
+        nowrap;
+
+    }
+
 
     .gmax-go-live {
-      border: 1px solid rgba(255,43,131,.5);
-      background: rgba(255,43,131,.12);
-      color: #fff;
-      padding: 9px 11px;
-      border-radius: 10px;
-      font: 800 10px/1 system-ui;
-      cursor: pointer;
+
+      border:
+        1px
+        solid
+        rgba(
+          255,
+          43,
+          131,
+          .5
+        );
+
+      background:
+        rgba(
+          255,
+          43,
+          131,
+          .12
+        );
+
+      color:
+        #fff;
+
+      padding:
+        9px
+        12px;
+
+      border-radius:
+        10px;
+
+      font:
+        800
+        10px/1
+        system-ui,
+        sans-serif;
+
+      letter-spacing:
+        .06em;
+
+      cursor:
+        pointer;
+
     }
+
+
+    .gmax-go-live:hover {
+
+      background:
+        rgba(
+          255,
+          43,
+          131,
+          .28
+        );
+
+    }
+
+
+    .gmax-volume {
+
+      width:
+        86px;
+
+      accent-color:
+        #ff2b83;
+
+      cursor:
+        pointer;
+
+    }
+
 
     .gmax-quality-wrap {
-      position: relative;
+
+      position:
+        relative;
+
     }
+
 
     .gmax-quality-menu {
-      position: absolute;
-      bottom: 48px;
-      right: 0;
-      width: 180px;
-      max-height: 280px;
-      overflow-y: auto;
-      background: rgba(15,15,18,.97);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 13px;
-      padding: 6px;
-      display: none;
-      z-index: 100;
+
+      position:
+        absolute;
+
+      right:
+        0;
+
+      bottom:
+        50px;
+
+      width:
+        180px;
+
+      max-height:
+        280px;
+
+      overflow-y:
+        auto;
+
+      padding:
+        7px;
+
+      display:
+        none;
+
+      background:
+        rgba(
+          15,
+          15,
+          18,
+          .97
+        );
+
+      border:
+        1px
+        solid
+        rgba(
+          255,
+          255,
+          255,
+          .11
+        );
+
+      border-radius:
+        14px;
+
+      box-shadow:
+        0
+        20px
+        60px
+        rgba(
+          0,
+          0,
+          0,
+          .65
+        );
+
+      backdrop-filter:
+        blur(
+          18px
+        );
+
+      z-index:
+        30;
+
     }
+
 
     .gmax-quality-menu.open {
-      display: block;
+
+      display:
+        block;
+
     }
 
+
     .gmax-quality-item {
-      width: 100%;
-      border: 0;
-      padding: 9px 10px;
-      text-align: left;
-      border-radius: 8px;
-      color: #fff;
-      background: transparent;
-      cursor: pointer;
-      font: 700 12px system-ui;
+
+      display:
+        block;
+
+      width:
+        100%;
+
+      border:
+        0;
+
+      border-radius:
+        9px;
+
+      background:
+        transparent;
+
+      color:
+        rgba(
+          255,
+          255,
+          255,
+          .76
+        );
+
+      text-align:
+        left;
+
+      padding:
+        10px
+        11px;
+
+      cursor:
+        pointer;
+
+      font:
+        700
+        12px/1
+        system-ui,
+        sans-serif;
+
     }
+
 
     .gmax-quality-item:hover,
     .gmax-quality-item.active {
-      background: rgba(255,43,131,.18);
+
+      color:
+        #fff;
+
+      background:
+        rgba(
+          255,
+          43,
+          131,
+          .16
+        );
+
     }
+
 
     .gmax-spinner {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 36px;
-      height: 36px;
-      margin: -18px 0 0 -18px;
-      border-radius: 50%;
-      border: 3px solid rgba(255,255,255,.15);
-      border-top-color: #fff;
-      animation: gmaxSpin .8s linear infinite;
-      z-index: 9;
-      display: none;
+
+      position:
+        absolute;
+
+      left:
+        50%;
+
+      top:
+        50%;
+
+      width:
+        46px;
+
+      height:
+        46px;
+
+      margin:
+        -23px
+        0
+        0
+        -23px;
+
+      border:
+        3px
+        solid
+        rgba(
+          255,
+          255,
+          255,
+          .18
+        );
+
+      border-top-color:
+        #ff2b83;
+
+      border-radius:
+        50%;
+
+      animation:
+        gmaxSpin
+        .8s
+        linear
+        infinite;
+
+      z-index:
+        10;
+
     }
+
 
     @keyframes gmaxSpin {
+
       to {
-        transform: rotate(360deg);
+
+        transform:
+          rotate(
+            360deg
+          );
+
       }
+
     }
+
 
     .gmax-player-error {
-      position: absolute;
-      inset: 0;
-      z-index: 20;
-      display: none;
-      place-items: center;
-      padding: 20px;
-      text-align: center;
-      background: rgba(0,0,0,.74);
+
+      position:
+        absolute;
+
+      inset:
+        0;
+
+      display:
+        none;
+
+      align-items:
+        center;
+
+      justify-content:
+        center;
+
+      flex-direction:
+        column;
+
+      gap:
+        10px;
+
+      text-align:
+        center;
+
+      padding:
+        24px;
+
+      background:
+        radial-gradient(
+          circle at center,
+          rgba(
+            60,
+            10,
+            35,
+            .75
+          ),
+          rgba(
+            0,
+            0,
+            0,
+            .96
+          )
+        );
+
+      color:
+        #fff;
+
+      z-index:
+        20;
+
     }
+
 
     .gmax-player-error.open {
-      display: grid;
+
+      display:
+        none; /* Modified to stay hidden for silent fallback */
+
     }
 
-    .gmax-error-box {
-      max-width: 340px;
-    }
 
     .gmax-error-title {
-      color: #fff;
-      font: 900 18px system-ui;
-      margin-bottom: 8px;
+
+      font:
+        800
+        20px/1.2
+        system-ui,
+        sans-serif;
+
     }
+
 
     .gmax-error-message {
-      color: rgba(255,255,255,.7);
-      font: 500 12px/1.4 system-ui;
-      margin-bottom: 15px;
+
+      max-width:
+        520px;
+
+      color:
+        rgba(
+          255,
+          255,
+          255,
+          .6
+        );
+
+      font:
+        500
+        12px/1.5
+        system-ui,
+        sans-serif;
+
     }
+
 
     .gmax-retry-button {
-      border: 0;
-      border-radius: 10px;
-      padding: 10px 15px;
-      color: #fff;
-      background: #ff2b83;
-      font: 800 11px system-ui;
-      cursor: pointer;
+
+      margin-top:
+        7px;
+
+      border:
+        0;
+
+      border-radius:
+        10px;
+
+      background:
+        #ff2b83;
+
+      color:
+        #fff;
+
+      padding:
+        11px
+        16px;
+
+      cursor:
+        pointer;
+
+      font:
+        800
+        11px/1
+        system-ui,
+        sans-serif;
+
     }
 
-    /* ============================
-       VIDEO MODES
-       ============================ */
 
-    .gmax-fit-normal {
-      object-fit: contain !important;
+    .gmax-player-info {
+
+      margin-top:
+        16px;
+
+      display:
+        grid;
+
+      gap:
+        16px;
+
     }
 
-    .gmax-fit-fit {
-      object-fit: contain !important;
+
+    .gmax-player-info-main {
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      gap:
+        13px;
+
+      }
+
+
+    .gmax-info-logo {
+
+      width:
+        52px;
+
+      height:
+        52px;
+
+      border-radius:
+        12px;
+
+      object-fit:
+        contain;
+
+      background:
+        rgba(
+          255,
+          255,
+          255,
+          .05
+        );
+
+      padding:
+        5px;
+
     }
 
-    .gmax-fit-fill {
-      object-fit: cover !important;
+
+    .gmax-info-label {
+
+      color:
+        #ff2b83;
+
+      font:
+        900
+        10px/1
+        system-ui,
+        sans-serif;
+
+      letter-spacing:
+        .1em;
+
+      text-transform:
+        uppercase;
+
+      margin-bottom:
+        5px;
+
     }
 
-    .gmax-fit-stretch {
-      object-fit: fill !important;
+
+    .gmax-info-title {
+
+      color:
+        #fff;
+
+      font:
+        900
+        20px/1.2
+        system-ui,
+        sans-serif;
+
     }
 
-    /* ============================
-       MOBILE / ANDROID
-       ============================ */
 
-    @media (max-width: 700px) {
+    .gmax-info-meta {
+
+      margin-top:
+        4px;
+
+      color:
+        rgba(
+          255,
+          255,
+          255,
+          .5
+        );
+
+      font:
+        500
+        12px/1.3
+        system-ui,
+        sans-serif;
+
+    }
+
+
+    .gmax-related-title {
+
+      color:
+        #fff;
+
+      font:
+        900
+        17px/1.2
+        system-ui,
+        sans-serif;
+
+      margin-bottom:
+        9px;
+
+    }
+
+
+    .gmax-related-row {
+
+      display:
+        flex;
+
+      gap:
+        11px;
+
+      overflow-x:
+        auto;
+
+      scrollbar-width:
+        thin;
+
+      padding-bottom:
+        4px;
+
+    }
+
+
+    .gmax-related-card {
+
+      flex:
+        0
+        0
+        155px;
+
+      min-height:
+        92px;
+
+      border:
+        1px
+        solid
+        rgba(
+          255,
+          255,
+          255,
+          .07
+        );
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(
+            255,
+            255,
+            255,
+            .06
+          ),
+          rgba(
+            255,
+            255,
+            255,
+            .025
+          )
+        );
+
+      border-radius:
+        12px;
+
+      overflow:
+        hidden;
+
+      cursor:
+        pointer;
+
+      transition:
+        .18s
+        ease;
+
+    }
+
+
+    .gmax-related-card:hover {
+
+      transform:
+        translateY(
+          -2px
+        );
+
+      border-color:
+        rgba(
+          255,
+          43,
+          131,
+          .35
+        );
+
+    }
+
+
+    .gmax-related-image {
+
+      width:
+        100%;
+
+      height:
+        55px;
+
+      object-fit:
+        contain;
+
+      background:
+        #0b0b0e;
+
+      padding:
+        8px;
+
+    }
+
+
+    .gmax-related-name {
+
+      padding:
+        7px
+        9px;
+
+      color:
+        rgba(
+          255,
+          255,
+          255,
+          .9
+        );
+
+      font:
+        800
+        11px/1.2
+        system-ui,
+        sans-serif;
+
+      white-space:
+        nowrap;
+
+      overflow:
+        hidden;
+
+      text-overflow:
+        ellipsis;
+
+    }
+
+
+    @media (
+      max-width:
+        700px
+    ) {
+
       .gmax-player-shell {
-        aspect-ratio: 16 / 9;
-        min-height: 210px;
-        border-radius: 12px;
+
+        border-radius:
+          10px;
+          
+        min-height:
+          auto;
+
+        aspect-ratio:
+          16 / 9;
+          
+        display: 
+          flex;
+
+        flex-direction: 
+          column;
+          
+        justify-content: 
+          flex-end;
+
       }
 
-      .gmax-player-controls {
-        gap: 5px;
+
+      .gmax-player-top {
+
         padding:
-          50px 8px
-          9px;
+          10px;
+
       }
 
-      .gmax-player-button {
-        width: 34px;
-        height: 34px;
-        border-radius: 8px;
-        font-size: 13px;
-      }
-
-      .gmax-volume {
-        display: none;
-      }
-
-      .gmax-live-lag {
-        display: none;
-      }
-
-      .gmax-go-live {
-        padding: 8px;
-        font-size: 9px;
-      }
 
       .gmax-channel-art {
-        width: 36px;
-        height: 36px;
+
+        width:
+          42px;
+
+        height:
+          42px;
+
+        border-radius:
+          9px;
+
       }
+
 
       .gmax-now-title {
-        font-size: 13px;
-        max-width: 46vw;
+
+        max-width:
+          48vw;
+
       }
+
 
       .gmax-now-meta {
-        font-size: 9px;
+
+        display:
+          none;
+
       }
 
+
       .gmax-live-badge {
-        padding: 6px 8px;
-        font-size: 8px;
+
+        padding:
+          7px
+          9px;
+
       }
+
+
+      .gmax-player-controls {
+
+        gap:
+          6px;
+
+        padding:
+          40px
+          9px
+          9px;
+
+      }
+
+
+      .gmax-volume {
+
+        display:
+          none;
+
+      }
+
+
+      .gmax-live-lag {
+
+        display:
+          none;
+
+      }
+
+
+      .gmax-player-button {
+
+        width:
+          34px;
+
+        height:
+          34px;
+
+      }
+
+
+      .gmax-go-live {
+
+        padding:
+          8px
+          9px;
+
+      }
+
+
+      .gmax-related-card {
+
+        flex-basis:
+          135px;
+
+      }
+
     }
+
   `;
+
 
   document.head.appendChild(
     style
   );
+
 }
 
+
 /* =========================================================
-   PLAYER SETUP
-   ========================================================= */
+   CINEMATIC PLAYER SETUP
+========================================================= */
 
-function setupPlayer() {
-  if (!video) {
-    return;
-  }
+function setupCinematicPlayer() {
 
-  injectPlayerStyles();
+  injectCinematicPlayerStyles();
+
 
   let shell =
     video.closest(
       ".gmax-player-shell"
     );
 
-  if (!shell) {
+
+  if (
+    !shell
+  ) {
+
     const parent =
       video.parentElement;
 
-    if (!parent) {
+
+    if (
+      !parent
+    ) {
+
       return;
+
     }
+
 
     shell =
       document.createElement(
         "div"
       );
 
+
     shell.className =
       "gmax-player-shell";
+
 
     parent.insertBefore(
       shell,
       video
     );
 
+
     shell.appendChild(
       video
     );
+
   }
 
-  playerShell = shell;
 
-  applyFitMode();
+  playerUiShell =
+    shell;
 
-  if (!playerControls) {
+
+  /*
+   * Make sure we only create the
+   * controls once.
+   */
+
+  if (
+    !playerControls
+  ) {
+
     createPlayerControls(
       shell
     );
+
   }
 
+
   updatePlayerIdentity();
+
+  buildRelatedChannels();
+
+  hidePlayerErrorOverlay();
+
 }
 
-function createPlayerControls(shell) {
+
+/* =========================================================
+   CREATE CONTROLS
+========================================================= */
+
+function createPlayerControls(
+  shell
+) {
+
   const gradient =
     document.createElement(
       "div"
     );
 
+
   gradient.className =
     "gmax-player-gradient";
+
 
   shell.appendChild(
     gradient
   );
+
 
   const top =
     document.createElement(
       "div"
     );
 
+
   top.className =
     "gmax-player-top";
 
+
   top.innerHTML = `
+
     <div class="gmax-now-playing">
+
       <img
         class="gmax-channel-art"
         data-role="channel-art"
@@ -1553,7 +3401,10 @@ function createPlayerControls(shell) {
       >
 
       <div class="gmax-now-copy">
-        <div class="gmax-now-label">
+
+        <div
+          class="gmax-now-label"
+        >
           NOW PLAYING
         </div>
 
@@ -1568,90 +3419,119 @@ function createPlayerControls(shell) {
           class="gmax-now-meta"
           data-role="channel-meta"
         >
-          LIVE
+          JIO TV
         </div>
+
       </div>
+
     </div>
 
-    <div class="gmax-live-badge">
-      ● LIVE
+
+    <div
+      class="gmax-live-badge"
+      title="Live"
+    >
+      <span
+        class="gmax-live-dot"
+      ></span>
+
+      LIVE
+
     </div>
+
   `;
+
 
   shell.appendChild(
     top
   );
+
 
   const spinner =
     document.createElement(
       "div"
     );
 
+
   spinner.className =
     "gmax-spinner";
 
+
   spinner.dataset.role =
     "spinner";
+
 
   shell.appendChild(
     spinner
   );
 
-  const error =
+
+  const errorOverlay =
     document.createElement(
       "div"
     );
 
-  error.className =
+
+  errorOverlay.className =
     "gmax-player-error";
 
-  error.dataset.role =
+
+  errorOverlay.dataset.role =
     "error";
 
-  error.innerHTML = `
-    <div class="gmax-error-box">
-      <div class="gmax-error-title">
-        Reconnecting…
-      </div>
 
-      <div
-        class="gmax-error-message"
-        data-role="error-message"
-      >
-        Trying another stream…
-      </div>
+  errorOverlay.innerHTML = `
 
-      <button
-        class="gmax-retry-button"
-        type="button"
-        data-action="retry"
-      >
-        RECONNECT
-      </button>
+    <div
+      class="gmax-error-title"
+    >
+      Playback problem
     </div>
+
+    <div
+      class="gmax-error-message"
+      data-role="error-message"
+    >
+      The channel could not be played.
+    </div>
+
+    <button
+      class="gmax-retry-button"
+      data-action="retry"
+      type="button"
+    >
+      RECONNECT
+    </button>
+
   `;
 
+
   shell.appendChild(
-    error
+    errorOverlay
   );
+
 
   const controls =
     document.createElement(
       "div"
     );
 
+
   controls.className =
     "gmax-player-controls";
 
+
   controls.innerHTML = `
+
     <button
       class="gmax-player-button"
       data-action="play"
       type="button"
-      title="Play"
+      title="Play / Pause"
     >
       ▶
     </button>
+
 
     <button
       class="gmax-player-button"
@@ -1661,6 +3541,7 @@ function createPlayerControls(shell) {
     >
       🔊
     </button>
+
 
     <input
       class="gmax-volume"
@@ -1673,24 +3554,34 @@ function createPlayerControls(shell) {
       aria-label="Volume"
     >
 
+
     <span
       class="gmax-live-lag"
       data-role="live-lag"
     >
-      LIVE
+      LIVE • -15s
     </span>
+
 
     <button
       class="gmax-go-live"
       data-action="go-live"
       type="button"
+      title="Return to the live safety position"
     >
       GO LIVE
     </button>
 
-    <span class="gmax-player-spacer"></span>
 
-    <div class="gmax-quality-wrap">
+    <span
+      class="gmax-player-spacer"
+    ></span>
+
+
+    <div
+      class="gmax-quality-wrap"
+    >
+
       <button
         class="gmax-player-button"
         data-action="quality"
@@ -1700,19 +3591,21 @@ function createPlayerControls(shell) {
         ⚙
       </button>
 
+
       <div
         class="gmax-quality-menu"
         data-role="quality-menu"
       ></div>
+
     </div>
 
     <button
       class="gmax-player-button"
-      data-action="fit"
+      data-action="aspect"
       type="button"
-      title="Video fit"
+      title="Aspect Ratio (Fit/Fill/Stretch)"
     >
-      FIT
+      ◱
     </button>
 
     <button
@@ -1723,512 +3616,848 @@ function createPlayerControls(shell) {
     >
       ⛶
     </button>
+
   `;
+
 
   shell.appendChild(
     controls
   );
 
+
   playerControls =
     controls;
+
 
   qualityMenu =
     controls.querySelector(
       '[data-role="quality-menu"]'
     );
 
-  /* PLAY */
 
-  controls
-    .querySelector(
+  const playButton =
+    controls.querySelector(
       '[data-action="play"]'
-    )
-    .addEventListener(
-      "click",
-      async event => {
-        event.stopPropagation();
-
-        if (video.paused) {
-          await video
-            .play()
-            .catch(() => {});
-        } else {
-          video.pause();
-        }
-
-        updatePlayerUi();
-      }
     );
 
-  /* MUTE */
 
-  controls
-    .querySelector(
+  const muteButton =
+    controls.querySelector(
       '[data-action="mute"]'
-    )
-    .addEventListener(
-      "click",
-      event => {
-        event.stopPropagation();
-
-        video.muted =
-          !video.muted;
-
-        updatePlayerUi();
-      }
     );
 
-  /* VOLUME */
 
-  controls
-    .querySelector(
+  const volumeInput =
+    controls.querySelector(
       '[data-action="volume"]'
-    )
-    .addEventListener(
-      "input",
-      event => {
-        event.stopPropagation();
+    );
 
-        video.volume =
-          Number(
-            event.target.value
+
+  const qualityButton =
+    controls.querySelector(
+      '[data-action="quality"]'
+    );
+
+
+  const goLiveButton =
+    controls.querySelector(
+      '[data-action="go-live"]'
+    );
+
+
+  const fullscreenButton =
+    controls.querySelector(
+      '[data-action="fullscreen"]'
+    );
+
+
+  const retryButton =
+    errorOverlay.querySelector(
+      '[data-action="retry"]'
+    );
+
+  // NEW: Aspect Ratio logic
+  const aspectButton = controls.querySelector('[data-action="aspect"]');
+  const aspectModes = ["contain", "fill", "cover"];
+  let currentAspect = 0;
+
+  aspectButton.addEventListener("click", event => {
+    event.stopPropagation();
+    currentAspect = (currentAspect + 1) % aspectModes.length;
+    video.style.objectFit = aspectModes[currentAspect];
+  });
+
+
+  playButton.addEventListener(
+    "click",
+    async event => {
+
+      event.stopPropagation();
+
+
+      if (
+        video.paused
+      ) {
+
+        await video
+          .play()
+          .catch(
+            () => {}
           );
 
-        video.muted =
-          video.volume === 0;
+      } else {
 
-        updatePlayerUi();
+        video.pause();
+
       }
-    );
 
-  /* GO LIVE */
 
-  controls
-    .querySelector(
-      '[data-action="go-live"]'
-    )
-    .addEventListener(
-      "click",
-      event => {
-        event.stopPropagation();
+      updatePlayerUi();
 
-        if (
-          seekToConfiguredLivePosition()
-        ) {
-          video
-            .play()
-            .catch(() => {});
-        }
+    }
+  );
 
-        updatePlayerUi();
-      }
-    );
 
-  /* QUALITY */
+  muteButton.addEventListener(
+    "click",
+    event => {
 
-  controls
-    .querySelector(
-      '[data-action="quality"]'
-    )
-    .addEventListener(
-      "click",
-      event => {
-        event.stopPropagation();
+      event.stopPropagation();
 
-        qualityMenu.classList.toggle(
-          "open"
+
+      video.muted =
+        !video.muted;
+
+
+      updatePlayerUi();
+
+    }
+  );
+
+
+  volumeInput.addEventListener(
+    "input",
+    event => {
+
+      event.stopPropagation();
+
+
+      video.volume =
+        Number(
+          volumeInput.value
         );
+
+
+      video.muted =
+        video.volume ===
+        0;
+
+
+      updatePlayerUi();
+
+    }
+  );
+
+
+  goLiveButton.addEventListener(
+    "click",
+    event => {
+
+      event.stopPropagation();
+
+
+      if (
+        seekToConfiguredLivePosition()
+      ) {
+
+        video.play().catch(
+          () => {}
+        );
+
       }
-    );
 
-  /* FIT */
 
-  controls
-    .querySelector(
-      '[data-action="fit"]'
-    )
-    .addEventListener(
-      "click",
-      event => {
-        event.stopPropagation();
+      updatePlayerUi();
 
-        cycleFitMode();
-      }
-    );
+    }
+  );
 
-  /* FULLSCREEN */
 
-  controls
-    .querySelector(
-      '[data-action="fullscreen"]'
-    )
-    .addEventListener(
-      "click",
-      event => {
-        event.stopPropagation();
+  qualityButton.addEventListener(
+    "click",
+    event => {
 
-        toggleFullscreen();
-      }
-    );
+      event.stopPropagation();
 
-  /* RETRY */
 
-  error
-    .querySelector(
-      '[data-action="retry"]'
-    )
-    .addEventListener(
-      "click",
-      event => {
-        event.stopPropagation();
-
-        reconnectCurrentChannel();
-      }
-    );
-
-  /* VIDEO EVENTS */
-
-  [
-    "play",
-    "pause",
-    "loadedmetadata",
-    "volumechange",
-    "durationchange",
-    "progress",
-    "canplay",
-    "waiting",
-    "playing"
-  ].forEach(
-    eventName => {
-      video.addEventListener(
-        eventName,
-        updatePlayerUi
+      qualityMenu.classList.toggle(
+        "open"
       );
+
     }
   );
 
-  /* TOUCH */
 
-  shell.addEventListener(
-    "touchstart",
-    () => {
-      showControlsTemporarily();
-    },
-    {
-      passive: true
+  fullscreenButton.addEventListener(
+    "click",
+    event => {
+
+      event.stopPropagation();
+
+
+      toggleFullscreen();
+
     }
   );
 
-  shell.addEventListener(
-    "mousemove",
-    () => {
-      showControlsTemporarily();
+
+  retryButton.addEventListener(
+    "click",
+    event => {
+
+      event.stopPropagation();
+
+
+      retryCurrentChannel();
+
     }
   );
 
-  /* DOUBLE CLICK */
 
   shell.addEventListener(
     "dblclick",
     event => {
+
       if (
         event.target.closest(
           ".gmax-player-controls"
         )
       ) {
+
         return;
+
       }
 
+
       toggleFullscreen();
+
     }
   );
 
-  /* CLOSE QUALITY */
+
+  shell.addEventListener(
+    "click",
+    event => {
+
+      if (
+        event.target !==
+        video
+      ) {
+
+        return;
+
+      }
+
+
+      if (
+        video.paused
+      ) {
+
+        video
+          .play()
+          .catch(
+            () => {}
+          );
+
+      } else {
+
+        video.pause();
+
+      }
+
+    }
+  );
+
+
+  [
+    "play",
+    "pause",
+    "timeupdate",
+    "loadedmetadata",
+    "volumechange",
+    "durationchange",
+    "progress",
+    "canplay"
+  ].forEach(
+    eventName => {
+
+      video.addEventListener(
+        eventName,
+        updatePlayerUi
+      );
+
+    }
+  );
+
+
+  shell.addEventListener(
+    "mousemove",
+    () => {
+
+      showPlayerControlsTemporarily();
+
+    }
+  );
+
+
+  shell.addEventListener(
+    "touchstart",
+    () => {
+
+      showPlayerControlsTemporarily();
+
+    },
+    {
+      passive:
+        true
+    }
+  );
+
 
   document.addEventListener(
     "click",
     event => {
+
       if (
         !qualityMenu
       ) {
+
         return;
+
       }
+
 
       if (
         !event.target.closest(
           ".gmax-quality-wrap"
         )
       ) {
+
         qualityMenu.classList.remove(
           "open"
         );
+
       }
+
     }
   );
 
-  /* KEYBOARD */
 
   window.addEventListener(
     "keydown",
-    handleKeyboard
+    handlePlayerKeyboard
   );
 
-  updatePlayerUi();
 }
 
-/* =========================================================
-   FIT / STRETCH / FILL
-   ========================================================= */
-
-function applyFitMode() {
-  if (!video) {
-    return;
-  }
-
-  video.classList.remove(
-    "gmax-fit-normal",
-    "gmax-fit-fit",
-    "gmax-fit-fill",
-    "gmax-fit-stretch"
-  );
-
-  video.classList.add(
-    `gmax-fit-${selectedFitMode}`
-  );
-}
-
-function cycleFitMode() {
-  const modes = [
-    "normal",
-    "fit",
-    "fill",
-    "stretch"
-  ];
-
-  const currentIndex =
-    modes.indexOf(
-      selectedFitMode
-    );
-
-  selectedFitMode =
-    modes[
-      (currentIndex + 1) %
-      modes.length
-    ];
-
-  localStorage.setItem(
-    "gmax-player-fit-mode",
-    selectedFitMode
-  );
-
-  applyFitMode();
-
-  const button =
-    playerControls?.querySelector(
-      '[data-action="fit"]'
-    );
-
-  if (button) {
-    button.textContent =
-      selectedFitMode.toUpperCase();
-  }
-}
 
 /* =========================================================
    PLAYER IDENTITY
-   ========================================================= */
+========================================================= */
 
 function updatePlayerIdentity() {
+
   if (
-    !playerShell ||
+    !playerUiShell ||
     !currentChannel
   ) {
+
     return;
+
   }
 
+
   const art =
-    playerShell.querySelector(
+    playerUiShell.querySelector(
       '[data-role="channel-art"]'
     );
 
+
   const title =
-    playerShell.querySelector(
+    playerUiShell.querySelector(
       '[data-role="channel-title"]'
     );
 
+
   const meta =
-    playerShell.querySelector(
+    playerUiShell.querySelector(
       '[data-role="channel-meta"]'
     );
+
 
   const logo =
     getChannelLogo(
       currentChannel
     );
 
-  if (art) {
-    if (logo) {
-      art.src = logo;
+
+  if (
+    art
+  ) {
+
+    if (
+      logo
+    ) {
+
+      art.src =
+        logo;
+
       art.style.display =
         "block";
+
     } else {
+
       art.removeAttribute(
         "src"
       );
 
       art.style.display =
         "none";
+
     }
+
   }
 
-  if (title) {
+
+  if (
+    title
+  ) {
+
     title.textContent =
-      getChannelName(
-        currentChannel
-      );
+      currentChannel.name ||
+      "Live TV";
+
   }
 
-  if (meta) {
+
+  if (
+    meta
+  ) {
+
     meta.textContent =
       [
-        "LIVE",
-        currentSource?.server ||
-          "JIO TV",
+        "JIO TV",
+        currentChannel.country ||
+          "INDIA",
         getCategory(
           currentChannel
         )
       ]
-        .filter(Boolean)
-        .join(" • ");
+        .filter(
+          Boolean
+        )
+        .join(
+          " • "
+        );
+
   }
+
 }
 
-/* =========================================================
-   CONTROLS
-   ========================================================= */
 
-function showControlsTemporarily() {
-  if (!playerControls) {
+/* =========================================================
+   RELATED CHANNELS
+========================================================= */
+
+function buildRelatedChannels() {
+
+  if (
+    !playerSection ||
+    !currentChannel
+  ) {
+
     return;
+
   }
 
-  playerControls.classList.remove(
-    "hidden-controls"
+
+  let info =
+    playerSection.querySelector(
+      ".gmax-player-info"
+    );
+
+
+  if (
+    !info
+  ) {
+
+    info =
+      document.createElement(
+        "div"
+      );
+
+
+    info.className =
+      "gmax-player-info";
+
+
+    playerSection.appendChild(
+      info
+    );
+
+  }
+
+
+  const logo =
+    getChannelLogo(
+      currentChannel
+    );
+
+
+  const related =
+    allChannels
+      .filter(
+        channel =>
+          getChannelId(
+            channel
+          ) !==
+          getChannelId(
+            currentChannel
+          )
+      )
+      .filter(
+        channel =>
+          normalize(
+            getCategory(
+              channel
+            )
+          ) ===
+          normalize(
+            getCategory(
+              currentChannel
+            )
+          )
+      )
+      .slice(
+        0,
+        12
+      );
+
+
+  info.innerHTML = `
+
+    <div
+      class="gmax-player-info-main"
+    >
+
+      ${
+        logo
+          ? `
+            <img
+              class="gmax-info-logo"
+              src="${escapeHtml(
+                logo
+              )}"
+              alt=""
+              referrerpolicy="no-referrer"
+            >
+          `
+          : ""
+      }
+
+
+      <div>
+
+        <div
+          class="gmax-info-label"
+        >
+          NOW PLAYING
+        </div>
+
+        <div
+          class="gmax-info-title"
+        >
+          ${escapeHtml(
+            currentChannel.name ||
+            "Live TV"
+          )}
+        </div>
+
+        <div
+          class="gmax-info-meta"
+        >
+          ${escapeHtml(
+            [
+              "JIO TV",
+              currentChannel.country ||
+                "INDIA",
+              getCategory(
+                currentChannel
+              )
+            ]
+              .filter(
+                Boolean
+              )
+              .join(
+                " • "
+              )
+          )}
+        </div>
+
+      </div>
+
+    </div>
+
+
+    ${
+      related.length
+        ? `
+          <div>
+
+            <div
+              class="gmax-related-title"
+            >
+              RELATED CHANNELS
+            </div>
+
+            <div
+              class="gmax-related-row"
+            >
+
+              ${related
+                .map(
+                  channel => {
+
+                    const channelLogo =
+                      getChannelLogo(
+                        channel
+                      );
+
+
+                    return `
+
+                      <div
+                        class="gmax-related-card"
+                        data-related-channel="${escapeHtml(
+                          getChannelId(
+                            channel
+                          )
+                        )}"
+                      >
+
+                        ${
+                          channelLogo
+                            ? `
+                              <img
+                                class="gmax-related-image"
+                                src="${escapeHtml(
+                                  channelLogo
+                                )}"
+                                alt=""
+                                loading="lazy"
+                                referrerpolicy="no-referrer"
+                              >
+                            `
+                            : `
+                              <div
+                                class="gmax-related-image"
+                                style="
+                                  display:grid;
+                                  place-items:center;
+                                  color:#777;
+                                  font-weight:800;
+                                "
+                              >
+                                TV
+                              </div>
+                            `
+                        }
+
+
+                        <div
+                          class="gmax-related-name"
+                        >
+                          ${escapeHtml(
+                            channel.name ||
+                            "Channel"
+                          )}
+                        </div>
+
+                      </div>
+
+                    `;
+
+                  }
+                )
+                .join(
+                  ""
+                )}
+
+            </div>
+
+          </div>
+        `
+        : ""
+    }
+
+  `;
+
+
+  info
+    .querySelectorAll(
+      "[data-related-channel]"
+    )
+    .forEach(
+      card => {
+
+        card.addEventListener(
+          "click",
+          () => {
+
+            const id =
+              card.dataset.relatedChannel;
+
+
+            const channel =
+              allChannels.find(
+                item =>
+                  getChannelId(
+                    item
+                  ) ===
+                  String(
+                    id
+                  )
+              );
+
+
+            if (
+              channel
+            ) {
+
+              openChannel(
+                channel, 0
+              );
+
+            }
+
+          }
+        );
+
+      }
+    );
+
+}
+
+
+/* =========================================================
+   PLAYER CONTROLS
+========================================================= */
+
+function showPlayerControlsTemporarily() {
+
+  if (
+    !playerUiShell
+  ) {
+
+    return;
+
+  }
+
+
+  playerUiShell.classList.remove(
+    "gmax-controls-hidden"
   );
+
 
   clearTimeout(
     playerUiTimer
   );
 
+
   playerUiTimer =
     setTimeout(
       () => {
+
         if (
           !video.paused
         ) {
-          playerControls.classList.add(
-            "hidden-controls"
+
+          playerUiShell.classList.add(
+            "gmax-controls-hidden"
           );
+
         }
+
       },
-      3000
+      2800
     );
+
 }
 
-function updatePlayerUi() {
+
+function toggleFullscreen() {
+
   if (
-    !playerControls
+    !playerUiShell
   ) {
+
     return;
+
   }
 
-  const playButton =
-    playerControls.querySelector(
-      '[data-action="play"]'
-    );
 
-  const muteButton =
-    playerControls.querySelector(
-      '[data-action="mute"]'
-    );
+  if (
+    document.fullscreenElement
+  ) {
 
-  const volume =
-    playerControls.querySelector(
-      '[data-action="volume"]'
-    );
+    document
+      .exitFullscreen()
+      .catch(
+        () => {}
+      );
 
-  const lag =
-    playerControls.querySelector(
-      '[data-role="live-lag"]'
-    );
-
-  const fitButton =
-    playerControls.querySelector(
-      '[data-action="fit"]'
-    );
-
-  if (playButton) {
-    playButton.textContent =
-      video.paused
-        ? "▶"
-        : "⏸";
-  }
-
-  if (muteButton) {
-    muteButton.textContent =
-      video.muted
-        ? "🔇"
-        : "🔊";
-  }
-
-  if (volume) {
-    volume.value =
-      video.muted
-        ? "0"
-        : String(
-            video.volume
-          );
-  }
-
-  if (fitButton) {
-    fitButton.textContent =
-      selectedFitMode.toUpperCase();
-  }
-
-  if (lag) {
-    const liveLag =
-      getLiveLag();
+  } else {
 
     if (
-      liveLag === null
+      playerUiShell.requestFullscreen
     ) {
-      lag.textContent =
-        "LIVE";
-    } else {
-      lag.textContent =
-        `LIVE • -${Math.round(
-          liveLag
-        )}s`;
+
+      playerUiShell
+        .requestFullscreen()
+        .catch(
+          () => {}
+        );
+
     }
+
   }
 
-  updatePlayerIdentity();
 }
 
-function handleKeyboard(
+
+/* =========================================================
+   KEYBOARD
+========================================================= */
+
+function handlePlayerKeyboard(
   event
 ) {
+
   if (
-    !playerShell ||
-    playerSection?.classList.contains(
+    !playerUiShell ||
+    playerSection.classList.contains(
       "hidden"
     )
   ) {
+
     return;
+
   }
+
 
   const target =
     event.target;
+
 
   if (
     target &&
@@ -2240,1634 +4469,1341 @@ function handleKeyboard(
       target.isContentEditable
     )
   ) {
+
     return;
+
   }
+
 
   const key =
     String(
       event.key
     ).toLowerCase();
 
-  if (key === " ") {
+
+  if (
+    key ===
+    " "
+  ) {
+
     event.preventDefault();
 
-    if (video.paused) {
-      video
-        .play()
-        .catch(() => {});
+
+    if (
+      video.paused
+    ) {
+
+      video.play().catch(
+        () => {}
+      );
+
     } else {
+
       video.pause();
+
     }
+
+
+    updatePlayerUi();
+
   }
 
-  if (key === "m") {
+
+  if (
+    key ===
+    "m"
+  ) {
+
     video.muted =
       !video.muted;
+
+
+    updatePlayerUi();
+
   }
 
-  if (key === "f") {
+
+  if (
+    key ===
+    "f"
+  ) {
+
     toggleFullscreen();
+
   }
 
-  if (key === "g") {
+
+  if (
+    key ===
+    "g"
+  ) {
+
     seekToConfiguredLivePosition();
+
   }
 
-  if (key === "arrowup") {
+
+  if (
+    key ===
+    "arrowup"
+  ) {
+
     event.preventDefault();
+
 
     video.volume =
       Math.min(
         1,
-        video.volume + 0.05
+        video.volume +
+          0.05
       );
+
 
     video.muted =
       false;
+
+
+    updatePlayerUi();
+
   }
 
-  if (key === "arrowdown") {
+
+  if (
+    key ===
+    "arrowdown"
+  ) {
+
     event.preventDefault();
+
 
     video.volume =
       Math.max(
         0,
-        video.volume - 0.05
+        video.volume -
+          0.05
       );
+
+
+    updatePlayerUi();
+
   }
 
-  updatePlayerUi();
-  showControlsTemporarily();
+
+  showPlayerControlsTemporarily();
+
 }
 
-async function toggleFullscreen() {
-  if (!playerShell) {
-    return;
-  }
-
-  try {
-    if (
-      document.fullscreenElement
-    ) {
-      await document.exitFullscreen();
-      return;
-    }
-
-    if (
-      playerShell.requestFullscreen
-    ) {
-      await playerShell.requestFullscreen();
-    }
-  } catch {
-    /* Ignore mobile fullscreen quirks */
-  }
-}
 
 /* =========================================================
-   QUALITY
-   ========================================================= */
+   SPINNER
+========================================================= */
 
-function updateQualityOptions() {
-  if (!qualityMenu) {
-    return;
-  }
-
-  qualityMenu.innerHTML =
-    "";
+function showPlayerSpinner() {
 
   if (
-    !shakaPlayer
+    !playerUiShell
   ) {
-    qualityMenu.innerHTML = `
-      <button
-        class="gmax-quality-item active"
-        type="button"
-      >
-        Auto
-      </button>
-    `;
 
     return;
+
   }
 
-  const tracks =
-    shakaPlayer
-      .getVariantTracks?.() ||
-    [];
 
-  if (!tracks.length) {
-    qualityMenu.innerHTML = `
-      <button
-        class="gmax-quality-item active"
-        type="button"
-      >
-        Auto
-      </button>
-    `;
-
-    return;
-  }
-
-  const qualities =
-    new Map();
-
-  for (
-    const track of tracks
-  ) {
-    const height =
-      track.height ||
-      0;
-
-    if (
-      !qualities.has(height)
-    ) {
-      qualities.set(
-        height,
-        track
-      );
-    }
-  }
-
-  const auto =
-    document.createElement(
-      "button"
-    );
-
-  auto.type =
-    "button";
-
-  auto.className =
-    "gmax-quality-item active";
-
-  auto.textContent =
-    "Auto";
-
-  auto.addEventListener(
-    "click",
-    () => {
-      shakaPlayer.setConfig({
-        abr: {
-          enabled: true
-        }
-      });
-
-      qualityMenu.classList.remove(
-        "open"
-      );
-    }
-  );
-
-  qualityMenu.appendChild(
-    auto
-  );
-
-  [
-    ...qualities.entries()
-  ]
-    .sort(
-      (a, b) =>
-        a[0] - b[0]
-    )
-    .forEach(
-      ([height, track]) => {
-        const button =
-          document.createElement(
-            "button"
-          );
-
-        button.type =
-          "button";
-
-        button.className =
-          "gmax-quality-item";
-
-        button.textContent =
-          height
-            ? `${height}p`
-            : "Unknown";
-
-        button.addEventListener(
-          "click",
-          () => {
-            shakaPlayer.setConfig({
-              abr: {
-                enabled: false
-              }
-            });
-
-            shakaPlayer.selectVariantTrack(
-              track,
-              true
-            );
-
-            qualityMenu.classList.remove(
-              "open"
-            );
-          }
-        );
-
-        qualityMenu.appendChild(
-          button
-        );
-      }
-    );
-}
-
-/* =========================================================
-   PLAYER SPINNER
-   ========================================================= */
-
-function showSpinner() {
   const spinner =
-    playerShell?.querySelector(
+    playerUiShell.querySelector(
       '[data-role="spinner"]'
     );
 
-  if (spinner) {
+
+  if (
+    spinner
+  ) {
+
     spinner.style.display =
       "block";
+
   }
+
 }
 
-function hideSpinner() {
+
+function hidePlayerSpinner() {
+
+  if (
+    !playerUiShell
+  ) {
+
+    return;
+
+  }
+
+
   const spinner =
-    playerShell?.querySelector(
+    playerUiShell.querySelector(
       '[data-role="spinner"]'
     );
 
-  if (spinner) {
+
+  if (
+    spinner
+  ) {
+
     spinner.style.display =
       "none";
+
   }
+
 }
 
-/* =========================================================
-   REQUEST FILTER
-   ========================================================= */
 
-function installRequestFilter(
-  player,
-  source
+/* =========================================================
+   ERROR OVERLAY
+========================================================= */
+
+function showPlayerErrorOverlay(
+  message
 ) {
+
   if (
-    !player ||
-    !source
+    !playerUiShell
   ) {
+
     return;
+
   }
 
-  const engine =
-    player.getNetworkingEngine?.();
 
-  if (!engine) {
+  const overlay =
+    playerUiShell.querySelector(
+      '[data-role="error"]'
+    );
+
+
+  if (
+    !overlay
+  ) {
+
     return;
+
   }
 
-  engine.registerRequestFilter(
-    (
-      requestType,
-      request
-    ) => {
-      const isManifest =
-        requestType ===
-        shaka.net.NetworkingEngine.RequestType.MANIFEST;
 
-      const isSegment =
-        requestType ===
-        shaka.net.NetworkingEngine.RequestType.SEGMENT;
+  const messageElement =
+    overlay.querySelector(
+      '[data-role="error-message"]'
+    );
 
-      if (
-        !isManifest &&
-        !isSegment
-      ) {
-        return;
-      }
 
-      const cookie =
-        String(
-          source.cookie || ""
-        ).trim();
+  if (
+    messageElement
+  ) {
 
-      const referrer =
-        String(
-          source.referrer ||
-            ""
-        ).trim();
+    messageElement.textContent =
+      message ||
+      "The channel could not be played.";
 
-      const userAgent =
-        String(
-          source.user_agent ||
-            ""
-        ).trim();
+  }
 
-      request.uris =
-        request.uris.map(
-          uri => {
-            if (
-              cookie &&
-              !uri.includes(
-                "__hdnea__="
-              )
-            ) {
-              return addCookieToUrl(
-                uri,
-                cookie
-              );
-            }
 
-            return uri;
-          }
-        );
-
-      /*
-       * Only use custom headers
-       * when supplied by your
-       * source configuration.
-       */
-      if (
-        referrer
-      ) {
-        request.headers =
-          request.headers ||
-          {};
-
-        request.headers.Referer =
-          referrer;
-      }
-
-      if (
-        userAgent
-      ) {
-        request.headers =
-          request.headers ||
-          {};
-
-        request.headers[
-          "User-Agent"
-        ] =
-          userAgent;
-      }
-    }
+  overlay.classList.add(
+    "open"
   );
+
 }
+
+
+function hidePlayerErrorOverlay() {
+
+  if (
+    !playerUiShell
+  ) {
+
+    return;
+
+  }
+
+
+  const overlay =
+    playerUiShell.querySelector(
+      '[data-role="error"]'
+    );
+
+
+  if (
+    overlay
+  ) {
+
+    overlay.classList.remove(
+      "open"
+    );
+
+  }
+
+}
+
 
 /* =========================================================
-   CLEAR KEY
-   ========================================================= */
+   RETRY
+========================================================= */
 
-function configureClearKey(
-  player,
-  source
-) {
-  const keyId =
-    String(
-      source?.key_id || ""
-    ).trim();
-
-  const key =
-    String(
-      source?.key || ""
-    ).trim();
+async function retryCurrentChannel() {
 
   if (
-    !keyId ||
-    !key
+    isPlayerRetrying ||
+    !currentChannel
   ) {
-    return;
-  }
-
-  /*
-   * ClearKey expects hexadecimal
-   * KID + KEY values.
-   *
-   * Do not blindly treat something
-   * like "https://..." as a ClearKey.
-   */
-  const isHexKid =
-    /^[0-9a-fA-F]{32}$/.test(
-      keyId
-    );
-
-  const isHexKey =
-    /^[0-9a-fA-F]{32}$/.test(
-      key
-    );
-
-  if (
-    !isHexKid ||
-    !isHexKey
-  ) {
-    return;
-  }
-
-  const clearKeys = {};
-
-  clearKeys[keyId] =
-    key;
-
-  player.configure({
-    drm: {
-      clearKeys
-    }
-  });
-}
-
-/* =========================================================
-   DESTROY PLAYER
-   ========================================================= */
-
-async function destroyPlayer() {
-  stopLiveStatusTimer();
-
-  hideSpinner();
-
-  if (
-    shakaPlayer
-  ) {
-    try {
-      await shakaPlayer.destroy();
-    } catch {
-      /* Ignore destroy errors */
-    }
-
-    shakaPlayer =
-      null;
-  }
-
-  video.pause();
-
-  video.removeAttribute(
-    "src"
-  );
-
-  try {
-    video.load();
-  } catch {
-    /* Ignore */
-  }
-
-  currentSource =
-    null;
-}
-
-/* =========================================================
-   DASH
-   ========================================================= */
-
-async function playDash(
-  source
-) {
-  if (
-    !window.shaka
-  ) {
-    throw new Error(
-      "Shaka unavailable"
-    );
-  }
-
-  if (
-    !shaka.Player.isBrowserSupported()
-  ) {
-    throw new Error(
-      "Browser unsupported"
-    );
-  }
-
-  const rawUrl =
-    getStreamUrl(
-      source
-    );
-
-  const finalUrl =
-    addCookieToUrl(
-      rawUrl,
-      source.cookie
-    );
-
-  shakaPlayer =
-    new shaka.Player();
-
-  shakaPlayer.configure({
-    streaming: {
-      bufferingGoal:
-        BUFFERING_GOAL_SECONDS,
-
-      rebufferingGoal:
-        REBUFFERING_GOAL_SECONDS,
-
-      bufferBehind:
-        BUFFER_BEHIND_SECONDS,
-
-      lowLatencyMode:
-        false,
-
-      retryParameters: {
-        timeout:
-          10000,
-
-        maxAttempts:
-          2,
-
-        baseDelay:
-          500,
-
-        backoffFactor:
-          1.4,
-
-        fuzzFactor:
-          0.2
-      }
-    }
-  });
-
-  await shakaPlayer.attach(
-    video
-  );
-
-  shakaPlayer.addEventListener(
-    "error",
-    event => {
-      console.warn(
-        "Playback error:",
-        event.detail?.code
-      );
-    }
-  );
-
-  installRequestFilter(
-    shakaPlayer,
-    source
-  );
-
-  configureClearKey(
-    shakaPlayer,
-    source
-  );
-
-  await shakaPlayer.load(
-    finalUrl
-  );
-
-  setupPlayer();
-
-  seekToConfiguredLivePosition();
-
-  video.controls =
-    false;
-
-  startLiveStatusTimer();
-
-  updateQualityOptions();
-
-  updatePlayerUi();
-
-  await video
-    .play()
-    .catch(() => {});
-}
-
-/* =========================================================
-   HLS
-   ========================================================= */
-
-async function playHls(
-  source
-) {
-  /*
-   * Prefer Shaka first.
-   *
-   * This gives Android,
-   * Windows and other MSE
-   * browsers consistent handling.
-   */
-  if (
-    window.shaka &&
-    shaka.Player.isBrowserSupported()
-  ) {
-    shakaPlayer =
-      new shaka.Player();
-
-    shakaPlayer.configure({
-      streaming: {
-        bufferingGoal:
-          BUFFERING_GOAL_SECONDS,
-
-        rebufferingGoal:
-          REBUFFERING_GOAL_SECONDS,
-
-        bufferBehind:
-          BUFFER_BEHIND_SECONDS,
-
-        retryParameters: {
-          timeout:
-            10000,
-
-          maxAttempts:
-            2,
-
-          baseDelay:
-            500,
-
-          backoffFactor:
-            1.4,
-
-          fuzzFactor:
-            0.2
-        }
-      }
-    });
-
-    await shakaPlayer.attach(
-      video
-    );
-
-    shakaPlayer.addEventListener(
-      "error",
-      event => {
-        console.warn(
-          "HLS error:",
-          event.detail?.code
-        );
-      }
-    );
-
-    installRequestFilter(
-      shakaPlayer,
-      source
-    );
-
-    configureClearKey(
-      shakaPlayer,
-      source
-    );
-
-    const rawUrl =
-      getStreamUrl(
-        source
-      );
-
-    const finalUrl =
-      addCookieToUrl(
-        rawUrl,
-        source.cookie
-      );
-
-    await shakaPlayer.load(
-      finalUrl
-    );
-
-    setupPlayer();
-
-    seekToConfiguredLivePosition();
-
-    video.controls =
-      false;
-
-    startLiveStatusTimer();
-
-    updateQualityOptions();
-
-    updatePlayerUi();
-
-    await video
-      .play()
-      .catch(() => {});
 
     return;
+
   }
 
-  /*
-   * Native HLS fallback,
-   * especially useful for
-   * Safari/iOS.
-   */
 
-  if (
-    video.canPlayType(
-      "application/vnd.apple.mpegurl"
-    )
-  ) {
-    const rawUrl =
-      getStreamUrl(
-        source
-      );
-
-    const finalUrl =
-      addCookieToUrl(
-        rawUrl,
-        source.cookie
-      );
-
-    video.src =
-      finalUrl;
-
-    video.controls =
-      false;
-
-    setupPlayer();
-
-    startLiveStatusTimer();
-
-    await waitForVideoReady();
-
-    seekNativeHls();
-
-    updatePlayerUi();
-
-    await video
-      .play()
-      .catch(() => {});
-
-    return;
-  }
-
-  throw new Error(
-    "HLS unsupported"
-  );
-}
-
-function waitForVideoReady() {
-  return new Promise(
-    resolve => {
-      if (
-        video.readyState >=
-        2
-      ) {
-        resolve();
-        return;
-      }
-
-      let done = false;
-
-      const finish =
-        () => {
-          if (done) {
-            return;
-          }
-
-          done = true;
-
-          video.removeEventListener(
-            "loadedmetadata",
-            finish
-          );
-
-          video.removeEventListener(
-            "canplay",
-            finish
-          );
-
-          resolve();
-        };
-
-      video.addEventListener(
-        "loadedmetadata",
-        finish,
-        {
-          once: true
-        }
-      );
-
-      video.addEventListener(
-        "canplay",
-        finish,
-        {
-          once: true
-        }
-      );
-
-      setTimeout(
-        finish,
-        7000
-      );
-    }
-  );
-}
-
-function seekNativeHls() {
-  try {
-    const duration =
-      video.duration;
-
-    if (
-      !Number.isFinite(
-        duration
-      ) ||
-      duration <= 0
-    ) {
-      return;
-    }
-
-    video.currentTime =
-      Math.max(
-        0,
-        duration -
-          LIVE_DELAY_SECONDS
-      );
-  } catch {
-    /* Ignore */
-  }
-}
-
-/* =========================================================
-   PLAY ONE SOURCE
-   ========================================================= */
-
-async function playSource(
-  source
-) {
-  currentSource =
-    source;
-
-  updatePlayerIdentity();
-
-  showLoading(
-    true,
-    `Connecting • ${
-      source.server || "stream"
-    }`
-  );
-
-  showSpinner();
-
-  const type =
-    getStreamType(
-      source
-    );
-
-  if (
-    type === "dash"
-  ) {
-    await playDash(
-      source
-    );
-    return;
-  }
-
-  if (
-    type === "hls"
-  ) {
-    await playHls(
-      source
-    );
-    return;
-  }
-
-  throw new Error(
-    "Unknown stream type"
-  );
-}
-
-/* =========================================================
-   MAIN FALLBACK ENGINE
-   ========================================================= */
-
-async function playChannelCandidates(
-  channel,
-  options = {}
-) {
-  if (isOpeningChannel) {
-    return;
-  }
-
-  isOpeningChannel =
+  isPlayerRetrying =
     true;
+
+
+  showPlayerLoading(
+    true
+  );
+
 
   clearPlayerError();
 
-  playbackCandidates =
-    buildPlaybackCandidates(
-      channel
+
+  try {
+
+    await destroyPlayer();
+
+
+    /*
+     * Rebuild the same channel
+     * without changing the channel data.
+     */
+
+    if (
+      lastStreamType ===
+      "dash"
+    ) {
+
+      await playDash(
+        lastStreamUrl
+      );
+
+    } else if (
+      lastStreamType ===
+      "hls"
+    ) {
+
+      await playHls(
+        lastStreamUrl
+      );
+
+    } else {
+
+      throw new Error(
+        "Unsupported stream format."
+      );
+
+    }
+
+  } catch (
+    error
+  ) {
+
+    showPlayerError(
+      error instanceof Error
+        ? error.message
+        : String(
+            error
+          )
     );
 
-  playbackIndex = 0;
+  } finally {
 
-  retryCycle = 0;
-
-  if (
-    !playbackCandidates.length
-  ) {
-    isOpeningChannel =
+    isPlayerRetrying =
       false;
 
-    showLoading(
+
+    showPlayerLoading(
       false
     );
 
-    showPlayerError(
-      "No playable source available"
-    );
-
-    return;
   }
 
-  /*
-   * Try:
-   *
-   * 6
-   * 7
-   * 8
-   * Star
-   * Sony
-   * Voot
-   * etc.
-   */
-  while (
-    retryCycle <=
-      MAX_FULL_RETRY_CYCLES
-  ) {
-    for (
-      let i = 0;
-      i <
-      playbackCandidates.length;
-      i++
-    ) {
-      playbackIndex =
-        i;
-
-      const source =
-        playbackCandidates[i];
-
-      try {
-        await destroyPlayer();
-
-        clearPlayerError();
-
-        updateLoadingStatus(
-          source,
-          i,
-          playbackCandidates.length
-        );
-
-        await playSource(
-          source
-        );
-
-        /*
-         * Playback successfully loaded.
-         */
-        isOpeningChannel =
-          false;
-
-        hideSpinner();
-
-        showLoading(
-          false
-        );
-
-        clearPlayerError();
-
-        return;
-      } catch (error) {
-        console.warn(
-          "Source failed:",
-          source.server,
-          error
-        );
-
-        await destroyPlayer();
-
-        /*
-         * Continue to next M3U.
-         */
-        if (
-          i <
-          playbackCandidates.length -
-            1
-        ) {
-          setLoadingText(
-            `Reconnecting • trying ${
-              playbackCandidates[
-                i + 1
-              ]?.server ||
-              "next source"
-            }`
-          );
-
-          await sleep(
-            RETRY_DELAY_MS
-          );
-        }
-      }
-    }
-
-    retryCycle++;
-
-    if (
-      retryCycle <=
-      MAX_FULL_RETRY_CYCLES
-    ) {
-      setLoadingText(
-        `Reconnecting • retry ${retryCycle}`
-      );
-
-      await sleep(
-        RETRY_DELAY_MS
-      );
-    }
-  }
-
-  isOpeningChannel =
-    false;
-
-  hideSpinner();
-
-  showLoading(
-    false
-  );
-
-  showPlayerError(
-    "Unable to connect to this channel"
-  );
 }
 
-/* =========================================================
-   LOADING STATUS
-   ========================================================= */
-
-function updateLoadingStatus(
-  source,
-  index,
-  total
-) {
-  const name =
-    source?.server ||
-    "stream";
-
-  setLoadingText(
-    `Connecting • ${name} • ${index + 1}/${total}`
-  );
-}
-
-function sleep(ms) {
-  return new Promise(
-    resolve =>
-      setTimeout(
-        resolve,
-        ms
-      )
-  );
-}
-
-/* =========================================================
-   OPEN CHANNEL
-   ========================================================= */
-
-async function openChannel(
-  channel
-) {
-  currentChannel =
-    channel;
-
-  const id =
-    getChannelId(
-      channel
-    );
-
-  playerSection.classList.remove(
-    "hidden"
-  );
-
-  playerEmpty.classList.add(
-    "hidden"
-  );
-
-  playingTitle.textContent =
-    getChannelName(
-      channel
-    );
-
-  playingMeta.textContent =
-    [
-      "LIVE",
-      "JIO TV",
-      getCategory(
-        channel
-      )
-    ]
-      .filter(Boolean)
-      .join(" • ");
-
-  history.replaceState(
-    null,
-    "",
-    `?id=${encodeURIComponent(
-      id
-    )}`
-  );
-
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
-
-  setupPlayer();
-
-  showLoading(
-    true,
-    "Connecting…"
-  );
-
-  await playChannelCandidates(
-    channel
-  );
-}
-
-/* =========================================================
-   MANUAL RECONNECT
-   ========================================================= */
-
-async function reconnectCurrentChannel() {
-  if (
-    !currentChannel ||
-    isRetrying
-  ) {
-    return;
-  }
-
-  isRetrying =
-    true;
-
-  clearPlayerError();
-
-  showLoading(
-    true,
-    "Reconnecting…"
-  );
-
-  try {
-    await destroyPlayer();
-
-    /*
-     * Start from the next source
-     * rather than constantly
-     * hammering the same one.
-     */
-    const candidates =
-      buildPlaybackCandidates(
-        currentChannel
-      );
-
-    if (
-      candidates.length
-    ) {
-      const currentServer =
-        currentSource?.server;
-
-      const currentIndex =
-        candidates.findIndex(
-          source =>
-            normalize(
-              source.server
-            ) ===
-            normalize(
-              currentServer
-            )
-        );
-
-      if (
-        currentIndex >=
-        0 &&
-        currentIndex <
-          candidates.length -
-            1
-      ) {
-        candidates.push(
-          ...candidates.splice(
-            0,
-            currentIndex + 1
-          )
-        );
-      }
-
-      playbackCandidates =
-        candidates;
-    }
-
-    await playChannelCandidates(
-      currentChannel,
-      {
-        manualRetry: true
-      }
-    );
-  } finally {
-    isRetrying =
-      false;
-  }
-}
 
 /* =========================================================
    LIVE STATUS
-   ========================================================= */
+========================================================= */
 
 function startLiveStatusTimer() {
+
   stopLiveStatusTimer();
+
 
   liveStatusTimer =
     setInterval(
-      updatePlayerUi,
+      () => {
+
+        updateLiveStatus();
+
+      },
       1000
     );
 
-  updatePlayerUi();
+
+  updateLiveStatus();
+
 }
 
+
 function stopLiveStatusTimer() {
+
   if (
     liveStatusTimer
   ) {
+
     clearInterval(
       liveStatusTimer
     );
 
+
     liveStatusTimer =
       null;
+
   }
+
 }
 
-/* =========================================================
-   CHANNEL JSON
-   ========================================================= */
 
-async function loadChannels(
-  silent = false
-) {
-  try {
-    const response =
-      await fetch(
-        `${CHANNELS_URL}?t=${Date.now()}`,
-        {
-          cache: "no-store"
-        }
-      );
+function updateLiveStatus() {
 
-    if (!response.ok) {
-      throw new Error(
-        `HTTP ${response.status}`
-      );
-    }
-
-    const data =
-      await response.json();
-
-    if (
-      !Array.isArray(data)
-    ) {
-      throw new Error(
-        "channels.json is not an array"
-      );
-    }
-
-    allChannels =
-      data.filter(
-        channel =>
-          channel &&
-          (
-            channel.name ||
-            channel.stream_url ||
-            channel.url ||
-            Array.isArray(
-              channel.sources
-            )
-          )
-      );
-
-    filteredChannels =
-      [...allChannels];
-
-    channelCount.textContent =
-      `${allChannels.length.toLocaleString()} channels`;
-
-    resultsCount.textContent =
-      `${allChannels.length.toLocaleString()} channels`;
-
-    buildCategories();
-    applyFilters();
-
-    /*
-     * Preserve currently playing
-     * channel after JSON refresh.
-     */
-    if (
-      currentChannel
-    ) {
-      const same =
-        allChannels.find(
-          channel =>
-            getChannelId(
-              channel
-            ) ===
-            getChannelId(
-              currentChannel
-            )
-        );
-
-      if (same) {
-        currentChannel =
-          same;
-
-        updatePlayerIdentity();
-      }
-    }
-
-    if (!silent) {
-      console.log(
-        `Loaded ${allChannels.length} channels`
-      );
-    }
-  } catch (error) {
-    console.error(
-      "Channel loading failed:",
-      error
-    );
-
-    if (!silent) {
-      channelCount.textContent =
-        "Unable to load";
-
-      resultsCount.textContent =
-        "0 channels";
-
-      channelsGrid.innerHTML = `
-        <div class="empty-grid">
-          Unable to load channels right now.
-        </div>
-      `;
-    }
-  }
-}
-
-/* =========================================================
-   AUTO REFRESH CHANNELS
-   ========================================================= */
-
-function startChannelRefresh() {
   if (
-    refreshTimer
+    !playerControls
   ) {
-    clearInterval(
-      refreshTimer
-    );
+
+    return;
+
   }
 
-  refreshTimer =
-    setInterval(
-      async () => {
-        console.log(
-          "Refreshing channels.json..."
-        );
 
-        await loadChannels(
-          true
-        );
-
-        /*
-         * Reconnect only if the
-         * current source has changed
-         * or token data changed.
-         *
-         * This avoids unnecessarily
-         * restarting playback every
-         * 10 minutes.
-         */
-        if (
-          currentChannel &&
-          !isOpeningChannel
-        ) {
-          const refreshed =
-            allChannels.find(
-              channel =>
-                getChannelId(
-                  channel
-                ) ===
-                getChannelId(
-                  currentChannel
-                )
-            );
-
-          if (
-            refreshed &&
-            JSON.stringify(
-              refreshed.sources ||
-                []
-            ) !==
-              JSON.stringify(
-                currentChannel.sources ||
-                  []
-              )
-          ) {
-            console.log(
-              "Current channel source data changed"
-            );
-
-            currentChannel =
-              refreshed;
-          }
-        }
-      },
-      CHANNEL_REFRESH_MS
+  const lagElement =
+    playerControls.querySelector(
+      '[data-role="live-lag"]'
     );
+
+
+  if (
+    !lagElement
+  ) {
+
+    return;
+
+  }
+
+
+  const lag =
+    getCurrentLiveLag();
+
+
+  if (
+    lag ===
+    null
+  ) {
+
+    lagElement.textContent =
+      `LIVE • -${LIVE_DELAY_SECONDS}s`;
+
+    return;
+
+  }
+
+
+  /*
+   * Round to whole seconds.
+   * This displays how far behind the
+   * currently published live edge playback is.
+   */
+
+  const rounded =
+    Math.max(
+      0,
+      Math.round(
+        lag
+      )
+    );
+
+
+  lagElement.textContent =
+    `LIVE • -${rounded}s`;
+
 }
+
 
 /* =========================================================
-   QUERY STRING
-   ========================================================= */
+   QUALITY
+========================================================= */
 
-function openRequestedChannel() {
-  const params =
-    new URLSearchParams(
-      window.location.search
-    );
+function updateQualityOptions() {
 
-  const id =
-    params.get("id");
+  if (
+    !qualityMenu
+  ) {
 
-  if (!id) {
     return;
+
   }
 
-  const channel =
-    allChannels.find(
-      item =>
-        getChannelId(item) ===
-        String(id)
-    );
 
-  if (!channel) {
+  if (
+    !shakaPlayer ||
+    typeof
+      shakaPlayer.getVariantTracks !==
+        "function"
+  ) {
+
+    qualityMenu.innerHTML = `
+
+      <button
+        class="gmax-quality-item active"
+        type="button"
+      >
+        Auto
+      </button>
+
+      <button
+        class="gmax-quality-item"
+        type="button"
+        disabled
+      >
+        Native HLS
+      </button>
+
+    `;
+
+
     return;
+
   }
 
-  setTimeout(
-    () => {
-      openChannel(
-        channel
+
+  const tracks =
+    shakaPlayer
+      .getVariantTracks()
+      .filter(
+        track =>
+          track &&
+          track.video &&
+          track.height
       );
-    },
-    250
-  );
+
+
+  const bestByResolution =
+    new Map();
+
+
+  for (
+    const track of tracks
+  ) {
+
+    const height =
+      Number(
+        track.height
+      );
+
+
+    const existing =
+      bestByResolution.get(
+        height
+      );
+
+
+    if (
+      !existing ||
+      Number(
+        track.bandwidth ||
+        0
+      ) >
+        Number(
+          existing.bandwidth ||
+          0
+        )
+    ) {
+
+      bestByResolution.set(
+        height,
+        track
+      );
+
+    }
+
+  }
+
+
+  const uniqueTracks =
+    [
+      ...bestByResolution.values()
+    ].sort(
+      (
+        a,
+        b
+      ) =>
+        Number(
+          b.height ||
+          0
+        ) -
+        Number(
+          a.height ||
+          0
+        )
+    );
+
+
+  qualityMenu.innerHTML = `
+
+    <button
+      class="gmax-quality-item active"
+      data-quality="auto"
+      type="button"
+    >
+      Auto
+    </button>
+
+    ${
+      uniqueTracks
+        .map(
+          track => {
+
+            const fps =
+              Number(
+                track.frameRate ||
+                0
+              );
+
+
+            return `
+
+              <button
+                class="gmax-quality-item"
+                data-quality-track="${
+                  track.id
+                }"
+                type="button"
+              >
+                ${track.height}p${
+                  fps
+                    ? ` • ${Math.round(
+                        fps
+                      )}fps`
+                    : ""
+                }
+              </button>
+
+            `;
+
+          }
+        )
+        .join(
+          ""
+        )
+    }
+
+  `;
+
+
+  qualityMenu
+    .querySelectorAll(
+      "[data-quality]"
+    )
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          event => {
+
+            event.stopPropagation();
+
+
+            if (
+              button.dataset.quality ===
+              "auto"
+            ) {
+
+              shakaPlayer.configure({
+                abr: {
+                  enabled:
+                    true
+                }
+              });
+
+
+              setActiveQualityButton(
+                button
+              );
+
+
+              qualityMenu.classList.remove(
+                "open"
+              );
+
+
+              return;
+
+            }
+
+          }
+        );
+
+      }
+    );
+
+
+  qualityMenu
+    .querySelectorAll(
+      "[data-quality-track]"
+    )
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          event => {
+
+            event.stopPropagation();
+
+
+            const trackId =
+              Number(
+                button.dataset.qualityTrack
+              );
+
+
+            const selected =
+              tracks.find(
+                track =>
+                  Number(
+                    track.id
+                  ) ===
+                  trackId
+              );
+
+
+            if (
+              !selected
+            ) {
+
+              return;
+
+            }
+
+
+            shakaPlayer.configure({
+              abr: {
+                enabled:
+                  false
+              }
+            });
+
+
+            shakaPlayer.selectVariantTrack(
+              selected,
+              true,
+              0
+            );
+
+
+            setActiveQualityButton(
+              button
+            );
+
+
+            qualityMenu.classList.remove(
+              "open"
+            );
+
+          }
+        );
+
+      }
+    );
+
 }
+
+
+function setActiveQualityButton(
+  activeButton
+) {
+
+  if (
+    !qualityMenu
+  ) {
+
+    return;
+
+  }
+
+
+  qualityMenu
+    .querySelectorAll(
+      ".gmax-quality-item"
+    )
+    .forEach(
+      item => {
+
+        item.classList.toggle(
+          "active",
+          item ===
+            activeButton
+        );
+
+      }
+    );
+
+}
+
+
+/* =========================================================
+   UI UPDATE
+========================================================= */
+
+function updatePlayerUi() {
+
+  if (
+    !playerControls
+  ) {
+
+    return;
+
+  }
+
+
+  const playButton =
+    playerControls.querySelector(
+      '[data-action="play"]'
+    );
+
+
+  const muteButton =
+    playerControls.querySelector(
+      '[data-action="mute"]'
+    );
+
+
+  const volumeInput =
+    playerControls.querySelector(
+      '[data-action="volume"]'
+    );
+
+
+  if (
+    playButton
+  ) {
+
+    playButton.textContent =
+      video.paused
+        ? "▶"
+        : "Ⅱ";
+
+  }
+
+
+  if (
+    muteButton
+  ) {
+
+    muteButton.textContent =
+      video.muted ||
+      video.volume ===
+        0
+        ? "🔇"
+        : "🔊";
+
+  }
+
+
+  if (
+    volumeInput
+  ) {
+
+    volumeInput.value =
+      String(
+        video.volume
+      );
+
+  }
+
+
+  updateLiveStatus();
+
+}
+
+
+/* =========================================================
+   INFINITE SCROLL
+========================================================= */
+
+function ensureInfiniteScrollObserver() {
+
+  if (
+    infiniteScrollObserver
+  ) {
+
+    return;
+
+  }
+
+
+  let sentinel =
+    document.getElementById(
+      "gmax-infinite-scroll-sentinel"
+    );
+
+
+  if (
+    !sentinel
+  ) {
+
+    sentinel =
+      document.createElement(
+        "div"
+      );
+
+
+    sentinel.id =
+      "gmax-infinite-scroll-sentinel";
+
+
+    sentinel.style.height =
+      "1px";
+
+
+    sentinel.style.width =
+      "100%";
+
+
+    channelsGrid.insertAdjacentElement(
+      "afterend",
+      sentinel
+    );
+
+  }
+
+
+  infiniteScrollObserver =
+    new IntersectionObserver(
+      entries => {
+
+        const entry =
+          entries[0];
+
+
+        if (
+          !entry.isIntersecting ||
+          infiniteScrollBusy ||
+          visibleCount >=
+            filteredChannels.length
+        ) {
+
+          return;
+
+        }
+
+
+        infiniteScrollBusy =
+          true;
+
+
+        visibleCount +=
+          CHANNELS_PER_PAGE;
+
+
+        renderChannels();
+
+
+        requestAnimationFrame(
+          () => {
+
+            infiniteScrollBusy =
+              false;
+
+          }
+        );
+
+      },
+      {
+        root:
+          null,
+
+        rootMargin:
+          "1000px 0px",
+
+        threshold:
+          0
+      }
+    );
+
+
+  infiniteScrollObserver.observe(
+    sentinel
+  );
+
+}
+
+
+/* =========================================================
+   HIDE OLD LOAD MORE
+========================================================= */
+
+function hideLoadMore() {
+
+  if (
+    loadMore
+  ) {
+
+    loadMore.classList.add(
+      "hidden"
+    );
+
+
+    loadMore.style.display =
+      "none";
+
+  }
+
+
+  if (
+    loadMoreButton
+  ) {
+
+    loadMoreButton.style.display =
+      "none";
+
+  }
+
+}
+
 
 /* =========================================================
    SEARCH
-   ========================================================= */
+========================================================= */
 
 searchInput.addEventListener(
   "input",
   () => {
+
     visibleCount =
       CHANNELS_PER_PAGE;
 
+
+    if (
+      infiniteScrollObserver
+    ) {
+
+      infiniteScrollObserver.disconnect();
+
+      infiniteScrollObserver =
+        null;
+
+    }
+
+
+    const oldSentinel =
+      document.getElementById(
+        "gmax-infinite-scroll-sentinel"
+      );
+
+
+    if (
+      oldSentinel
+    ) {
+
+      oldSentinel.remove();
+
+    }
+
+
     applyFilters();
+
   }
 );
 
+
+/* =========================================================
+   URL ID
+========================================================= */
+
+function getRequestedChannelId() {
+
+  return new URLSearchParams(
+    window.location.search
+  ).get(
+    "id"
+  );
+
+}
+
+
+function openRequestedChannel() {
+
+  const id =
+    getRequestedChannelId();
+
+
+  if (
+    !id
+  ) {
+
+    return;
+
+  }
+
+
+  const channel =
+    allChannels.find(
+      item =>
+        String(
+          item.id ??
+          item.tvgId
+        ) ===
+        String(
+          id
+        )
+    );
+
+
+  if (
+    !channel
+  ) {
+
+    console.warn(
+      "Channel ID not found:",
+      id
+    );
+
+
+    return;
+
+  }
+
+
+  setTimeout(
+    () => {
+
+      openChannel(
+        channel, 0
+      );
+
+    },
+    200
+  );
+
+}
+
+
 /* =========================================================
    CLOSE PLAYER
-   ========================================================= */
+========================================================= */
 
 closePlayerButton.addEventListener(
   "click",
   async () => {
+
     await destroyPlayer();
 
-    currentChannel =
-      null;
 
-    playbackCandidates =
-      [];
+    video.pause();
 
-    playbackIndex =
-      0;
+
+    video.removeAttribute(
+      "src"
+    );
+
+
+    video.load();
+
 
     playerSection.classList.add(
       "hidden"
     );
 
+
     playerEmpty.classList.remove(
       "hidden"
     );
 
+
     clearPlayerError();
 
-    showLoading(
-      false
-    );
+
+    currentChannel =
+      null;
+
+
+    lastStreamUrl =
+      "";
+
+
+    lastStreamType =
+      "";
+
+
+    const info =
+      playerSection.querySelector(
+        ".gmax-player-info"
+      );
+
+
+    if (
+      info
+    ) {
+
+      info.remove();
+
+    }
+
+
+    const cleanUrl =
+      window.location.pathname;
+
 
     history.replaceState(
       null,
       "",
-      window.location.pathname
-    );
-  }
-);
-
-/* =========================================================
-   VIDEO ERROR HANDLING
-   ========================================================= */
-
-video.addEventListener(
-  "error",
-  () => {
-    if (
-      !currentChannel ||
-      isRetrying
-    ) {
-      return;
-    }
-
-    /*
-     * Automatically move to
-     * the next available source.
-     */
-    if (
-      !isOpeningChannel
-    ) {
-      reconnectCurrentChannel();
-    }
-  }
-);
-
-video.addEventListener(
-  "waiting",
-  () => {
-    if (
-      currentChannel &&
-      !video.paused
-    ) {
-      showLoading(
-        true,
-        "Reconnecting…"
-      );
-    }
-  }
-);
-
-video.addEventListener(
-  "playing",
-  () => {
-    showLoading(
-      false
+      cleanUrl
     );
 
-    hideSpinner();
-
-    clearPlayerError();
-
-    showControlsTemporarily();
   }
 );
 
-/* =========================================================
-   VISIBILITY / MOBILE RESUME
-   ========================================================= */
 
-document.addEventListener(
-  "visibilitychange",
-  () => {
-    if (
-      document.visibilityState ===
-        "visible" &&
-      currentChannel &&
-      video.paused
-    ) {
-      /*
-       * Android browsers may pause
-       * media when the page loses
-       * visibility.
-       *
-       * Don't restart automatically
-       * while the user intentionally
-       * paused the stream.
-       */
-      return;
+/* =========================================================
+   DYNAMIC M3U PARSER
+========================================================= */
+
+function parseM3U(text) {
+  const lines = text.split('\n');
+  const channels = [];
+  let currentChannel = {};
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    if (line.startsWith('#EXTINF:')) {
+      // New channel block
+      currentChannel = {};
+      
+      // Extract tvg-id
+      const idMatch = line.match(/tvg-id="([^"]+)"/);
+      if (idMatch) currentChannel.id = idMatch[1];
+      
+      // Extract tvg-name
+      const nameMatch = line.match(/tvg-name="([^"]+)"/);
+      if (nameMatch) currentChannel.name = nameMatch[1];
+      
+      // Extract tvg-logo
+      const logoMatch = line.match(/tvg-logo="([^"]+)"/);
+      if (logoMatch) currentChannel.logo = logoMatch[1];
+      
+      // Extract group-title
+      const groupMatch = line.match(/group-title="([^"]+)"/);
+      if (groupMatch) currentChannel.group = groupMatch[1];
+      
+      // Fallback name if tvg-name is missing
+      if (!currentChannel.name && line.includes(',')) {
+        currentChannel.name = line.substring(line.indexOf(',') + 1).trim();
+      }
+    } 
+    else if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=')) {
+      const keyStr = line.split('=')[1];
+      if (keyStr && keyStr.includes(':')) {
+        const parts = keyStr.split(':');
+        // Ensure whitespace is trimmed to prevent DRM crash
+        currentChannel.key_id = parts[0].trim();
+        currentChannel.key = parts[1].trim();
+      }
+    }
+    else if (line.startsWith('#EXTHTTP:')) {
+      try {
+        const jsonStr = line.substring(9);
+        const httpProps = JSON.parse(jsonStr);
+        if (httpProps.cookie) {
+          currentChannel.cookie = httpProps.cookie;
+        }
+      } catch (e) {
+        console.warn("Failed to parse EXTHTTP JSON", e);
+      }
+    }
+    else if (!line.startsWith('#')) {
+      // It's the URL
+      currentChannel.stream_url = line;
+      channels.push(currentChannel);
+      currentChannel = {}; // Reset for next
     }
   }
-);
+
+  return channels;
+}
+
 
 /* =========================================================
-   INITIALIZATION
-   ========================================================= */
+   LOAD CHANNELS
+========================================================= */
+
+async function loadChannels() {
+  try {
+    const response = await fetch(CHANNELS_URL, { cache: "no-store" });
+
+    if (!response.ok) {
+      throw new Error(`channels.json returned HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!Array.isArray(data)) {
+      throw new Error("channels.json is not an array.");
+    }
+
+    allChannels = data.filter(
+      channel => channel && (channel.name || channel.stream_url || channel.url)
+    );
+
+    filteredChannels = [...allChannels];
+
+    channelCount.textContent = `${allChannels.length.toLocaleString()} channels`;
+    resultsCount.textContent = `${allChannels.length.toLocaleString()} channels`;
+
+    buildCategories();
+    applyFilters();
+    openRequestedChannel();
+
+  } catch (error) {
+    console.error("Channel loading failed:", error);
+    channelCount.textContent = "Failed to load";
+    resultsCount.textContent = "0 channels";
+    channelsGrid.innerHTML = `
+      <div class="empty-grid">
+        <strong>Failed to load Jio TV channels</strong>
+        <br><br>
+        <span>${escapeHtml(error instanceof Error ? error.message : String(error))}</span>
+      </div>
+    `;
+  }
+}
+
+/* =========================================================
+   START
+========================================================= */
 
 document.addEventListener(
   "DOMContentLoaded",
-  async () => {
+  () => {
+
     hideLoadMore();
 
-    setupPlayer();
+    loadChannels();
 
-    await loadChannels();
-
-    startChannelRefresh();
-
-    openRequestedChannel();
-
-    /*
-     * Periodically update the
-     * player UI.
-     */
-    setInterval(
-      updatePlayerUi,
-      1000
-    );
   }
 );
