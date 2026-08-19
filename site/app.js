@@ -16,7 +16,17 @@ const CHANNELS_PER_PAGE = 60;
  * Live edge safety offset (seconds behind real-time).
  * Slightly higher = fewer freezes on unstable networks.
  */
-const LIVE_DELAY_SECONDS = 20;
+const LIVE_DELAY_SECONDS = 12;
+
+/*
+ * If actual playback falls this many seconds further behind
+ * LIVE_DELAY_SECONDS than intended, nudge playbackRate up to
+ * catch back up instead of permanently trailing the live edge.
+ * (Fixes: "loaded/buffered part is far ahead of the playing part".)
+ */
+const LIVE_CATCHUP_TRIGGER_SECONDS = 3;
+const LIVE_CATCHUP_HARD_RESYNC_SECONDS = 15;
+const LIVE_CATCHUP_PLAYBACK_RATE = 1.12;
 
 /*
  * Buffer targets (seconds of media held in memory).
@@ -537,6 +547,41 @@ function getTargetLiveTime() {
     range.end -
       LIVE_DELAY_SECONDS
   );
+
+}
+
+
+/*
+ * Recover from drift instead of trailing the live edge forever.
+ * Any stall/pause used to permanently increase the gap between the
+ * loaded buffer and the actual playhead, because nothing ever sped
+ * playback back up. This runs once a second from updateLiveStatus().
+ */
+function applyLiveCatchup(lag) {
+
+  if (!video || video.paused || video.seeking) {
+    return;
+  }
+
+  // Way too far behind (segments may be close to expiring from the
+  // DVR window) — hard resync instead of a slow catch-up.
+  if (lag > LIVE_DELAY_SECONDS + LIVE_CATCHUP_HARD_RESYNC_SECONDS) {
+    seekToConfiguredLivePosition();
+    video.playbackRate = 1;
+    return;
+  }
+
+  if (lag > LIVE_DELAY_SECONDS + LIVE_CATCHUP_TRIGGER_SECONDS) {
+    if (video.playbackRate !== LIVE_CATCHUP_PLAYBACK_RATE) {
+      video.playbackRate = LIVE_CATCHUP_PLAYBACK_RATE;
+    }
+    return;
+  }
+
+  // Back within the target window — return to normal speed.
+  if (video.playbackRate !== 1) {
+    video.playbackRate = 1;
+  }
 
 }
 
@@ -1407,11 +1452,17 @@ function getShakaStreamingConfig() {
     },
     abr: {
       enabled: true,
-      // Don't drop quality too aggressively (causes rebuffer loops)
       useNetworkInformation: true,
-      switchInterval: 4,
+      // Re-evaluate less often so it doesn't flap between renditions.
+      switchInterval: 8,
+      // NOTE: downgradeTarget must be >= upgradeTarget, otherwise ABR
+      // downgrades the instant a track uses >70% of estimated bandwidth
+      // but only allows upgrading once there's >85% headroom — a gap
+      // that causes constant down/up thrashing and keeps playback
+      // stuck on a lower rendition even on a good connection. This was
+      // inverted; restored to Shaka's sane defaults.
       bandwidthUpgradeTarget: 0.85,
-      bandwidthDowngradeTarget: 0.7,
+      bandwidthDowngradeTarget: 0.95,
       restrictions: {
         minWidth: 0,
         minHeight: 0,
@@ -3737,6 +3788,8 @@ function createPlayerControls(
         seekToConfiguredLivePosition()
       ) {
 
+        video.playbackRate = 1;
+
         video.play().catch(
           () => {}
         );
@@ -4847,6 +4900,9 @@ function updateLiveStatus() {
     return;
 
   }
+
+
+  applyLiveCatchup(lag);
 
 
   /*
