@@ -60,7 +60,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/Star_Gold_HD_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=021bd4635e8653bca6830adaca183b14:035ec746d6ee0d39cb7cb15963da8424
 #EXTVLCOPT:http-user-agent=Droovy
-#EXTHTTP:{"cookie": "__hdnea__=st=1787158812~exp=1787180412~acl=/*~hmac=980c7ad50d141f8c72b018e3b122cd5e4e29d0e080b3259c80a2b5616cc9872d"}
+#EXTHTTP:{"cookie": "__hdnea__=st=1787146023~exp=1787149623~acl=/bpk-tv/Travel_XP_HD_BTS/WDVLive/*~hmac=00f306145dffbb3f4a218ffc0cec3c46ff4044a583d12e12988a0dfd02880dbe"}
 https://jiotvpllive.cdn.jio.com/bpk-tv/Travel_XP_HD_BTS/WDVLive/index.mpd
 
 #EXTINF:-1 tvg-id="165" tvg-name="Zee Cinema HD" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/ZeeCinemaHD.png" group-title="Movies",Zee Cinema HD
