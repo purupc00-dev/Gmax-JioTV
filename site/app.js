@@ -1211,7 +1211,8 @@ function totalSourceCount(channel) {
 function setLoadingSourceMessage(index, total) {
   const n = index + 1;
   const t = Math.max(total, n);
-  const msg = `Reconnecting... (${n}/${t})`;
+  // If it's the first try, say Connecting. Otherwise say Reconnecting.
+  const msg = index === 0 ? `Connecting... (${n}/${t})` : `Reconnecting... (${n}/${t})`;
 
   // Update new internal reconnect badge
   if (playerUiShell) {
@@ -1230,7 +1231,7 @@ function setLoadingSourceMessage(index, total) {
   }
 }
 
-// SILENT RECONNECT — never show raw error text to the user
+// SILENT RECONNECT — tries all sources, shows error if all fail
 async function handleStreamError(err) {
   console.warn("Silent reconnect:", err);
   if (reconnectInFlight || !currentChannel) return;
@@ -1239,35 +1240,54 @@ async function handleStreamError(err) {
   try {
     const total = totalSourceCount(currentChannel);
     const maxIdx = total - 1;
-    let nextIdx = currentFallbackIndex + 1;
 
-    while (nextIdx <= maxIdx) {
+    if (currentFallbackIndex < maxIdx) {
+      // Try next fallback
+      const nextIdx = currentFallbackIndex + 1;
       setLoadingSourceMessage(nextIdx, total);
       showPlayerLoading(true);
       hidePlayerErrorOverlay();
-
-      try {
-        await openChannel(currentChannel, nextIdx, true);
-        return;
-      } catch (error) {
-        console.warn("Fallback stream failed:", nextIdx, error);
-        nextIdx += 1;
-      }
+      await openChannel(currentChannel, nextIdx);
+    } else {
+      // WE RAN OUT OF FALLBACKS! Show the actual error overlay.
+      showPlayerLoading(false);
+      const errorMsg = `All ${total} sources failed to play.`;
+      showPlayerErrorOverlay(errorMsg);
+      await destroyPlayer();
     }
-
-    showPlayerLoading(false);
-    showPlayerErrorOverlay(
-      "Not played. None of the available streams could be played."
-    );
   } finally {
     reconnectInFlight = false;
   }
 }
+
+function showPlayerError(message) {
+  // Never expose raw bug text — always silent reconnect UI
+  handleStreamError(message);
+}
+
+
+function clearPlayerError() {
+
+  playerError.textContent =
+    "";
+
+
+  playerError.classList.add(
+    "hidden"
+  );
+
+
+  hidePlayerErrorOverlay();
+
+}
+
+
 /* =========================================================
    OPEN CHANNEL
 ========================================================= */
+
 async function openChannel(
-  channel, fallbackIdx = 0, reconnectAttempt = false
+  channel, fallbackIdx = 0
 ) {
 
   currentChannel =
@@ -1414,10 +1434,6 @@ async function openChannel(
       error
     );
 
-
-    if (reconnectAttempt) {
-      throw error;
-    }
 
     showPlayerError(
       error instanceof Error
@@ -4792,79 +4808,16 @@ async function retryCurrentChannel() {
 
   }
 
-
-  isPlayerRetrying =
-    true;
-
-
-  showPlayerLoading(
-    true
-  );
-
-
+  isPlayerRetrying = true;
+  showPlayerLoading(true);
   clearPlayerError();
 
-
   try {
-
-    await destroyPlayer();
-
-
-    /*
-     * Rebuild the same channel
-     * without changing the channel data.
-     */
-
-    if (
-      lastStreamType ===
-      "dash"
-    ) {
-
-      await playDash(
-        lastStreamUrl
-      );
-
-    } else if (
-      lastStreamType ===
-      "hls"
-    ) {
-
-      await playHls(
-        lastStreamUrl
-      );
-
-    } else {
-
-      throw new Error(
-        "Unsupported stream format."
-      );
-
-    }
-
-  } catch (
-    error
-  ) {
-
-    showPlayerError(
-      error instanceof Error
-        ? error.message
-        : String(
-            error
-          )
-    );
-
+    // Restart from source 1 (index 0)
+    await openChannel(currentChannel, 0);
   } finally {
-
-    isPlayerRetrying =
-      false;
-
-
-    showPlayerLoading(
-      false
-    );
-
+    isPlayerRetrying = false;
   }
-
 }
 
 
@@ -5864,3 +5817,4 @@ document.addEventListener(
 
   }
 );
+]
