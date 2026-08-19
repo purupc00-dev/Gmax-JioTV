@@ -1239,53 +1239,35 @@ async function handleStreamError(err) {
   try {
     const total = totalSourceCount(currentChannel);
     const maxIdx = total - 1;
+    let nextIdx = currentFallbackIndex + 1;
 
-    if (currentFallbackIndex < maxIdx) {
-      const nextIdx = currentFallbackIndex + 1;
+    while (nextIdx <= maxIdx) {
       setLoadingSourceMessage(nextIdx, total);
       showPlayerLoading(true);
       hidePlayerErrorOverlay();
-      await openChannel(currentChannel, nextIdx);
-    } else {
-      setLoadingSourceMessage(0, total);
-      showPlayerLoading(true);
-      hidePlayerErrorOverlay();
-      await new Promise((r) => setTimeout(r, 2500));
-      await openChannel(currentChannel, 0);
+
+      try {
+        await openChannel(currentChannel, nextIdx, true);
+        return;
+      } catch (error) {
+        console.warn("Fallback stream failed:", nextIdx, error);
+        nextIdx += 1;
+      }
     }
+
+    showPlayerLoading(false);
+    showPlayerErrorOverlay(
+      "Not played. None of the available streams could be played."
+    );
   } finally {
     reconnectInFlight = false;
   }
 }
-
-function showPlayerError(message) {
-  // Never expose raw bug text — always silent reconnect UI
-  handleStreamError(message);
-}
-
-
-function clearPlayerError() {
-
-  playerError.textContent =
-    "";
-
-
-  playerError.classList.add(
-    "hidden"
-  );
-
-
-  hidePlayerErrorOverlay();
-
-}
-
-
 /* =========================================================
    OPEN CHANNEL
 ========================================================= */
-
 async function openChannel(
-  channel, fallbackIdx = 0
+  channel, fallbackIdx = 0, reconnectAttempt = false
 ) {
 
   currentChannel =
@@ -1432,6 +1414,10 @@ async function openChannel(
       error
     );
 
+
+    if (reconnectAttempt) {
+      throw error;
+    }
 
     showPlayerError(
       error instanceof Error
