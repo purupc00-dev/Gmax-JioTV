@@ -164,6 +164,8 @@ def parse_m3u_file(file_path: Path):
             identifier = str(ch.get("id") or normalize_name(ch.get("name"))).strip()
             if identifier:
                 ch["source_m3u"] = file_path.name
+                # Preserve original playlist position (lower = higher in list)
+                ch["_pos"] = len(channels)
                 channels[identifier] = ch
 
         i = max(j, i + 1)
@@ -239,9 +241,31 @@ def merge_channels():
         channel["sources"] = sources
         channel["fallbacks"] = sources[1:]
         channel["source_count"] = len(sources)
+        # Keep original position from highest-priority M3U (jtvplus6 first)
+        channel["sort_order"] = channel.pop("_pos", 10_000_000)
+        # Also try position from primary source metadata
+        for s in sources:
+            if s.get("m3u", "").lower() == "jtvplus6.m3u":
+                channel["sort_order"] = min(channel.get("sort_order", 10_000_000), channel.get("sort_order", 0))
+                break
         unique.append(channel)
 
-    unique.sort(key=lambda c: normalize_name(c.get("name")))
+    # jtvplus6 primary first (by original playlist order), then other primaries, then name
+    def sort_key(c):
+        m = str(c.get("source_m3u") or "").lower()
+        if "jtvplus6" in m:
+            tier = 0
+        elif "jtvplus7" in m:
+            tier = 1
+        elif "jtvplus8" in m:
+            tier = 2
+        elif "jtv" in m:
+            tier = 3
+        else:
+            tier = 4
+        return (tier, int(c.get("sort_order") or 10_000_000), normalize_name(c.get("name")))
+
+    unique.sort(key=sort_key)
     return m3u_files, unique
 
 
