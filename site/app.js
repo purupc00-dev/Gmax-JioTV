@@ -61,7 +61,6 @@ const channelsGrid = document.getElementById("channels-grid");
 const categoryList = document.getElementById("category-list");
 const searchInput = document.getElementById("search-input");
 const channelCount = document.getElementById("channel-count");
-const sourceCount = document.getElementById("source-count");
 const resultsCount = document.getElementById("results-count");
 const loadMore = document.getElementById("load-more");
 const loadMoreButton = document.getElementById("load-more-button");
@@ -178,16 +177,6 @@ function saveFavorites() {
   localStorage.setItem("gmax-jiotv-favorites", JSON.stringify([...favorites]));
 }
 
-function getUniqueM3uCount(channels = allChannels) {
-  const set = new Set();
-  for (const channel of channels) {
-    for (const source of getChannelSources(channel)) {
-      if (source?.m3u) set.add(source.m3u);
-    }
-    if (channel?.source_m3u) set.add(channel.source_m3u);
-  }
-  return set.size;
-}
 
 function resetInfiniteScroll() {
   if (infiniteScrollObserver) {
@@ -1097,7 +1086,6 @@ async function loadChannels(initial = false) {
 
     channelCount.textContent = `${allChannels.length.toLocaleString()} channels`;
     resultsCount.textContent = `${allChannels.length.toLocaleString()} channels`;
-    sourceCount.textContent = `${getUniqueM3uCount(allChannels)} M3Us loaded`;
 
     buildCategories();
     renderRecentChannels();
@@ -1111,7 +1099,6 @@ async function loadChannels(initial = false) {
     console.warn("Channel refresh failed:", error);
     if (initial) {
       channelCount.textContent = "Unable to load";
-      sourceCount.textContent = "Retrying…";
       resultsCount.textContent = "0 channels";
       channelsGrid.innerHTML = `<div class="empty-grid"><strong>Live channels are reconnecting…</strong><br><br><span>Please try again in a moment.</span></div>`;
     }
