@@ -1175,10 +1175,23 @@ async function destroyPlayer() {
 ========================================================= */
 
 function showPlayerLoading(state) {
-  // Single loading UI only (#player-loading) — no second ring
+  // Keep external loading UI
   if (playerLoading) {
     playerLoading.classList.toggle("hidden", !state);
   }
+  
+  // Show dedicated Reconnecting orange overlay when falling back
+  if (playerUiShell) {
+    const reconnectOverlay = playerUiShell.querySelector('[data-role="reconnect-overlay"]');
+    if (reconnectOverlay) {
+      if (state && reconnectInFlight) {
+        reconnectOverlay.style.display = "flex";
+      } else {
+        reconnectOverlay.style.display = "none";
+      }
+    }
+  }
+
   hidePlayerSpinner();
   if (playerError) {
     playerError.classList.add("hidden");
@@ -1196,14 +1209,25 @@ function totalSourceCount(channel) {
 }
 
 function setLoadingSourceMessage(index, total) {
+  const n = index + 1;
+  const t = Math.max(total, n);
+  const msg = `Reconnecting... (${n}/${t})`;
+
+  // Update new internal reconnect badge
+  if (playerUiShell) {
+    const reconnectText = playerUiShell.querySelector('[data-role="reconnect-text"]');
+    if (reconnectText) {
+      reconnectText.textContent = msg;
+    }
+  }
+
+  // Update existing span as fallback
   const loadingSpan =
     document.querySelector("#player-loading-text") ||
     document.querySelector("#player-loading span");
-  if (!loadingSpan) return;
-  const n = index + 1;
-  const t = Math.max(total, n);
-  loadingSpan.textContent =
-    `Reconnecting… Source ${n} of ${t} loaded`;
+  if (loadingSpan) {
+    loadingSpan.textContent = msg;
+  }
 }
 
 // SILENT RECONNECT — never show raw error text to the user
@@ -1972,6 +1996,12 @@ function injectCinematicPlayerStyles() {
 
       height:
         100%;
+      
+      max-width:
+        100%;
+      
+      max-height:
+        100%;
 
       object-fit:
         contain;
@@ -2301,6 +2331,33 @@ function injectCinematicPlayerStyles() {
 
     }
 
+    .gmax-reconnect-overlay {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      border: 1px solid rgba(255, 152, 0, 0.3);
+      padding: 6px 14px;
+      border-radius: 20px;
+      color: #ff9800;
+      font: 600 13px/1 system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 50;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    
+    .gmax-reconnect-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 152, 0, 0.3);
+      border-top-color: #ff9800;
+      border-radius: 50%;
+      animation: gmaxSpin 0.8s linear infinite;
+    }
+
 
     .gmax-player-controls {
 
@@ -2378,11 +2435,14 @@ function injectCinematicPlayerStyles() {
 
     .gmax-player-button {
 
-      width:
+      min-width:
         38px;
 
       height:
         38px;
+
+      padding:
+        0 8px;
 
       border:
         0;
@@ -2425,6 +2485,12 @@ function injectCinematicPlayerStyles() {
         0
         auto;
 
+    }
+    
+    #gmax-aspect-btn {
+      width: auto;
+      padding: 0 12px;
+      font-size: 13px;
     }
 
 
@@ -3246,15 +3312,6 @@ function injectCinematicPlayerStyles() {
       .gmax-related-card {
         flex-basis: 120px;
       }
-
-      #gmax-aspect-btn {
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.02em;
-        width: auto;
-        min-width: 44px;
-        padding: 0 8px;
-      }
     }
 
     /* Extra-small / Android TV lean-back */
@@ -3452,6 +3509,16 @@ function createPlayerControls(
     top
   );
 
+  // Dedicated Silent Reconnect Overlay
+  const reconnectOverlay = document.createElement("div");
+  reconnectOverlay.className = "gmax-reconnect-overlay";
+  reconnectOverlay.dataset.role = "reconnect-overlay";
+  reconnectOverlay.style.display = "none";
+  reconnectOverlay.innerHTML = `
+    <span class="gmax-reconnect-spinner"></span>
+    <span data-role="reconnect-text">Reconnecting...</span>
+  `;
+  shell.appendChild(reconnectOverlay);
 
   // No second spinner here — #player-loading already has one.
   // A hidden marker keeps showPlayerSpinner/hidePlayerSpinner safe.
@@ -3610,7 +3677,7 @@ function createPlayerControls(
       title="Fit / Fill / Stretch"
       id="gmax-aspect-btn"
     >
-      Fit
+      Fit ⛶
     </button>
 
     <button
@@ -3685,9 +3752,9 @@ function createPlayerControls(
   // (same idea as 16:9 / zoom controls on reference players)
   const aspectButton = controls.querySelector('[data-action="aspect"]');
   const aspectModes = [
-    { fit: "contain", label: "16:9", title: "Normal / Fit" },
-    { fit: "cover", label: "Zoom", title: "Fill / Zoom" },
-    { fit: "fill", label: "Stretch", title: "Stretch" },
+    { fit: "contain", label: "Fit ⛶", title: "Normal / Fit" },
+    { fit: "cover", label: "Zoom ⛶", title: "Fill / Zoom" },
+    { fit: "fill", label: "Stretch ⛶", title: "Stretch" },
   ];
   let currentAspect = 0;
   video.style.objectFit = aspectModes[0].fit;
