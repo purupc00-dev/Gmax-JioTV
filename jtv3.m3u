@@ -60,7 +60,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/Star_Gold_HD_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=021bd4635e8653bca6830adaca183b14:035ec746d6ee0d39cb7cb15963da8424
 #EXTVLCOPT:http-user-agent=Droovy
-#EXTHTTP:{"cookie": "__hdnea__=st=1787164091~exp=1787167691~acl=/bpk-tv/Travel_XP_HD_BTS/WDVLive/*~hmac=deef497306d6998556c43d2ce73dfc7c42345497b7afe2298e303294e743d4fb"}
+#EXTHTTP:{"cookie": "__hdnea__=st=1787162432~exp=1787184032~acl=/*~hmac=b3f2293d92b1af7b9355cc9e84a150b12d4c1e9d69bbfb72058a6f0e07fab578"}
 https://jiotvpllive.cdn.jio.com/bpk-tv/Travel_XP_HD_BTS/WDVLive/index.mpd
 
 #EXTINF:-1 tvg-id="165" tvg-name="Zee Cinema HD" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/ZeeCinemaHD.png" group-title="Movies",Zee Cinema HD
@@ -4047,7 +4047,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/Star_Gold_Select_HD_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=e705c9330a935a119021d97c7677ce62:dd306a57de1715b0e1256d5c1737f485
 #EXTVLCOPT:http-user-agent=Droovy
-#EXTHTTP:{"cookie": "__hdnea__=st=1787146512~exp=1787168112~acl=/bpk-tv/Star_Movies_BTS/WDVLive/*~hmac=58ba12b5ae3a6c866247c644d0f67f48fc1a07e4857a2e994ce2ce9053c2bd3d"}
+#EXTHTTP:{"cookie": "__hdnea__=st=1787168417~exp=1787190017~acl=/bpk-tv/Star_Movies_BTS/WDVLive/*~hmac=19246b83511bf523b24ab0b4dfd96678a1ecef60cbfa93bd84c6f661bcfe9d5c"}
 https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Movies_BTS/WDVLive/index.mpd
 
 #EXTINF:-1 tvg-id="1117" tvg-name="Suvarna" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Suvarna.png" group-title="Kannada",Suvarna
@@ -8826,7 +8826,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/Vijay_Takkar_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=4b7d579e28d45041ba78c3a92f0acc92:fbf33acfca489b1354955cbfb09570b5
 #EXTVLCOPT:http-user-agent=Droovy
-#EXTHTTP:{"cookie": "__hdnea__=st=1787146517~exp=1787168117~acl=/bpk-tv/Star_Movies_Select_BTS/WDVLive/*~hmac=7b9d656e6e8806ac3888c17cd839197c637efe6dbe223b1fbdc9ac4a1744a279"}
+#EXTHTTP:{"cookie": "__hdnea__=st=1787168422~exp=1787190022~acl=/bpk-tv/Star_Movies_Select_BTS/WDVLive/*~hmac=11554f24d240586d2363e7dc71c3d293325c8093dfe26baa0013ab7797fb8760"}
 https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Movies_Select_BTS/WDVLive/index.mpd
 
 #EXTINF:-1 tvg-id="3279" tvg-name="OM TV" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/OM_TV.png" group-title="English",OM TV
