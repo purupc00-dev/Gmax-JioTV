@@ -1803,6 +1803,7 @@ function seekNativeHlsToDelayedLive() {
 
     }
 
+
     const target =
       Math.max(
         0,
@@ -3239,8 +3240,8 @@ function injectCinematicPlayerStyles() {
       .gmax-player-shell {
         border-radius: 10px;
         min-height: 0;
-        aspect-ratio: 16 / 9;
-        max-height: min(56vw, 70vh);
+        aspect-ratio: 16 / 10;
+        max-height: min(68vw, 72vh);
         position: relative;
         overflow: hidden;
       }
@@ -3306,6 +3307,10 @@ function injectCinematicPlayerStyles() {
         touch-action: manipulation;
       }
 
+      .gmax-orientation-button {
+        display: none;
+      }
+
       .gmax-go-live {
         padding: 8px 10px;
         font-size: 10px;
@@ -3319,12 +3324,18 @@ function injectCinematicPlayerStyles() {
     /* Extra-small / Android TV lean-back */
     @media (max-width: 480px) {
       .gmax-player-shell {
-        aspect-ratio: 16 / 9;
-        max-height: 48vh;
+        aspect-ratio: 16 / 10;
+        max-height: min(68vw, 72vh);
         border-radius: 8px;
       }
       .gmax-player-controls {
         padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      }
+    }
+
+    @media (max-width: 700px) and (pointer: coarse) {
+      .gmax-orientation-button {
+        display: grid;
       }
     }
 
@@ -3683,6 +3694,15 @@ function createPlayerControls(
     </button>
 
     <button
+      class="gmax-player-button gmax-orientation-button"
+      data-action="orientation"
+      type="button"
+      title="Rotate to landscape"
+    >
+      ↔
+    </button>
+
+    <button
       class="gmax-player-button"
       data-action="fullscreen"
       type="button"
@@ -3742,6 +3762,11 @@ function createPlayerControls(
   const fullscreenButton =
     controls.querySelector(
       '[data-action="fullscreen"]'
+    );
+
+  const orientationButton =
+    controls.querySelector(
+      '[data-action="orientation"]'
     );
 
 
@@ -3898,6 +3923,19 @@ function createPlayerControls(
 
     }
   );
+
+  if (orientationButton) {
+    orientationButton.addEventListener(
+      "click",
+      async event => {
+
+        event.stopPropagation();
+
+        await toggleLandscapeOrientation();
+
+      }
+    );
+  }
 
 
   retryButton.addEventListener(
@@ -4484,6 +4522,58 @@ function showPlayerControlsTemporarily() {
 }
 
 
+async function toggleLandscapeOrientation() {
+
+  if (
+    !playerUiShell
+  ) {
+
+    return;
+
+  }
+
+  try {
+
+    if (
+      !document.fullscreenElement &&
+      playerUiShell.requestFullscreen
+    ) {
+
+      await playerUiShell
+        .requestFullscreen()
+        .catch(
+          () => {}
+        );
+
+    }
+
+    if (
+      screen.orientation &&
+      screen.orientation.lock
+    ) {
+
+      await screen.orientation
+        .lock("landscape")
+        .catch(
+          () => {}
+        );
+
+    }
+
+  } catch (
+    error
+  ) {
+
+    console.warn(
+      "Landscape orientation lock failed:",
+      error
+    );
+
+  }
+
+}
+
+
 function toggleFullscreen() {
 
   if (
@@ -4498,6 +4588,17 @@ function toggleFullscreen() {
   if (
     document.fullscreenElement
   ) {
+
+    if (
+      screen.orientation &&
+      screen.orientation.unlock
+    ) {
+
+      try {
+        screen.orientation.unlock();
+      } catch (_) {}
+
+    }
 
     document
       .exitFullscreen()
