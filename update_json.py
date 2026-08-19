@@ -1,33 +1,28 @@
 #!/usr/bin/env python3
-"""Refresh paired source M3Us, then rebuild site/channels.json.
+"""Refresh every paired playlist updater, then rebuild channels.json once."""
 
-A source updater is executed only when a Python file and an M3U with the same
-stem exist in the repository, e.g. sony.py -> sony.m3u. Utility scripts are
-not executed unless they have a matching M3U. Failed source updaters are
-reported but do not prevent a merge of the successfully refreshed playlists.
-"""
+from __future__ import annotations
 
 import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-SELF_NAMES = {"update_json.py", "merge_m3u.py"}
+SELF_NAMES = {"update_json.py", "merge_m3u.py", "update_and_merge.py"}
 TIMEOUT_SECONDS = 180
 
 
-def discover_pairs():
-    pairs = []
-    m3u_names = {path.stem.lower() for path in ROOT.glob("*.m3u")}
-    for script in sorted(ROOT.glob("*.py"), key=lambda p: p.name.lower()):
-        if script.name.lower() in {name.lower() for name in SELF_NAMES}:
-            continue
-        if script.stem.lower() in m3u_names:
-            pairs.append(script)
-    return pairs
+def discover_pairs() -> list[Path]:
+    m3u_stems = {path.stem.lower() for path in ROOT.glob("*.m3u")}
+    return [
+        script
+        for script in sorted(ROOT.glob("*.py"), key=lambda p: p.name.lower())
+        if script.name.lower() not in {name.lower() for name in SELF_NAMES}
+        and script.stem.lower() in m3u_stems
+    ]
 
 
-def run_updater(script: Path):
+def run_updater(script: Path) -> bool:
     print(f"[UPDATE] {script.name}")
     try:
         result = subprocess.run(
@@ -37,36 +32,41 @@ def run_updater(script: Path):
             capture_output=True,
             timeout=TIMEOUT_SECONDS,
         )
-        if result.stdout.strip():
-            print(result.stdout.strip())
-        if result.returncode != 0:
-            if result.stderr.strip():
-                print(result.stderr.strip())
-            print(f"[WARN] {script.name} failed with exit code {result.returncode}; continuing.")
-            return False
-        return True
     except Exception as exc:
-        print(f"[WARN] {script.name} failed: {exc}; continuing.")
+        print(f"[WARN] {script.name}: {exc}")
         return False
 
+    if result.stdout.strip():
+        print(result.stdout.strip())
 
-def main():
+    if result.returncode != 0:
+        if result.stderr.strip():
+            print(result.stderr.strip())
+        print(f"[WARN] {script.name} failed with exit code {result.returncode}; continuing.")
+        return False
+
+    return True
+
+
+def main() -> None:
     pairs = discover_pairs()
-    print(f"Found {len(pairs)} paired source updaters.")
+    print(f"[SOURCES] Found {len(pairs)} paired playlist updaters.")
+
+    successes = 0
     for script in pairs:
-        run_updater(script)
+        if run_updater(script):
+            successes += 1
 
-    # Import after source updaters have completed so the merger sees fresh M3Us.
-    from merge_m3u import merge_channels, OUTPUT_JSON_PATH
+    from merge_m3u import OUTPUT_JSON_PATH, merge_channels, write_channels
+
     m3u_files, channels = merge_channels()
-    OUTPUT_JSON_PATH.parent.mkdir(parents=True, exist_ok=True)
-    import json
-    OUTPUT_JSON_PATH.write_text(
-        json.dumps(channels, indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
+    write_channels(channels)
 
-    print(f"[MERGE] {len(channels)} channels from {len(m3u_files)} M3Us -> {OUTPUT_JSON_PATH}")
+    print(
+        f"[DONE] {successes}/{len(pairs)} updaters succeeded; "
+        f"merged {len(channels)} channels from {len(m3u_files)} M3Us."
+    )
+    print(f"[DONE] JSON rewritten: {OUTPUT_JSON_PATH}")
 
 
 if __name__ == "__main__":
