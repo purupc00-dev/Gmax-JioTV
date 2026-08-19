@@ -2,17 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0a0d18">
   <title>Gmax-JioTV</title>
   <link rel="stylesheet" href="./style.css">
-  <!-- Shaka Player -->
   <script src="https://cdn.jsdelivr.net/npm/shaka-player@5.1.0/dist/shaka-player.compiled.js" defer></script>
 </head>
 
 <body>
   <div class="page">
-    <!-- HEADER -->
     <header class="header">
       <div class="brand">
         <div class="brand-icon">📺</div>
@@ -22,12 +20,12 @@
         </div>
       </div>
       <div class="header-right">
+        <span id="source-count">0 M3Us loaded</span>
         <span id="channel-count">0 channels</span>
         <span class="live-pill">● LIVE</span>
       </div>
     </header>
 
-    <!-- PLAYER -->
     <section id="player-section" class="player-section hidden">
       <div class="player-topbar">
         <div>
@@ -39,11 +37,20 @@
       </div>
 
       <div class="video-container">
-        <video id="video" controls playsinline preload="metadata"></video>
-        <div id="player-loading" class="player-overlay hidden">
+        <video id="video" playsinline webkit-playsinline preload="metadata"></video>
+
+        <div id="aspect-controls" class="aspect-controls" aria-label="Video sizing">
+          <button type="button" data-aspect="normal" class="aspect-button active">Normal</button>
+          <button type="button" data-aspect="contain" class="aspect-button">Fit</button>
+          <button type="button" data-aspect="fill" class="aspect-button">Fill</button>
+          <button type="button" data-aspect="stretch" class="aspect-button">Stretch</button>
+        </div>
+
+        <div id="player-loading" class="player-overlay hidden" aria-live="polite">
           <div class="spinner"></div>
           <span id="player-loading-text">Connecting to live stream…</span>
         </div>
+
         <div id="player-empty" class="player-empty">
           <div class="empty-icon">📺</div>
           <div class="empty-title">Select a channel</div>
@@ -52,9 +59,20 @@
       </div>
 
       <div id="player-error" class="player-error hidden"></div>
+      <div id="source-status" class="source-status" aria-live="polite"></div>
     </section>
 
-    <!-- SEARCH -->
+    <section id="recent-section" class="recent-section hidden">
+      <div class="section-heading-row recent-heading">
+        <div>
+          <div class="section-kicker">YOUR TV</div>
+          <h2>Recently Watched</h2>
+        </div>
+        <div class="recent-hint">Swipe →</div>
+      </div>
+      <div id="recent-grid" class="recent-grid"></div>
+    </section>
+
     <section class="toolbar">
       <div class="search-wrapper">
         <span class="search-icon">🔎</span>
@@ -62,13 +80,11 @@
       </div>
     </section>
 
-    <!-- CATEGORIES -->
     <section class="category-section">
       <div class="section-label">CATEGORIES</div>
       <div id="category-list" class="category-list"></div>
     </section>
 
-    <!-- CHANNEL SECTION -->
     <section class="channels-section">
       <div class="section-heading-row">
         <div>
@@ -83,15 +99,12 @@
       </div>
     </section>
 
-    <!-- FOOTER -->
     <footer class="footer">
       <span>Gmax-JioTV</span>
       <span>Powered by GmaxHub</span>
     </footer>
   </div>
 
-  <!-- Canonical application logic -->
   <script src="./app.js" defer></script>
-
 </body>
 </html>
