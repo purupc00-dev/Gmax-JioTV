@@ -12,15 +12,20 @@ const CHANNELS_PER_PAGE = 60;
  * Keep playback approximately this far behind
  * the current live edge.
  */
-const LIVE_DELAY_SECONDS = 15;
+/*
+ * Live edge safety offset (seconds behind real-time).
+ * Slightly higher = fewer freezes on unstable networks.
+ */
+const LIVE_DELAY_SECONDS = 20;
 
 /*
- * Give Shaka some breathing room.
- * This is buffering, not a fake playback timer.
+ * Buffer targets (seconds of media held in memory).
+ * Higher bufferingGoal = less rebuffering, more startup delay.
+ * Tuned for Jio live DASH (short segments, token CDNs).
  */
-const BUFFERING_GOAL_SECONDS = 25;
-const REBUFFERING_GOAL_SECONDS = 6;
-const BUFFER_BEHIND_SECONDS = 45;
+const BUFFERING_GOAL_SECONDS = 40;
+const REBUFFERING_GOAL_SECONDS = 12;
+const BUFFER_BEHIND_SECONDS = 60;
 
 
 /* =========================================================
@@ -1378,6 +1383,54 @@ async function openChannel(
 }
 
 
+
+function getShakaStreamingConfig() {
+  return {
+    streaming: {
+      bufferingGoal: BUFFERING_GOAL_SECONDS,
+      rebufferingGoal: REBUFFERING_GOAL_SECONDS,
+      bufferBehind: BUFFER_BEHIND_SECONDS,
+      // Prefer stability over chasing live edge
+      lowLatencyMode: false,
+      inaccurateManifestTolerance: 2,
+      segmentPrefetchLimit: 3,
+      retryParameters: {
+        maxAttempts: 5,
+        baseDelay: 400,
+        backoffFactor: 1.6,
+        timeout: 20000,
+      },
+      stallEnabled: true,
+      stallThreshold: 1.5,
+      stallSkip: 0.1,
+      jumpLargeGaps: true,
+    },
+    abr: {
+      enabled: true,
+      // Don't drop quality too aggressively (causes rebuffer loops)
+      useNetworkInformation: true,
+      switchInterval: 4,
+      bandwidthUpgradeTarget: 0.85,
+      bandwidthDowngradeTarget: 0.7,
+      restrictions: {
+        minWidth: 0,
+        minHeight: 0,
+      },
+    },
+    manifest: {
+      retryParameters: {
+        maxAttempts: 4,
+        baseDelay: 300,
+        backoffFactor: 1.5,
+        timeout: 15000,
+      },
+      dash: {
+        ignoreMinBufferTime: true,
+      },
+    },
+  };
+}
+
 /* =========================================================
    DASH
 ========================================================= */
@@ -1411,19 +1464,7 @@ async function playDash(
   shakaPlayer =
     new shaka.Player();
 
-
-  shakaPlayer.configure({
-    streaming: {
-      bufferingGoal:
-        BUFFERING_GOAL_SECONDS,
-
-      rebufferingGoal:
-        REBUFFERING_GOAL_SECONDS,
-
-      bufferBehind:
-        BUFFER_BEHIND_SECONDS
-    }
-  });
+  shakaPlayer.configure(getShakaStreamingConfig());
 
 
   await shakaPlayer.attach(
@@ -1500,6 +1541,13 @@ async function playDash(
   setupCinematicPlayer();
 
   updateQualityOptions();
+  // Refresh quality list when variants become available
+  try {
+    shakaPlayer.addEventListener("trackschanged", () => updateQualityOptions());
+    shakaPlayer.addEventListener("adaptation", () => updateQualityOptions());
+  } catch (_) {}
+  setTimeout(() => updateQualityOptions(), 800);
+  setTimeout(() => updateQualityOptions(), 2500);
 
   startLiveStatusTimer();
 
@@ -1570,19 +1618,7 @@ async function playHls(
     shakaPlayer =
       new shaka.Player();
 
-
-    shakaPlayer.configure({
-      streaming: {
-        bufferingGoal:
-          BUFFERING_GOAL_SECONDS,
-
-        rebufferingGoal:
-          REBUFFERING_GOAL_SECONDS,
-
-        bufferBehind:
-          BUFFER_BEHIND_SECONDS
-      }
-    });
+    shakaPlayer.configure(getShakaStreamingConfig());
 
 
     await shakaPlayer.attach(
@@ -1637,6 +1673,12 @@ async function playHls(
     setupCinematicPlayer();
 
     updateQualityOptions();
+    try {
+      shakaPlayer.addEventListener("trackschanged", () => updateQualityOptions());
+      shakaPlayer.addEventListener("adaptation", () => updateQualityOptions());
+    } catch (_) {}
+    setTimeout(() => updateQualityOptions(), 800);
+    setTimeout(() => updateQualityOptions(), 2500);
 
     startLiveStatusTimer();
 
@@ -4832,124 +4874,60 @@ function updateLiveStatus() {
    QUALITY
 ========================================================= */
 
+function formatBandwidthMbps(bw) {
+  const n = Number(bw) || 0;
+  if (n <= 0) return "";
+  const mbps = n / 1e6;
+  if (mbps >= 10) return `${Math.round(mbps)} Mbps`;
+  if (mbps >= 1) return `${mbps.toFixed(1)} Mbps`;
+  return `${Math.round(n / 1e3)} Kbps`;
+}
+
 function updateQualityOptions() {
 
-  if (
-    !qualityMenu
-  ) {
-
+  if (!qualityMenu) {
     return;
-
   }
-
 
   if (
     !shakaPlayer ||
-    typeof
-      shakaPlayer.getVariantTracks !==
-        "function"
+    typeof shakaPlayer.getVariantTracks !== "function"
   ) {
-
     qualityMenu.innerHTML = `
-
-      <button
-        class="gmax-quality-item active"
-        type="button"
-      >
-        Auto
-      </button>
-
-      <button
-        class="gmax-quality-item"
-        type="button"
-        disabled
-      >
-        Native HLS
-      </button>
-
+      <button class="gmax-quality-item active" type="button">Auto</button>
     `;
-
-
     return;
-
   }
 
+  // Real tracks from the loaded stream (DASH/HLS variants)
+  let tracks = shakaPlayer.getVariantTracks().filter((track) => {
+    if (!track) return false;
+    // Accept any video variant with height or bandwidth
+    const h = Number(track.height) || 0;
+    const bw = Number(track.bandwidth) || 0;
+    return h > 0 || bw > 0;
+  });
 
-  const tracks =
-    shakaPlayer
-      .getVariantTracks()
-      .filter(
-        track =>
-          track &&
-          track.video &&
-          track.height
-      );
-
-
-  const bestByResolution =
-    new Map();
-
-
-  for (
-    const track of tracks
-  ) {
-
-    const height =
-      Number(
-        track.height
-      );
-
-
-    const existing =
-      bestByResolution.get(
-        height
-      );
-
-
-    if (
-      !existing ||
-      Number(
-        track.bandwidth ||
-        0
-      ) >
-        Number(
-          existing.bandwidth ||
-          0
-        )
-    ) {
-
-      bestByResolution.set(
-        height,
-        track
-      );
-
-    }
-
+  // Keep distinct height+bandwidth combos (like 576p 2.7Mbps + 576p 1.7Mbps)
+  const seen = new Set();
+  const uniqueTracks = [];
+  for (const track of tracks) {
+    const h = Number(track.height) || 0;
+    const bw = Number(track.bandwidth) || 0;
+    const key = `${h}|${Math.round(bw / 50000)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    uniqueTracks.push(track);
   }
 
+  uniqueTracks.sort((a, b) => {
+    const dh = (Number(b.height) || 0) - (Number(a.height) || 0);
+    if (dh !== 0) return dh;
+    return (Number(b.bandwidth) || 0) - (Number(a.bandwidth) || 0);
+  });
 
-  const uniqueTracks =
-    [
-      ...bestByResolution.values()
-    ].sort(
-      (
-        a,
-        b
-      ) =>
-        Number(
-          b.height ||
-          0
-        ) -
-        Number(
-          a.height ||
-          0
-        )
-    );
-
-
-  // Real resolutions only (from Shaka variant tracks — not fake labels)
   qualityMenu.innerHTML = `
-
+    <div style="padding:6px 10px 4px;font:700 11px/1 system-ui;opacity:.55;letter-spacing:.04em;">Resolution</div>
     <button
       class="gmax-quality-item active"
       data-quality="auto"
@@ -4957,46 +4935,23 @@ function updateQualityOptions() {
     >
       Auto
     </button>
-
-    ${
-      uniqueTracks
-        .map(
-          track => {
-
-            const fps =
-              Number(
-                track.frameRate ||
-                0
-              );
-
-
-            return `
-
-              <button
-                class="gmax-quality-item"
-                data-quality-track="${
-                  track.id
-                }"
-                type="button"
-              >
-                ${track.height}p${
-                  fps
-                    ? ` • ${Math.round(
-                        fps
-                      )}fps`
-                    : ""
-                }
-              </button>
-
-            `;
-
-          }
-        )
-        .join(
-          ""
-        )
-    }
-
+    ${uniqueTracks
+      .map((track) => {
+        const h = Number(track.height) || 0;
+        const label = h > 0 ? `${h}p` : "Video";
+        const bwLabel = formatBandwidthMbps(track.bandwidth);
+        const text = bwLabel ? `${label} (${bwLabel})` : label;
+        return `
+          <button
+            class="gmax-quality-item"
+            data-quality-track="${track.id}"
+            type="button"
+          >
+            ${text}
+          </button>
+        `;
+      })
+      .join("")}
   `;
 
 
