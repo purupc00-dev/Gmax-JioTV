@@ -257,14 +257,57 @@ function getStreamUrl(channel) {
 }
 
 
+/* Main categories only (~10) — matches GMAXHUB-style filters */
+const MAIN_CATEGORIES = [
+  "Entertainment",
+  "Movies",
+  "Sports",
+  "News",
+  "Kids",
+  "Music",
+  "Information",
+  "Religious",
+];
+
+function normalizeCategory(group, name) {
+  const text = `${group || ""} ${name || ""}`.toLowerCase();
+
+  if (/sport|cricket|football|fifa|tennis|kabaddi|nba|nfl|racing|formula/.test(text))
+    return "Sports";
+  if (/news|headline|breaking|current affairs/.test(text))
+    return "News";
+  if (/movie|cinema|film|bollywood|hollywood|picture/.test(text))
+    return "Movies";
+  if (/kid|cartoon|animation|junior|children|nick|hungama/.test(text))
+    return "Kids";
+  if (/music|mtv|radio|songs|fm /.test(text))
+    return "Music";
+  if (/relig|devotional|spiritual|bhakti|temple|islam|quran|church|gospel|hindu|sikh/.test(text))
+    return "Religious";
+  if (/info|document|education|knowledge|science|tech|history|nature|travel|lifestyle|business|weather|health|food/.test(text))
+    return "Information";
+  return "Entertainment";
+}
+
 function getCategory(channel) {
+  const raw = channel?.category || channel?.group || "";
+  if (MAIN_CATEGORIES.includes(raw)) return raw;
+  return normalizeCategory(raw, channel?.name || "");
+}
 
-  return (
-    channel?.category ||
-    channel?.group ||
-    "Entertainment"
-  );
+function decodeHtmlEntities(str) {
+  if (!str) return "";
+  const t = document.createElement("textarea");
+  t.innerHTML = String(str);
+  return t.value;
+}
 
+function isPrimaryJioSource(channel) {
+  const m3u = String(channel?.source_m3u || "").toLowerCase();
+  const server = String(
+    (channel?.sources && channel.sources[0] && channel.sources[0].m3u) || ""
+  ).toLowerCase();
+  return m3u.includes("jtvplus6") || server.includes("jtvplus6");
 }
 
 
@@ -532,81 +575,15 @@ function toggleFavorite(
 
 
 /* =========================================================
-   CATEGORIES
+   CATEGORIES — fixed main list only (no 80+ group titles)
 ========================================================= */
 
 function buildCategories() {
-
-  const categories =
-    new Set();
-
-
-  for (
-    const channel of allChannels
-  ) {
-
-    const category =
-      getCategory(
-        channel
-      );
-
-
-    if (
-      category
-    ) {
-
-      categories.add(
-        category
-      );
-
-    }
-
+  categoryList.innerHTML = "";
+  categoryList.appendChild(createCategoryButton("ALL", true));
+  for (const category of MAIN_CATEGORIES) {
+    categoryList.appendChild(createCategoryButton(category, false));
   }
-
-
-  const sorted =
-    [
-      ...categories
-    ].sort(
-      (
-        a,
-        b
-      ) =>
-        String(a).localeCompare(
-          String(b)
-        )
-    );
-
-
-  categoryList.innerHTML =
-    "";
-
-
-  const allButton =
-    createCategoryButton(
-      "ALL",
-      true
-    );
-
-
-  categoryList.appendChild(
-    allButton
-  );
-
-
-  for (
-    const category of sorted
-  ) {
-
-    categoryList.appendChild(
-      createCategoryButton(
-        category,
-        false
-      )
-    );
-
-  }
-
 }
 
 
@@ -1097,34 +1074,16 @@ async function destroyPlayer() {
    ORIGINAL PLAYER MESSAGE FUNCTIONS
 ========================================================= */
 
-function showPlayerLoading(
-  state
-) {
-
-  if (
-    playerLoading
-  ) {
-
-    playerLoading.classList.toggle(
-      "hidden",
-      !state
-    );
-
+function showPlayerLoading(state) {
+  // Single loading UI only (#player-loading) — no second ring
+  if (playerLoading) {
+    playerLoading.classList.toggle("hidden", !state);
   }
-
-
-  if (
-    state
-  ) {
-
-    showPlayerSpinner();
-
-  } else {
-
-    hidePlayerSpinner();
-
+  hidePlayerSpinner();
+  if (playerError) {
+    playerError.classList.add("hidden");
+    playerError.textContent = "";
   }
-
 }
 
 function totalSourceCount(channel) {
@@ -2395,7 +2354,9 @@ function injectCinematicPlayerStyles() {
     .gmax-player-shell.gmax-controls-hidden
       .gmax-player-controls,
     .gmax-player-shell.gmax-controls-hidden
-      .gmax-player-top {
+      .gmax-player-top,
+    .gmax-player-shell.gmax-controls-hidden
+      .gmax-player-gradient {
 
       opacity:
         0;
@@ -2403,6 +2364,10 @@ function injectCinematicPlayerStyles() {
       pointer-events:
         none;
 
+    }
+
+    .gmax-player-gradient {
+      transition: opacity .25s ease;
     }
 
 
@@ -3483,20 +3448,18 @@ function createPlayerControls(
   );
 
 
+  // No second spinner here — #player-loading already has one.
+  // A hidden marker keeps showPlayerSpinner/hidePlayerSpinner safe.
   const spinner =
     document.createElement(
       "div"
     );
-
-
   spinner.className =
     "gmax-spinner";
-
-
   spinner.dataset.role =
     "spinner";
-
-
+  spinner.style.display =
+    "none";
   shell.appendChild(
     spinner
   );
@@ -3713,16 +3676,20 @@ function createPlayerControls(
       '[data-action="retry"]'
     );
 
-  // Aspect: Fit (contain) → Fill (cover) → Stretch (fill)
+  // Single aspect button: Normal → Zoom → Stretch → Normal…
+  // (same idea as 16:9 / zoom controls on reference players)
   const aspectButton = controls.querySelector('[data-action="aspect"]');
   const aspectModes = [
-    { fit: "contain", label: "Fit" },
-    { fit: "cover", label: "Fill" },
-    { fit: "fill", label: "Stretch" },
+    { fit: "contain", label: "16:9", title: "Normal / Fit" },
+    { fit: "cover", label: "Zoom", title: "Fill / Zoom" },
+    { fit: "fill", label: "Stretch", title: "Stretch" },
   ];
   let currentAspect = 0;
   video.style.objectFit = aspectModes[0].fit;
-  if (aspectButton) aspectButton.textContent = aspectModes[0].label;
+  if (aspectButton) {
+    aspectButton.textContent = aspectModes[0].label;
+    aspectButton.title = aspectModes[0].title;
+  }
 
   aspectButton.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -3730,6 +3697,7 @@ function createPlayerControls(
     const mode = aspectModes[currentAspect];
     video.style.objectFit = mode.fit;
     aspectButton.textContent = mode.label;
+    aspectButton.title = mode.title;
   });
 
 
@@ -4644,60 +4612,22 @@ function handlePlayerKeyboard(
 ========================================================= */
 
 function showPlayerSpinner() {
-
-  if (
-    !playerUiShell
-  ) {
-
-    return;
-
+  // Only the HTML overlay spinner is shown (avoids double rings)
+  if (playerLoading) {
+    playerLoading.classList.remove("hidden");
   }
-
-
-  const spinner =
-    playerUiShell.querySelector(
-      '[data-role="spinner"]'
-    );
-
-
-  if (
-    spinner
-  ) {
-
-    spinner.style.display =
-      "block";
-
+  if (playerUiShell) {
+    const spinner = playerUiShell.querySelector('[data-role="spinner"]');
+    if (spinner) spinner.style.display = "none";
   }
-
 }
 
 
 function hidePlayerSpinner() {
-
-  if (
-    !playerUiShell
-  ) {
-
-    return;
-
+  if (playerUiShell) {
+    const spinner = playerUiShell.querySelector('[data-role="spinner"]');
+    if (spinner) spinner.style.display = "none";
   }
-
-
-  const spinner =
-    playerUiShell.querySelector(
-      '[data-role="spinner"]'
-    );
-
-
-  if (
-    spinner
-  ) {
-
-    spinner.style.display =
-      "none";
-
-  }
-
 }
 
 
@@ -5105,6 +5035,31 @@ function updateQualityOptions() {
     );
 
 
+  // Alternate M3U sources as extra "quality / server" options
+  const sourceList =
+    (currentChannel &&
+      Array.isArray(currentChannel.sources) &&
+      currentChannel.sources) ||
+    [];
+
+  const sourceButtons = sourceList
+    .map((s, i) => {
+      const label = (s.server || s.m3u || `Source ${i + 1}`)
+        .replace(/\.m3u8?$/i, "");
+      const active =
+        i === currentFallbackIndex ? " active" : "";
+      return `
+        <button
+          class="gmax-quality-item${active}"
+          data-source-index="${i}"
+          type="button"
+        >
+          ${escapeHtml(label)}
+        </button>
+      `;
+    })
+    .join("");
+
   qualityMenu.innerHTML = `
 
     <button
@@ -5154,7 +5109,24 @@ function updateQualityOptions() {
         )
     }
 
+    ${
+      sourceList.length > 1
+        ? `<div class="gmax-quality-sep" style="padding:6px 10px;opacity:.5;font-size:10px;font-weight:700;letter-spacing:.06em;">SOURCES</div>${sourceButtons}`
+        : ""
+    }
+
   `;
+
+  qualityMenu.querySelectorAll("[data-source-index]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const idx = Number(button.dataset.sourceIndex);
+      qualityMenu.classList.remove("open");
+      if (currentChannel && Number.isFinite(idx)) {
+        openChannel(currentChannel, idx);
+      }
+    });
+  });
 
 
   qualityMenu
@@ -5875,14 +5847,46 @@ async function loadChannels() {
       throw new Error("channels.json is not an array.");
     }
 
-    allChannels = data.filter(
-      channel => channel && (channel.name || channel.stream_url || channel.url)
-    );
+    allChannels = data
+      .filter(
+        (channel) =>
+          channel &&
+          (channel.name || channel.stream_url || channel.url)
+      )
+      .map((ch) => {
+        // Decode &amp; etc. and force main category
+        const name = decodeHtmlEntities(ch.name || "");
+        const category = normalizeCategory(
+          ch.category || ch.group || "",
+          name
+        );
+        return { ...ch, name, category };
+      });
+
+    // jtvplus6 (best) first, then other Jio, then everything else
+    allChannels.sort((a, b) => {
+      const rank = (c) => {
+        const m = String(c.source_m3u || "").toLowerCase();
+        if (m.includes("jtvplus6")) return 0;
+        if (m.includes("jtvplus7")) return 1;
+        if (m.includes("jtvplus8")) return 2;
+        if (m.includes("jtv")) return 3;
+        return 4;
+      };
+      const d = rank(a) - rank(b);
+      if (d !== 0) return d;
+      return String(a.name || "").localeCompare(String(b.name || ""));
+    });
 
     filteredChannels = [...allChannels];
 
-    channelCount.textContent = `${allChannels.length.toLocaleString()} channels`;
-    resultsCount.textContent = `${allChannels.length.toLocaleString()} channels`;
+    // Header: only channel count (no "0 M3Us loaded")
+    if (channelCount) {
+      channelCount.textContent = `${allChannels.length.toLocaleString()} channels`;
+    }
+    if (resultsCount) {
+      resultsCount.textContent = `${allChannels.length.toLocaleString()} channels`;
+    }
 
     buildCategories();
     applyFilters();
