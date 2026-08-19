@@ -5863,10 +5863,14 @@ async function loadChannels() {
         return { ...ch, name, category };
       });
 
-    // jtvplus6 (best) first, then other Jio, then everything else
+    // jtvplus6 first (original playlist order), then 7/8, then other M3Us at the bottom
     allChannels.sort((a, b) => {
       const rank = (c) => {
-        const m = String(c.source_m3u || "").toLowerCase();
+        const m = String(
+          c.source_m3u ||
+            (c.sources && c.sources[0] && c.sources[0].m3u) ||
+            ""
+        ).toLowerCase();
         if (m.includes("jtvplus6")) return 0;
         if (m.includes("jtvplus7")) return 1;
         if (m.includes("jtvplus8")) return 2;
@@ -5875,6 +5879,9 @@ async function loadChannels() {
       };
       const d = rank(a) - rank(b);
       if (d !== 0) return d;
+      const oa = Number(a.sort_order);
+      const ob = Number(b.sort_order);
+      if (Number.isFinite(oa) && Number.isFinite(ob) && oa !== ob) return oa - ob;
       return String(a.name || "").localeCompare(String(b.name || ""));
     });
 
