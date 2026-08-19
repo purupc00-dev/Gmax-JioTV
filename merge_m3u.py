@@ -1,68 +1,105 @@
 #!/usr/bin/env python3
-"""Merge every root-level M3U into one dynamic channels.json.
+"""Merge every root-level M3U into one deduplicated channels.json.
 
-Priority for the primary source is:
-  jtvplus6 -> jtvplus7 -> jtvplus8 -> every other M3U (alphabetical)
+Priority is deterministic:
+  1. jtvplus6.m3u
+  2. jtvplus7.m3u
+  3. jtvplus8.m3u
+  4. special/owned playlists (Star*, Sony, Voot, Zee, Sun, Waves, Hotstar)
+  5. every remaining M3U alphabetically
 
-Each channel gets a `sources` array containing every playable source found
-across every M3U, plus the legacy `fallbacks` field for compatibility.
+For a channel found in more than one playlist, the first source in that order
+becomes primary and every other playable source is preserved in ``sources``.
+The JSON file is fully rewritten every run, so stale entries are removed.
 """
 
+from __future__ import annotations
+
+import html
 import json
-import os
 import re
 from pathlib import Path
-from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
 
 ROOT = Path(__file__).resolve().parent
 OUTPUT_JSON_PATH = ROOT / "site" / "channels.json"
 
-PRIMARY_ORDER = ["jtvplus6.m3u", "jtvplus7.m3u", "jtvplus8.m3u"]
-IGNORED_M3U_NAMES = {
-    "channels.m3u",
-}
+PRIMARY_ORDER = [
+    "jtvplus6.m3u",
+    "jtvplus7.m3u",
+    "jtvplus8.m3u",
+]
+
+SPECIAL_ORDER = [
+    "Star.m3u",
+    "Star2.m3u",
+    "Star3.m3u",
+    "sony.m3u",
+    "voot.m3u",
+    "zee.m3u",
+    "sun.m3u",
+    "waves.m3u",
+    "hotstar.m3u",
+]
+
+IGNORED_M3U_NAMES: set[str] = set()
+
+ATTR_RE = re.compile(r'([A-Za-z0-9_-]+)="([^"]*)"')
 
 
-def normalize_name(value: str) -> str:
-    value = str(value or "").strip().lower()
-    value = re.sub(r"\s+", " ", value)
-    value = re.sub(r"[^a-z0-9+& ]+", "", value)
-    return value
+def clean(value: object) -> str:
+    return html.unescape(str(value or "")).strip()
 
 
-def source_rank(filename: str):
+def normalize_name(value: object) -> str:
+    text = clean(value).lower()
+    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"[^a-z0-9+& ]+", "", text)
+    return text.strip()
+
+
+def normalize_id(value: object) -> str:
+    text = clean(value).lower()
+    return re.sub(r"\s+", "", text)
+
+
+def source_rank(filename: str) -> tuple[int, int | str]:
     lower = filename.lower()
-    if lower in [x.lower() for x in PRIMARY_ORDER]:
-        return (0, [x.lower() for x in PRIMARY_ORDER].index(lower))
-    return (1, lower)
+    primary = [x.lower() for x in PRIMARY_ORDER]
+    special = [x.lower() for x in SPECIAL_ORDER]
+
+    if lower in primary:
+        return (0, primary.index(lower))
+    if lower in special:
+        return (1, special.index(lower))
+    return (2, lower)
 
 
-def find_m3u_files():
-    files = []
-    for path in ROOT.glob("*.m3u"):
-        if path.name.lower() in IGNORED_M3U_NAMES:
-            continue
-        files.append(path)
+def find_m3u_files() -> list[Path]:
+    files = [
+        path
+        for path in ROOT.iterdir()
+        if path.is_file()
+        and path.suffix.lower() in {".m3u", ".m3u8"}
+        and path.name.lower() not in {x.lower() for x in IGNORED_M3U_NAMES}
+    ]
     return sorted(files, key=lambda p: source_rank(p.name))
 
 
-def parse_attributes(extinf_line: str):
-    attrs = {}
-    for key in ("tvg-id", "tvg-name", "tvg-logo", "group-title", "tvg-language", "tvg-country"):
-        match = re.search(rf'{re.escape(key)}="([^"]*)"', extinf_line, re.IGNORECASE)
-        attrs[key] = match.group(1).strip() if match else ""
-    display_name = extinf_line.split(",", 1)[1].strip() if "," in extinf_line else ""
+def parse_attributes(line: str) -> tuple[dict[str, str], str]:
+    attrs = {key.lower(): clean(value) for key, value in ATTR_RE.findall(line)}
+    display_name = clean(line.split(",", 1)[1]) if "," in line else ""
     return attrs, display_name
 
 
-def parse_m3u_file(file_path: Path):
-    channels = {}
+def parse_m3u_file(file_path: Path) -> list[dict]:
+    channels: list[dict] = []
+
     try:
-        content = file_path.read_text(encoding="utf-8", errors="ignore")
-    except OSError:
+        lines = file_path.read_text(encoding="utf-8", errors="ignore").splitlines()
+    except OSError as exc:
+        print(f"[WARN] Cannot read {file_path.name}: {exc}")
         return channels
 
-    lines = [line.rstrip("\r") for line in content.splitlines()]
     i = 0
     while i < len(lines):
         line = lines[i].strip()
@@ -71,88 +108,95 @@ def parse_m3u_file(file_path: Path):
             continue
 
         attrs, display_name = parse_attributes(line)
-        block_lines = []
+        block: list[str] = []
         j = i + 1
         while j < len(lines) and not lines[j].strip().startswith("#EXTINF:"):
-            block_lines.append(lines[j].strip())
+            block.append(lines[j].strip())
             j += 1
 
-        ch = {
+        channel = {
             "id": attrs.get("tvg-id", ""),
             "name": attrs.get("tvg-name", "") or display_name,
             "logo": attrs.get("tvg-logo", ""),
             "group": attrs.get("group-title", "") or "Entertainment",
-            "category": attrs.get("group-title", "") or "Entertainment",
         }
-        if attrs.get("tvg-language"):
-            ch["language"] = attrs["tvg-language"]
-        if attrs.get("tvg-country"):
-            ch["country"] = attrs["tvg-country"]
 
-        for raw in block_lines:
+        if attrs.get("tvg-language"):
+            channel["language"] = attrs["tvg-language"]
+        if attrs.get("tvg-country"):
+            channel["country"] = attrs["tvg-country"]
+
+        for raw in block:
+            if not raw:
+                continue
+
             if raw.startswith("#KODIPROP:inputstream.adaptive.license_key="):
-                key_value = raw.split("=", 1)[1].strip()
-                if ":" in key_value:
-                    key_id, key = key_value.split(":", 1)
-                    ch["key_id"] = key_id.strip()
-                    ch["key"] = key.strip()
+                value = raw.split("=", 1)[1].strip()
+                if ":" in value:
+                    key_id, key = value.split(":", 1)
+                    channel["key_id"] = key_id.strip()
+                    channel["key"] = key.strip()
+
             elif raw.startswith("#EXTHTTP:"):
                 payload = raw[len("#EXTHTTP:"):].strip()
                 try:
                     data = json.loads(payload)
-                    if isinstance(data, dict):
-                        if data.get("cookie"):
-                            ch["cookie"] = str(data["cookie"]).strip()
-                        if data.get("referrer"):
-                            ch["referrer"] = str(data["referrer"]).strip()
-                        if data.get("user-agent"):
-                            ch["user_agent"] = str(data["user-agent"]).strip()
-                except Exception:
-                    pass
+                except json.JSONDecodeError:
+                    data = {}
+                if isinstance(data, dict):
+                    for field in ("cookie", "referrer", "user-agent"):
+                        if data.get(field):
+                            channel[{"user-agent": "user_agent"}.get(field, field)] = clean(data[field])
+
             elif raw.startswith("#EXTVLCOPT:http-referrer="):
-                ch["referrer"] = raw.split("=", 1)[1].strip()
+                channel["referrer"] = clean(raw.split("=", 1)[1])
+
             elif raw.startswith("#EXTVLCOPT:http-user-agent="):
-                ch["user_agent"] = raw.split("=", 1)[1].strip()
-            elif raw and not raw.startswith("#") and raw.startswith(("http://", "https://")):
-                ch["stream_url"] = raw
+                channel["user_agent"] = clean(raw.split("=", 1)[1])
+
+            elif raw.startswith(("http://", "https://")):
+                channel["stream_url"] = raw
                 break
 
-        if ch.get("stream_url"):
-            identifier = str(ch.get("id") or normalize_name(ch.get("name"))).strip()
-            if identifier:
-                ch["source_m3u"] = file_path.name
-                channels[identifier] = ch
+        if channel.get("stream_url"):
+            channel["source_m3u"] = file_path.name
+            channels.append(channel)
 
         i = max(j, i + 1)
 
     return channels
 
 
-def merge_channels():
+def merge_channels() -> tuple[list[Path], list[dict]]:
     m3u_files = find_m3u_files()
-    grouped = {}
+    grouped: dict[str, dict] = {}
 
     for m3u_path in m3u_files:
-        parsed = parse_m3u_file(m3u_path)
-        for source_key, channel in parsed.items():
-            channel_id = str(channel.get("id") or "").strip()
+        for channel in parse_m3u_file(m3u_path):
+            tvg_id = normalize_id(channel.get("id"))
             name_key = normalize_name(channel.get("name"))
-            # Prefer stable tvg-id, but allow name matching when a source has no id.
-            keys = []
-            if channel_id:
-                keys.append(f"id:{channel_id.lower()}")
-            if name_key:
-                keys.append(f"name:{name_key}")
-            if not keys:
+
+            if not tvg_id and not name_key:
                 continue
 
+            match_keys = []
+            if tvg_id:
+                match_keys.append(f"id:{tvg_id}")
+            if name_key:
+                match_keys.append(f"name:{name_key}")
+
             target = None
-            for key in keys:
+            for key in match_keys:
                 if key in grouped:
                     target = grouped[key]
                     break
+
             if target is None:
-                target = {"channel": dict(channel), "sources": []}
+                target = {
+                    "channel": dict(channel),
+                    "sources": [],
+                    "keys": set(),
+                }
 
             source = {
                 "server": m3u_path.stem,
@@ -166,53 +210,78 @@ def merge_channels():
             }
             source = {k: v for k, v in source.items() if v not in (None, "")}
 
-            fingerprint = (source.get("server"), source.get("stream_url"))
-            if fingerprint not in {(x.get("server"), x.get("stream_url")) for x in target["sources"]}:
+            source_fingerprint = (
+                source.get("server", ""),
+                source.get("stream_url", ""),
+                source.get("key_id", ""),
+            )
+            existing_fingerprints = {
+                (
+                    item.get("server", ""),
+                    item.get("stream_url", ""),
+                    item.get("key_id", ""),
+                )
+                for item in target["sources"]
+            }
+            if source_fingerprint not in existing_fingerprints:
                 target["sources"].append(source)
 
-            # Register every matching key to the same target object.
-            for key in keys:
+            target["keys"].update(match_keys)
+            for key in target["keys"]:
                 grouped[key] = target
 
-    unique = []
-    seen_objects = set()
+    unique: list[dict] = []
+    seen_targets: set[int] = set()
+
     for target in grouped.values():
         marker = id(target)
-        if marker in seen_objects:
+        if marker in seen_targets:
             continue
-        seen_objects.add(marker)
+        seen_targets.add(marker)
 
-        channel = target["channel"]
-        sources = sorted(target["sources"], key=lambda s: source_rank(s.get("m3u", "")))
+        sources = sorted(
+            target["sources"],
+            key=lambda source: source_rank(source.get("m3u", "")),
+        )
         if not sources:
             continue
 
         primary = sources[0]
-        # Prefer metadata from the highest-priority source, then keep source data as fallbacks.
+        channel = dict(target["channel"])
+
+        # Primary source's live credentials become top-level compatibility fields.
         for field in ("stream_url", "cookie", "key_id", "key", "referrer", "user_agent"):
             if primary.get(field):
                 channel[field] = primary[field]
+
         channel["source_m3u"] = primary.get("m3u", "")
-        channel["sources"] = sources
-        channel["fallbacks"] = sources[1:]
         channel["source_count"] = len(sources)
+        channel["sources"] = sources
+        channel["category"] = channel.get("group") or "Entertainment"
+
         unique.append(channel)
 
-    unique.sort(key=lambda c: normalize_name(c.get("name")))
+    unique.sort(key=lambda item: (normalize_name(item.get("name")), normalize_id(item.get("id"))))
     return m3u_files, unique
 
 
-def main():
-    m3u_files, channels = merge_channels()
+def write_channels(channels: list[dict]) -> None:
     OUTPUT_JSON_PATH.parent.mkdir(parents=True, exist_ok=True)
+    # Compact JSON keeps the generated file substantially smaller while the
+    # script still fully rewrites it on every refresh, removing stale entries.
     OUTPUT_JSON_PATH.write_text(
-        json.dumps(channels, indent=2, ensure_ascii=False),
+        json.dumps(channels, ensure_ascii=False, separators=(",", ":")),
         encoding="utf-8",
     )
 
-    print(f"Merged {len(channels)} unique channels from {len(m3u_files)} M3U files.")
-    print("M3U order:", ", ".join(path.name for path in m3u_files))
-    print(f"Wrote: {OUTPUT_JSON_PATH}")
+
+def main() -> None:
+    m3u_files, channels = merge_channels()
+    write_channels(channels)
+
+    print(f"[MERGE] {len(channels)} unique channels from {len(m3u_files)} M3Us")
+    print("[M3U] " + ", ".join(path.name for path in m3u_files))
+    print(f"[JSON] {OUTPUT_JSON_PATH}")
 
 
 if __name__ == "__main__":
