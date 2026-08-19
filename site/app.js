@@ -347,6 +347,56 @@ function getChannelId(channel) {
 }
 
 
+
+function extractHdneaToken(value) {
+  if (!value) return "";
+  const s = String(value);
+  // Prefer full __hdnea__=... token
+  const m = s.match(/__hdnea__=[^&\s"']+/i);
+  if (m) return m[0];
+  // Bare token without prefix
+  if (/^st=\d+~exp=\d+~/.test(s.trim())) {
+    return "__hdnea__=" + s.trim();
+  }
+  return "";
+}
+
+/** Remove every __hdnea__ query param so we never stack two channel tokens. */
+function stripHdneaFromUrl(url) {
+  if (!url) return "";
+  try {
+    const u = new URL(url, "https://dummy.local");
+    const keys = [];
+    u.searchParams.forEach((_, k) => {
+      if (k.toLowerCase() === "__hdnea__") keys.push(k);
+    });
+    keys.forEach((k) => u.searchParams.delete(k));
+    // Also strip raw duplicates that URLSearchParams might miss
+    let out = u.origin === "https://dummy.local"
+      ? u.pathname + u.search + u.hash
+      : u.toString();
+    out = out.replace(/([?&])__hdnea__=[^&]*/gi, (match, sep) => (sep === "?" ? "?" : ""));
+    out = out.replace(/\?&/, "?").replace(/\?$/, "").replace(/&&+/g, "&");
+    return out;
+  } catch (_) {
+    return String(url)
+      .replace(/([?&])__hdnea__=[^&]*/gi, "$1")
+      .replace(/\?&/, "?")
+      .replace(/[?&]$/, "")
+      .replace(/&&+/g, "&");
+  }
+}
+
+/** Apply exactly one __hdnea__ token for this channel. */
+function applyHdneaToUrl(url, cookieOrToken) {
+  const clean = stripHdneaFromUrl(url);
+  const token = extractHdneaToken(cookieOrToken);
+  if (!token || !clean) return clean || url;
+  const sep = clean.includes("?") ? "&" : "?";
+  return clean + sep + token;
+}
+
+
 // Active stream from primary (index 0) or fallbacks / sources array
 function getActiveStreamConfig() {
   const ch = currentChannel;
@@ -1176,27 +1226,8 @@ async function openChannel(
 
   const config = getActiveStreamConfig();
 
-  let streamUrl = config.url;
-
-  if (
-    config.cookie &&
-    config.cookie.includes(
-      "__hdnea__="
-    )
-  ) {
-
-    const separator =
-      streamUrl.includes(
-        "?"
-      )
-        ? "&"
-        : "?";
-
-
-    streamUrl =
-      `${streamUrl}${separator}${config.cookie}`;
-
-  }
+  // Always strip old __hdnea__ then apply THIS channel's token only (fixes 403 double-token)
+  let streamUrl = applyHdneaToUrl(config.url, config.cookie);
 
 
   if (
@@ -1413,82 +1444,23 @@ async function playDash(
     }
   );
 
-  if (
-    hdneaCookie &&
-    hdneaCookie.includes(
-      "__hdnea__="
-    )
-  ) {
-
-    const networkingEngine =
-      shakaPlayer.getNetworkingEngine();
-
-
-    if (
-      networkingEngine
-    ) {
-
-      networkingEngine.registerRequestFilter(
-        (
-          requestType,
-          request
-        ) => {
-
-          const isManifest =
-            requestType ===
-            shaka.net.NetworkingEngine.RequestType.MANIFEST;
-
-
-          const isSegment =
-            requestType ===
-            shaka.net.NetworkingEngine.RequestType.SEGMENT;
-
-
-          if (
-            isManifest ||
-            isSegment
-          ) {
-
-            request.uris =
-              request.uris.map(
-                uri => {
-
-                  if (
-                    !uri ||
-                    uri.includes(
-                      "__hdnea__="
-                    )
-                  ) {
-
-                    return uri;
-
-                  }
-
-
-                  const separator =
-                    uri.includes(
-                      "?"
-                    )
-                      ? "&"
-                      : "?";
-
-
-                  return (
-                    uri +
-                    separator +
-                    hdneaCookie
-                  );
-
-                }
-              );
-
-          }
-
-        }
-      );
-
+  const hdneaToken = extractHdneaToken(hdneaCookie);
+  if (hdneaToken) {
+    const networkingEngine = shakaPlayer.getNetworkingEngine();
+    if (networkingEngine) {
+      networkingEngine.registerRequestFilter((requestType, request) => {
+        const isManifest =
+          requestType === shaka.net.NetworkingEngine.RequestType.MANIFEST;
+        const isSegment =
+          requestType === shaka.net.NetworkingEngine.RequestType.SEGMENT;
+        if (!isManifest && !isSegment) return;
+        request.uris = request.uris.map((uri) => {
+          if (!uri) return uri;
+          // Always replace with the current channel token — never stack
+          return applyHdneaToUrl(uri, hdneaToken);
+        });
+      });
     }
-
   }
 
   if (
@@ -1631,82 +1603,22 @@ async function playHls(
       }
     );
 
-    if (
-      hdneaCookie &&
-      hdneaCookie.includes(
-        "__hdnea__="
-      )
-    ) {
-
-      const networkingEngine =
-        shakaPlayer.getNetworkingEngine();
-
-
-      if (
-        networkingEngine
-      ) {
-
-        networkingEngine.registerRequestFilter(
-          (
-            requestType,
-            request
-          ) => {
-
-            const isManifest =
-              requestType ===
-              shaka.net.NetworkingEngine.RequestType.MANIFEST;
-
-
-            const isSegment =
-              requestType ===
-              shaka.net.NetworkingEngine.RequestType.SEGMENT;
-
-
-            if (
-              isManifest ||
-              isSegment
-            ) {
-
-              request.uris =
-                request.uris.map(
-                  uri => {
-
-                    if (
-                      !uri ||
-                      uri.includes(
-                        "__hdnea__="
-                      )
-                    ) {
-
-                      return uri;
-
-                    }
-
-
-                    const separator =
-                      uri.includes(
-                        "?"
-                      )
-                        ? "&"
-                        : "?";
-
-
-                    return (
-                      uri +
-                      separator +
-                      hdneaCookie
-                    );
-
-                  }
-                );
-
-            }
-
-          }
-        );
-
+    const hdneaTokenHls = extractHdneaToken(hdneaCookie);
+    if (hdneaTokenHls) {
+      const networkingEngine = shakaPlayer.getNetworkingEngine();
+      if (networkingEngine) {
+        networkingEngine.registerRequestFilter((requestType, request) => {
+          const isManifest =
+            requestType === shaka.net.NetworkingEngine.RequestType.MANIFEST;
+          const isSegment =
+            requestType === shaka.net.NetworkingEngine.RequestType.SEGMENT;
+          if (!isManifest && !isSegment) return;
+          request.uris = request.uris.map((uri) => {
+            if (!uri) return uri;
+            return applyHdneaToUrl(uri, hdneaTokenHls);
+          });
+        });
       }
-
     }
 
 
@@ -5035,31 +4947,7 @@ function updateQualityOptions() {
     );
 
 
-  // Alternate M3U sources as extra "quality / server" options
-  const sourceList =
-    (currentChannel &&
-      Array.isArray(currentChannel.sources) &&
-      currentChannel.sources) ||
-    [];
-
-  const sourceButtons = sourceList
-    .map((s, i) => {
-      const label = (s.server || s.m3u || `Source ${i + 1}`)
-        .replace(/\.m3u8?$/i, "");
-      const active =
-        i === currentFallbackIndex ? " active" : "";
-      return `
-        <button
-          class="gmax-quality-item${active}"
-          data-source-index="${i}"
-          type="button"
-        >
-          ${escapeHtml(label)}
-        </button>
-      `;
-    })
-    .join("");
-
+  // Real resolutions only (from Shaka variant tracks — not fake labels)
   qualityMenu.innerHTML = `
 
     <button
@@ -5109,24 +4997,7 @@ function updateQualityOptions() {
         )
     }
 
-    ${
-      sourceList.length > 1
-        ? `<div class="gmax-quality-sep" style="padding:6px 10px;opacity:.5;font-size:10px;font-weight:700;letter-spacing:.06em;">SOURCES</div>${sourceButtons}`
-        : ""
-    }
-
   `;
-
-  qualityMenu.querySelectorAll("[data-source-index]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.stopPropagation();
-      const idx = Number(button.dataset.sourceIndex);
-      qualityMenu.classList.remove("open");
-      if (currentChannel && Number.isFinite(idx)) {
-        openChannel(currentChannel, idx);
-      }
-    });
-  });
 
 
   qualityMenu
