@@ -17,6 +17,25 @@ from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
 ROOT = Path(__file__).resolve().parent
 OUTPUT_JSON_PATH = ROOT / "site" / "channels.json"
 
+def _normalize_category(group: str, name: str) -> str:
+    text = f"{group or ''} {name or ''}".lower()
+    if any(w in text for w in ("sport", "cricket", "football", "fifa", "tennis", "kabaddi", "nba", "nfl", "racing", "formula")):
+        return "Sports"
+    if any(w in text for w in ("news", "headline", "breaking", "current affairs")):
+        return "News"
+    if any(w in text for w in ("movie", "cinema", "film", "bollywood", "hollywood", "picture")):
+        return "Movies"
+    if any(w in text for w in ("kid", "cartoon", "animation", "junior", "children", "nick", "hungama")):
+        return "Kids"
+    if any(w in text for w in ("music", "mtv", "radio", "songs", "fm ")):
+        return "Music"
+    if any(w in text for w in ("relig", "devotional", "spiritual", "bhakti", "temple", "islam", "quran", "church", "gospel", "hindu", "sikh")):
+        return "Religious"
+    if any(w in text for w in ("info", "document", "education", "knowledge", "science", "tech", "history", "nature", "travel", "lifestyle", "business", "weather", "health", "food")):
+        return "Information"
+    return "Entertainment"
+
+
 # Primary play order: JioTV 6 → 7 → 8, then own-repo / brand sources, then rest.
 PRIMARY_ORDER = [
     "jtvplus6.m3u",
@@ -93,12 +112,20 @@ def parse_m3u_file(file_path: Path):
             block_lines.append(lines[j].strip())
             j += 1
 
+        raw_group = attrs.get("group-title", "") or "Entertainment"
+        raw_name = attrs.get("tvg-name", "") or display_name
+        raw_name = (
+            raw_name.replace("&amp;", "&")
+            .replace("&lt;", "<")
+            .replace("&gt;", ">")
+            .replace("&quot;", '"')
+        )
         ch = {
             "id": attrs.get("tvg-id", ""),
-            "name": attrs.get("tvg-name", "") or display_name,
+            "name": raw_name,
             "logo": attrs.get("tvg-logo", ""),
-            "group": attrs.get("group-title", "") or "Entertainment",
-            "category": attrs.get("group-title", "") or "Entertainment",
+            "group": raw_group,
+            "category": _normalize_category(raw_group, raw_name),
         }
         if attrs.get("tvg-language"):
             ch["language"] = attrs["tvg-language"]
