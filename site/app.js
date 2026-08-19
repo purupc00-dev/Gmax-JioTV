@@ -1211,8 +1211,7 @@ function totalSourceCount(channel) {
 function setLoadingSourceMessage(index, total) {
   const n = index + 1;
   const t = Math.max(total, n);
-  // If it's the first try, say Connecting. Otherwise say Reconnecting.
-  const msg = index === 0 ? `Connecting... (${n}/${t})` : `Reconnecting... (${n}/${t})`;
+  const msg = `Reconnecting... (${n}/${t})`;
 
   // Update new internal reconnect badge
   if (playerUiShell) {
@@ -1231,7 +1230,7 @@ function setLoadingSourceMessage(index, total) {
   }
 }
 
-// SILENT RECONNECT — tries all sources, shows error if all fail
+// SILENT RECONNECT — never show raw error text to the user
 async function handleStreamError(err) {
   console.warn("Silent reconnect:", err);
   if (reconnectInFlight || !currentChannel) return;
@@ -1242,18 +1241,17 @@ async function handleStreamError(err) {
     const maxIdx = total - 1;
 
     if (currentFallbackIndex < maxIdx) {
-      // Try next fallback
       const nextIdx = currentFallbackIndex + 1;
       setLoadingSourceMessage(nextIdx, total);
       showPlayerLoading(true);
       hidePlayerErrorOverlay();
       await openChannel(currentChannel, nextIdx);
     } else {
-      // WE RAN OUT OF FALLBACKS! Show the actual error overlay.
-      showPlayerLoading(false);
-      const errorMsg = `All ${total} sources failed to play.`;
-      showPlayerErrorOverlay(errorMsg);
-      await destroyPlayer();
+      setLoadingSourceMessage(0, total);
+      showPlayerLoading(true);
+      hidePlayerErrorOverlay();
+      await new Promise((r) => setTimeout(r, 2500));
+      await openChannel(currentChannel, 0);
     }
   } finally {
     reconnectInFlight = false;
@@ -4808,16 +4806,79 @@ async function retryCurrentChannel() {
 
   }
 
-  isPlayerRetrying = true;
-  showPlayerLoading(true);
+
+  isPlayerRetrying =
+    true;
+
+
+  showPlayerLoading(
+    true
+  );
+
+
   clearPlayerError();
 
+
   try {
-    // Restart from source 1 (index 0)
-    await openChannel(currentChannel, 0);
+
+    await destroyPlayer();
+
+
+    /*
+     * Rebuild the same channel
+     * without changing the channel data.
+     */
+
+    if (
+      lastStreamType ===
+      "dash"
+    ) {
+
+      await playDash(
+        lastStreamUrl
+      );
+
+    } else if (
+      lastStreamType ===
+      "hls"
+    ) {
+
+      await playHls(
+        lastStreamUrl
+      );
+
+    } else {
+
+      throw new Error(
+        "Unsupported stream format."
+      );
+
+    }
+
+  } catch (
+    error
+  ) {
+
+    showPlayerError(
+      error instanceof Error
+        ? error.message
+        : String(
+            error
+          )
+    );
+
   } finally {
-    isPlayerRetrying = false;
+
+    isPlayerRetrying =
+      false;
+
+
+    showPlayerLoading(
+      false
+    );
+
   }
+
 }
 
 
@@ -5817,4 +5878,3 @@ document.addEventListener(
 
   }
 );
-]
