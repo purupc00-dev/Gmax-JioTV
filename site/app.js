@@ -99,7 +99,171 @@ const favorites =
     )
   );
 
+function toggleFavorite(
+  channelId
+) {
 
+  const key =
+    String(
+      channelId
+    );
+
+
+  if (
+    favorites.has(
+      key
+    )
+  ) {
+
+    favorites.delete(
+      key
+    );
+
+  } else {
+
+    favorites.add(
+      key
+    );
+
+  }
+
+
+  saveFavorites();
+
+  buildCategories();
+  renderChannels();
+
+}
+
+
+/* =========================================================
+   CATEGORIES — fixed main list only (no 80+ group titles)
+========================================================= */
+
+function buildCategories() {
+  categoryList.innerHTML = "";
+  categoryList.appendChild(createCategoryButton("ALL", activeCategory === "ALL"));
+  categoryList.appendChild(createCategoryButton("FAVORITES", activeCategory === "FAVORITES"));
+  for (const category of MAIN_CATEGORIES) {
+    categoryList.appendChild(createCategoryButton(category, activeCategory === category));
+  }
+}
+
+
+function createCategoryButton(
+  category,
+  active
+) {
+
+  const button =
+    document.createElement(
+      "button"
+    );
+
+
+  button.type =
+    "button";
+
+
+  button.className =
+    "category-button" +
+    (
+      active
+        ? " active"
+        : ""
+    );
+
+  button.dataset.category =
+    String(
+      category
+    );
+
+
+  button.textContent =
+    category === "FAVORITES"
+      ? `⭐ Favorites (${favorites.size})`
+      : String(
+          category
+        );
+
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      activeCategory =
+        category;
+
+
+      visibleCount =
+        CHANNELS_PER_PAGE;
+
+
+      if (
+        infiniteScrollObserver
+      ) {
+
+        infiniteScrollObserver.disconnect();
+
+        infiniteScrollObserver =
+          null;
+
+      }
+
+
+      const oldSentinel =
+        document.getElementById(
+          "gmax-infinite-scroll-sentinel"
+        );
+
+
+      if (
+        oldSentinel
+      ) {
+
+        oldSentinel.remove();
+
+      }
+
+
+      document
+        .querySelectorAll(
+          ".category-button"
+        )
+        .forEach(
+          item => {
+
+            item.classList.toggle(
+              "active",
+              item.dataset.category ===
+                String(
+                  category
+                )
+            );
+
+            if (
+              item.dataset.category ===
+                "FAVORITES"
+            ) {
+
+              item.textContent =
+                `⭐ Favorites (${favorites.size})`;
+
+            }
+
+          }
+        );
+
+
+      applyFilters();
+
+    }
+  );
+
+
+  return button;
+
+}
 /* =========================================================
    DOM
 ========================================================= */
@@ -635,158 +799,6 @@ function seekToConfiguredLivePosition() {
 
 
 /* =========================================================
-   FAVORITES
-========================================================= */
-
-function toggleFavorite(
-  channelId
-) {
-
-  const key =
-    String(
-      channelId
-    );
-
-
-  if (
-    favorites.has(
-      key
-    )
-  ) {
-
-    favorites.delete(
-      key
-    );
-
-  } else {
-
-    favorites.add(
-      key
-    );
-
-  }
-
-
-  saveFavorites();
-
-  renderChannels();
-
-}
-
-
-/* =========================================================
-   CATEGORIES — fixed main list only (no 80+ group titles)
-========================================================= */
-
-function buildCategories() {
-  categoryList.innerHTML = "";
-  categoryList.appendChild(createCategoryButton("ALL", true));
-  for (const category of MAIN_CATEGORIES) {
-    categoryList.appendChild(createCategoryButton(category, false));
-  }
-}
-
-
-function createCategoryButton(
-  category,
-  active
-) {
-
-  const button =
-    document.createElement(
-      "button"
-    );
-
-
-  button.type =
-    "button";
-
-
-  button.className =
-    "category-button" +
-    (
-      active
-        ? " active"
-        : ""
-    );
-
-
-  button.textContent =
-    String(
-      category
-    );
-
-
-  button.addEventListener(
-    "click",
-    () => {
-
-      activeCategory =
-        category;
-
-
-      visibleCount =
-        CHANNELS_PER_PAGE;
-
-
-      if (
-        infiniteScrollObserver
-      ) {
-
-        infiniteScrollObserver.disconnect();
-
-        infiniteScrollObserver =
-          null;
-
-      }
-
-
-      const oldSentinel =
-        document.getElementById(
-          "gmax-infinite-scroll-sentinel"
-        );
-
-
-      if (
-        oldSentinel
-      ) {
-
-        oldSentinel.remove();
-
-      }
-
-
-      document
-        .querySelectorAll(
-          ".category-button"
-        )
-        .forEach(
-          item => {
-
-            item.classList.toggle(
-              "active",
-              item.textContent ===
-                String(
-                  category
-                )
-            );
-
-          }
-        );
-
-
-      applyFilters();
-
-    }
-  );
-
-
-  return button;
-
-}
-
-
-/* =========================================================
    FILTERING
 ========================================================= */
 
@@ -811,12 +823,21 @@ function applyFilters() {
         const matchesCategory =
           activeCategory ===
             "ALL" ||
-          normalize(
-            category
-          ) ===
-            normalize(
-              activeCategory
-            );
+          (
+            activeCategory ===
+              "FAVORITES"
+              ? favorites.has(
+                  getChannelId(
+                    channel
+                  )
+                )
+              : normalize(
+                  category
+                ) ===
+                  normalize(
+                    activeCategory
+                  )
+          );
 
 
         if (
@@ -1338,6 +1359,13 @@ async function openChannel(
   playerEmpty.classList.add(
     "hidden"
   );
+
+
+  // Create the player shell first so fullscreen can be requested
+  // from the original channel click gesture on small touch devices.
+  if (!playerUiShell) {
+    setupCinematicPlayer();
+  }
 
 
   // Auto-enter fullscreen + landscape on small touch devices.
