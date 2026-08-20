@@ -88,8 +88,6 @@ const RECENT_KEY = "gmax-jiotv-recent";
 const RECENT_MAX = 12;
 let recentIds = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
 
-// ---------- NEW: player busy flag ----------
-let isPlayerBusy = false;
 
 /* =========================================================
    FAVORITES
@@ -549,15 +547,16 @@ function extractHdneaToken(value) {
 function stripHdneaFromUrl(url) {
   if (!url) return "";
   try {
-    // Use window.location.origin as base for protocol-relative URLs
-    const u = new URL(url, window.location.origin);
+    const u = new URL(url, "https://dummy.local");
     const keys = [];
     u.searchParams.forEach((_, k) => {
       if (k.toLowerCase() === "__hdnea__") keys.push(k);
     });
     keys.forEach((k) => u.searchParams.delete(k));
     // Also strip raw duplicates that URLSearchParams might miss
-    let out = u.toString();
+    let out = u.origin === "https://dummy.local"
+      ? u.pathname + u.search + u.hash
+      : u.toString();
     out = out.replace(/([?&])__hdnea__=[^&]*/gi, (match, sep) => (sep === "?" ? "?" : ""));
     out = out.replace(/\?&/, "?").replace(/\?$/, "").replace(/&&+/g, "&");
     return out;
@@ -675,27 +674,22 @@ function getCurrentLiveLag() {
 
 
   if (
-    range &&
-    Number.isFinite(
+    !range ||
+    !Number.isFinite(
       video.currentTime
     )
   ) {
-    return Math.max(
-      0,
-      range.end -
-        video.currentTime
-    );
+
+    return null;
+
   }
 
-  // Fallback for native HLS: use seekable
-  if (video.seekable && video.seekable.length) {
-    const end = video.seekable.end(video.seekable.length - 1);
-    if (Number.isFinite(end) && Number.isFinite(video.currentTime)) {
-      return Math.max(0, end - video.currentTime);
-    }
-  }
 
-  return null;
+  return Math.max(
+    0,
+    range.end -
+      video.currentTime
+  );
 
 }
 
@@ -707,24 +701,19 @@ function getTargetLiveTime() {
 
 
   if (
-    range
+    !range
   ) {
-    return Math.max(
-      range.start,
-      range.end -
-        LIVE_DELAY_SECONDS
-    );
+
+    return null;
+
   }
 
-  // Native HLS: use seekable
-  if (video.seekable && video.seekable.length) {
-    const end = video.seekable.end(video.seekable.length - 1);
-    if (Number.isFinite(end)) {
-      return Math.max(0, end - LIVE_DELAY_SECONDS);
-    }
-  }
 
-  return null;
+  return Math.max(
+    range.start,
+    range.end -
+      LIVE_DELAY_SECONDS
+  );
 
 }
 
@@ -782,11 +771,9 @@ function seekToConfiguredLivePosition() {
 
   try {
 
-    if (shakaPlayer && typeof shakaPlayer.seek === "function") {
-      shakaPlayer.seek(target);
-    } else {
-      video.currentTime = target;
-    }
+    shakaPlayer.seek(
+      target
+    );
 
     return true;
 
@@ -1079,7 +1066,11 @@ function createChannelCard(
       <div
         class="channel-fallback"
         style="
-          display:${logo ? "none" : "flex"};
+          display:${
+            logo
+              ? "none"
+              : "flex"
+          };
         "
       >
         TV
@@ -1158,14 +1149,10 @@ function createChannelCard(
    PLAYER DESTROY
 ========================================================= */
 
-// Store event listener references for cleanup
-let trackChangeListener = null;
-let adaptationListener = null;
-
 async function destroyPlayer() {
 
   stopLiveStatusTimer();
-  clearTimeout(playbackWatchdogTimer);
+  clearTimeout(playbackWatchdogTimer); // Clear watchdog on destroy
 
   hidePlayerErrorOverlay();
 
@@ -1194,13 +1181,6 @@ async function destroyPlayer() {
 
   }
 
-  // Remove stored event listeners
-  if (trackChangeListener) {
-    // We'll rely on destroying the player to remove them
-    trackChangeListener = null;
-    adaptationListener = null;
-  }
-
   // NEW FIX: Force video source to blank so old frames don't stick around during fallback loading
   try {
     video.pause();
@@ -1208,11 +1188,6 @@ async function destroyPlayer() {
     video.load();
   } catch (e) {}
 
-  // Reset player busy flag only if we're not in the middle of a reconnect
-  // (reconnect will set it again later)
-  if (!reconnectInFlight) {
-    isPlayerBusy = false;
-  }
 
   if (
     playerUiShell
@@ -1268,8 +1243,10 @@ function totalSourceCount(channel) {
 function setLoadingSourceMessage(index, total) {
   const n = index + 1;
   const t = Math.max(total, n);
+  // If it's the first try, say Connecting. Otherwise say Reconnecting.
   const msg = index === 0 ? `Connecting... (${n}/${t})` : `Reconnecting... (${n}/${t})`;
 
+  // Update new internal reconnect badge
   if (playerUiShell) {
     const reconnectText = playerUiShell.querySelector('[data-role="reconnect-text"]');
     if (reconnectText) {
@@ -1277,6 +1254,7 @@ function setLoadingSourceMessage(index, total) {
     }
   }
 
+  // Update existing span as fallback
   const loadingSpan =
     document.querySelector("#player-loading-text") ||
     document.querySelector("#player-loading span");
@@ -1288,15 +1266,16 @@ function setLoadingSourceMessage(index, total) {
 // SILENT RECONNECT — tries all sources, shows error if all fail
 async function handleStreamError(err) {
   console.warn("Silent reconnect:", err);
-  if (reconnectInFlight || !currentChannel || isPlayerBusy) return;
+  if (reconnectInFlight || !currentChannel) return;
   reconnectInFlight = true;
-  clearTimeout(playbackWatchdogTimer);
+  clearTimeout(playbackWatchdogTimer); // Stop watchdog during fallback transition
 
   try {
     const total = totalSourceCount(currentChannel);
     const maxIdx = total - 1;
 
     if (currentFallbackIndex < maxIdx) {
+      // Try next fallback
       const nextIdx = currentFallbackIndex + 1;
       setLoadingSourceMessage(nextIdx, total);
       showPlayerLoading(true);
@@ -1315,6 +1294,7 @@ async function handleStreamError(err) {
 }
 
 function showPlayerError(message) {
+  // Never expose raw bug text — always silent reconnect UI
   handleStreamError(message);
 }
 
@@ -1343,14 +1323,6 @@ async function openChannel(
   channel, fallbackIdx = 0
 ) {
 
-  // Prevent concurrent opens
-  if (isPlayerBusy) {
-    console.warn("Player is busy, ignoring new channel open request.");
-    return;
-  }
-
-  isPlayerBusy = true;
-
   currentChannel =
     channel;
 
@@ -1374,7 +1346,8 @@ async function openChannel(
     showPlayerError(
       "This channel does not contain a playable stream URL."
     );
-    isPlayerBusy = false;
+
+
     return;
 
   }
@@ -1405,6 +1378,12 @@ async function openChannel(
   if (!playerUiShell) {
     setupCinematicPlayer();
   }
+
+
+  // Auto-enter fullscreen + landscape on small touch devices.
+  // Called immediately from the channel click so Android can preserve
+  // the user's fullscreen gesture activation.
+  // autoEnterLandscapeOnMobile();
 
 
   playingTitle.textContent =
@@ -1463,10 +1442,11 @@ async function openChannel(
 
   await destroyPlayer();
 
-  // Start the Watchdog
+  // Start the Watchdog BEFORE we try to play the stream
+  // Using 6 seconds (6000ms) to account for slight manifest loading delays
   clearTimeout(playbackWatchdogTimer);
   playbackWatchdogTimer = setTimeout(() => {
-    if (video.readyState <= 2 && !reconnectInFlight && !isPlayerBusy) {
+    if (video.readyState <= 2 && !reconnectInFlight) {
       console.warn("Watchdog triggered: Video stuck on black screen.");
       handleStreamError("Stream timeout (Black screen)");
     }
@@ -1513,6 +1493,7 @@ async function openChannel(
       error
     );
 
+    // Await silent reconnect so finally block doesn't prematurely hide UI
     await handleStreamError(
       error instanceof Error
         ? error.message
@@ -1523,15 +1504,12 @@ async function openChannel(
 
   } finally {
 
+    // NEW FIX: Only hide the spinner if it ACTUALLY loaded, OR if it's the final failure
     if (streamLoadedSuccessfully) {
       reconnectInFlight = false;
       showPlayerLoading(false);
-      isPlayerBusy = false;
     } else if (!reconnectInFlight) {
       showPlayerLoading(false);
-      isPlayerBusy = false;
-    } else {
-      // Reconnect in flight, keep busy flag true until it finishes
     }
 
   }
@@ -1546,6 +1524,7 @@ function getShakaStreamingConfig() {
       bufferingGoal: BUFFERING_GOAL_SECONDS,
       rebufferingGoal: REBUFFERING_GOAL_SECONDS,
       bufferBehind: BUFFER_BEHIND_SECONDS,
+      // Prefer stability over chasing live edge
       lowLatencyMode: false,
       inaccurateManifestTolerance: 2,
       segmentPrefetchLimit: 3,
@@ -1563,7 +1542,14 @@ function getShakaStreamingConfig() {
     abr: {
       enabled: true,
       useNetworkInformation: true,
+      // Re-evaluate less often so it doesn't flap between renditions.
       switchInterval: 8,
+      // NOTE: downgradeTarget must be >= upgradeTarget, otherwise ABR
+      // downgrades the instant a track uses >70% of estimated bandwidth
+      // but only allows upgrading once there's >85% headroom — a gap
+      // that causes constant down/up thrashing and keeps playback
+      // stuck on a lower rendition even on a good connection. This was
+      // inverted; restored to Shaka's sane defaults.
       bandwidthUpgradeTarget: 0.85,
       bandwidthDowngradeTarget: 0.95,
       restrictions: {
@@ -1639,7 +1625,6 @@ async function playDash(
     }
   );
 
-  // ---------- NEW: Networking filter for LICENSE requests ----------
   const hdneaToken = extractHdneaToken(hdneaCookie);
   if (hdneaToken) {
     const networkingEngine = shakaPlayer.getNetworkingEngine();
@@ -1649,48 +1634,37 @@ async function playDash(
           requestType === shaka.net.NetworkingEngine.RequestType.MANIFEST;
         const isSegment =
           requestType === shaka.net.NetworkingEngine.RequestType.SEGMENT;
-        const isLicense =
-          requestType === shaka.net.NetworkingEngine.RequestType.LICENSE;
-        if (!isManifest && !isSegment && !isLicense) return;
+        if (!isManifest && !isSegment) return;
         request.uris = request.uris.map((uri) => {
           if (!uri) return uri;
+          // Always replace with the current channel token — never stack
           return applyHdneaToUrl(uri, hdneaToken);
         });
       });
     }
   }
 
-  // ---------- DRM Handling ----------
-  // Detect if keyId is a license server URL (starts with http)
-  const isLicenseUrl = keyId && (keyId.startsWith("http") || keyId === "https");
-  if (isLicenseUrl) {
-    // keyVal may be the server URL (e.g., "//streamflexsmm.in/license/1123/")
-    let licenseServer = keyVal;
-    if (licenseServer && licenseServer.startsWith("//")) {
-      licenseServer = "https:" + licenseServer;
-    }
-    if (licenseServer) {
-      shakaPlayer.configure({
-        drm: {
-          servers: {
-            "com.widevine.alpha": licenseServer,
-            // Also for other systems if needed
-          }
-        }
-      });
-    }
-  } else if (keyId && keyVal) {
-    // Classic Clear Key
-    const clearKeys = {};
-    clearKeys[keyId] = keyVal;
-    // Merge with existing drm config (if any) instead of overwriting
-    const currentDrm = shakaPlayer.getConfiguration().drm || {};
+  if (
+    keyId &&
+    keyVal
+  ) {
+
+    const clearKeys =
+      {};
+
+
+    clearKeys[
+      keyId
+    ] =
+      keyVal;
+
+
     shakaPlayer.configure({
       drm: {
-        ...currentDrm,
         clearKeys
       }
     });
+
   }
 
   await shakaPlayer.load(
@@ -1707,11 +1681,11 @@ async function playDash(
   setupCinematicPlayer();
 
   updateQualityOptions();
-  // Store listeners for cleanup
-  trackChangeListener = () => updateQualityOptions();
-  adaptationListener = () => updateQualityOptions();
-  shakaPlayer.addEventListener("trackschanged", trackChangeListener);
-  shakaPlayer.addEventListener("adaptation", adaptationListener);
+  // Refresh quality list when variants become available
+  try {
+    shakaPlayer.addEventListener("trackschanged", () => updateQualityOptions());
+    shakaPlayer.addEventListener("adaptation", () => updateQualityOptions());
+  } catch (_) {}
   setTimeout(() => updateQualityOptions(), 800);
   setTimeout(() => updateQualityOptions(), 2500);
 
@@ -1814,9 +1788,7 @@ async function playHls(
             requestType === shaka.net.NetworkingEngine.RequestType.MANIFEST;
           const isSegment =
             requestType === shaka.net.NetworkingEngine.RequestType.SEGMENT;
-          const isLicense =
-            requestType === shaka.net.NetworkingEngine.RequestType.LICENSE;
-          if (!isManifest && !isSegment && !isLicense) return;
+          if (!isManifest && !isSegment) return;
           request.uris = request.uris.map((uri) => {
             if (!uri) return uri;
             return applyHdneaToUrl(uri, hdneaTokenHls);
@@ -1841,10 +1813,10 @@ async function playHls(
     setupCinematicPlayer();
 
     updateQualityOptions();
-    trackChangeListener = () => updateQualityOptions();
-    adaptationListener = () => updateQualityOptions();
-    shakaPlayer.addEventListener("trackschanged", trackChangeListener);
-    shakaPlayer.addEventListener("adaptation", adaptationListener);
+    try {
+      shakaPlayer.addEventListener("trackschanged", () => updateQualityOptions());
+      shakaPlayer.addEventListener("adaptation", () => updateQualityOptions());
+    } catch (_) {}
     setTimeout(() => updateQualityOptions(), 800);
     setTimeout(() => updateQualityOptions(), 2500);
 
@@ -1875,7 +1847,47 @@ async function playHls(
 ========================================================= */
 
 function seekNativeHlsToDelayedLive() {
-  return seekToConfiguredLivePosition();
+
+  try {
+
+    const duration =
+      video.duration;
+
+
+    if (
+      !Number.isFinite(
+        duration
+      ) ||
+      duration <=
+        0
+    ) {
+
+      return false;
+
+    }
+
+    const target =
+      Math.max(
+        0,
+        duration -
+          LIVE_DELAY_SECONDS
+      );
+
+
+    video.currentTime =
+      target;
+
+
+    return true;
+
+  } catch (
+    error
+  ) {
+
+    return false;
+
+  }
+
 }
 
 
@@ -2936,7 +2948,7 @@ function injectCinematicPlayerStyles() {
     .gmax-player-error.open {
 
       display:
-        flex;
+        flex; /* Fixed from none to show final error message when all fallbacks fail */
 
     }
 
@@ -4047,7 +4059,6 @@ function createPlayerControls(
       showPlayerLoading(false);
       hidePlayerErrorOverlay();
       clearTimeout(playbackWatchdogTimer);
-      isPlayerBusy = false;
     });
   });
 
@@ -5718,7 +5729,7 @@ closePlayerButton.addEventListener(
 
 
 /* =========================================================
-   DYNAMIC M3U PARSER (unused but kept)
+   DYNAMIC M3U PARSER
 ========================================================= */
 
 function parseM3U(text) {
@@ -5731,15 +5742,26 @@ function parseM3U(text) {
     if (!line) continue;
 
     if (line.startsWith('#EXTINF:')) {
+      // New channel block
       currentChannel = {};
+      
+      // Extract tvg-id
       const idMatch = line.match(/tvg-id="([^"]+)"/);
       if (idMatch) currentChannel.id = idMatch[1];
+      
+      // Extract tvg-name
       const nameMatch = line.match(/tvg-name="([^"]+)"/);
       if (nameMatch) currentChannel.name = nameMatch[1];
+      
+      // Extract tvg-logo
       const logoMatch = line.match(/tvg-logo="([^"]+)"/);
       if (logoMatch) currentChannel.logo = logoMatch[1];
+      
+      // Extract group-title
       const groupMatch = line.match(/group-title="([^"]+)"/);
       if (groupMatch) currentChannel.group = groupMatch[1];
+      
+      // Fallback name if tvg-name is missing
       if (!currentChannel.name && line.includes(',')) {
         currentChannel.name = line.substring(line.indexOf(',') + 1).trim();
       }
@@ -5748,6 +5770,7 @@ function parseM3U(text) {
       const keyStr = line.split('=')[1];
       if (keyStr && keyStr.includes(':')) {
         const parts = keyStr.split(':');
+        // Ensure whitespace is trimmed to prevent DRM crash
         currentChannel.key_id = parts[0].trim();
         currentChannel.key = parts[1].trim();
       }
@@ -5764,9 +5787,10 @@ function parseM3U(text) {
       }
     }
     else if (!line.startsWith('#')) {
+      // It's the URL
       currentChannel.stream_url = line;
       channels.push(currentChannel);
-      currentChannel = {};
+      currentChannel = {}; // Reset for next
     }
   }
 
