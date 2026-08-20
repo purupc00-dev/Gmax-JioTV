@@ -1371,7 +1371,7 @@ async function openChannel(
   // Auto-enter fullscreen + landscape on small touch devices.
   // Called immediately from the channel click so Android can preserve
   // the user's fullscreen gesture activation.
-  autoEnterLandscapeOnMobile();
+  // autoEnterLandscapeOnMobile(); // <-- COMMMENTED OUT TO PREVENT AUTO FULLSCREEN
 
 
   playingTitle.textContent =
@@ -1468,8 +1468,8 @@ async function openChannel(
       error
     );
 
-
-    showPlayerError(
+    // Await silent reconnect so finally block doesn't prematurely hide UI
+    await handleStreamError(
       error instanceof Error
         ? error.message
         : String(
@@ -1479,9 +1479,12 @@ async function openChannel(
 
   } finally {
 
-    showPlayerLoading(
-      false
-    );
+    // Only hide the spinner if we aren't busy trying a fallback stream
+    if (!reconnectInFlight) {
+      showPlayerLoading(
+        false
+      );
+    }
 
   }
 
@@ -2919,7 +2922,7 @@ function injectCinematicPlayerStyles() {
     .gmax-player-error.open {
 
       display:
-        none; /* Modified to stay hidden for silent fallback */
+        flex; /* Fixed from none to show final error message when all fallbacks fail */
 
     }
 
@@ -4593,6 +4596,11 @@ function toggleFullscreen() {
 
     document
       .exitFullscreen()
+      .then(() => {
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock().catch(() => {});
+        }
+      })
       .catch(
         () => {}
       );
@@ -4605,6 +4613,11 @@ function toggleFullscreen() {
 
       playerUiShell
         .requestFullscreen()
+        .then(() => {
+          if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock("landscape").catch(() => {});
+          }
+        })
         .catch(
           () => {}
         );
