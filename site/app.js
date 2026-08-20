@@ -1376,7 +1376,7 @@ async function openChannel(
   // Auto-enter fullscreen + landscape on small touch devices.
   // Called immediately from the channel click so Android can preserve
   // the user's fullscreen gesture activation.
-  // autoEnterLandscapeOnMobile(); // <-- COMMMENTED OUT TO PREVENT AUTO FULLSCREEN
+  // autoEnterLandscapeOnMobile();
 
 
   playingTitle.textContent =
@@ -1435,6 +1435,17 @@ async function openChannel(
 
   await destroyPlayer();
 
+  // NEW: Start the Watchdog BEFORE we try to play the stream!
+  // If the video sits buffering (readyState <= 2) for more than 5 seconds,
+  // we manually force an error to trigger the 1/x fallback system.
+  clearTimeout(playbackWatchdogTimer);
+  playbackWatchdogTimer = setTimeout(() => {
+    if (video.readyState <= 2 && !reconnectInFlight) {
+      console.warn("Watchdog triggered: Video stuck on black screen.");
+      handleStreamError("Stream timeout (Black screen)");
+    }
+  }, 5000); // 5000 milliseconds = 5 seconds
+
 
   try {
 
@@ -1463,17 +1474,6 @@ async function openChannel(
       );
 
     }
-
-    // NEW: The Playback Watchdog
-    // If the video sits buffering (readyState <= 2) for more than 12 seconds,
-    // we manually force an error to trigger the 1/x fallback system.
-    clearTimeout(playbackWatchdogTimer);
-    playbackWatchdogTimer = setTimeout(() => {
-      if (video.readyState <= 2 && !reconnectInFlight) {
-        console.warn("Watchdog triggered: Video stuck on black screen (Failed to decode frames).");
-        handleStreamError("Stream timeout (Black screen)");
-      }
-    }, 12000);
 
   } catch (
     error
