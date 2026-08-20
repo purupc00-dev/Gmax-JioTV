@@ -1181,6 +1181,13 @@ async function destroyPlayer() {
 
   }
 
+  // NEW FIX: Force video source to blank so old frames don't stick around during fallback loading
+  try {
+    video.pause();
+    video.removeAttribute("src");
+    video.load();
+  } catch (e) {}
+
 
   if (
     playerUiShell
@@ -1435,17 +1442,17 @@ async function openChannel(
 
   await destroyPlayer();
 
-  // NEW: Start the Watchdog BEFORE we try to play the stream!
-  // If the video sits buffering (readyState <= 2) for more than 5 seconds,
-  // we manually force an error to trigger the 1/x fallback system.
+  // Start the Watchdog BEFORE we try to play the stream
+  // Using 6 seconds (6000ms) to account for slight manifest loading delays
   clearTimeout(playbackWatchdogTimer);
   playbackWatchdogTimer = setTimeout(() => {
     if (video.readyState <= 2 && !reconnectInFlight) {
       console.warn("Watchdog triggered: Video stuck on black screen.");
       handleStreamError("Stream timeout (Black screen)");
     }
-  }, 5000); // 5000 milliseconds = 5 seconds
+  }, 6000);
 
+  let streamLoadedSuccessfully = false;
 
   try {
 
@@ -1475,6 +1482,8 @@ async function openChannel(
 
     }
 
+    streamLoadedSuccessfully = true;
+
   } catch (
     error
   ) {
@@ -1495,11 +1504,12 @@ async function openChannel(
 
   } finally {
 
-    // Only hide the spinner if we aren't busy trying a fallback stream
-    if (!reconnectInFlight) {
-      showPlayerLoading(
-        false
-      );
+    // NEW FIX: Only hide the spinner if it ACTUALLY loaded, OR if it's the final failure
+    if (streamLoadedSuccessfully) {
+      reconnectInFlight = false;
+      showPlayerLoading(false);
+    } else if (!reconnectInFlight) {
+      showPlayerLoading(false);
     }
 
   }
@@ -4040,6 +4050,17 @@ function createPlayerControls(
 
     }
   );
+
+  // NEW FIX: Bulletproof UI Killers! If the video manages to decode a frame and play,
+  // we ruthlessly clear the reconnect flag, clear the watchdog, and wipe all loading screens.
+  ["playing", "canplay"].forEach(eventName => {
+    video.addEventListener(eventName, () => {
+      reconnectInFlight = false;
+      showPlayerLoading(false);
+      hidePlayerErrorOverlay();
+      clearTimeout(playbackWatchdogTimer);
+    });
+  });
 
 
   shell.addEventListener(
