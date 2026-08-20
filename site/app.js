@@ -74,6 +74,9 @@ let lastStreamType = "";
 
 let isPlayerRetrying = false;
 
+// Watchdog timer to detect black screens / permanent buffering
+let playbackWatchdogTimer = null;
+
 // Tracks current fallback stream index (0 = primary)
 let currentFallbackIndex = 0;
 
@@ -1149,6 +1152,7 @@ function createChannelCard(
 async function destroyPlayer() {
 
   stopLiveStatusTimer();
+  clearTimeout(playbackWatchdogTimer); // Clear watchdog on destroy
 
   hidePlayerErrorOverlay();
 
@@ -1257,6 +1261,7 @@ async function handleStreamError(err) {
   console.warn("Silent reconnect:", err);
   if (reconnectInFlight || !currentChannel) return;
   reconnectInFlight = true;
+  clearTimeout(playbackWatchdogTimer); // Stop watchdog during fallback transition
 
   try {
     const total = totalSourceCount(currentChannel);
@@ -1458,6 +1463,17 @@ async function openChannel(
       );
 
     }
+
+    // NEW: The Playback Watchdog
+    // If the video sits buffering (readyState <= 2) for more than 12 seconds,
+    // we manually force an error to trigger the 1/x fallback system.
+    clearTimeout(playbackWatchdogTimer);
+    playbackWatchdogTimer = setTimeout(() => {
+      if (video.readyState <= 2 && !reconnectInFlight) {
+        console.warn("Watchdog triggered: Video stuck on black screen (Failed to decode frames).");
+        handleStreamError("Stream timeout (Black screen)");
+      }
+    }, 12000);
 
   } catch (
     error
@@ -5030,9 +5046,12 @@ function updateLiveStatus() {
       )
     );
 
-
-  lagElement.textContent =
-    `LIVE • -${rounded}s`;
+  // NEW: Don't show massive incorrect timestamps if the video is failing to load
+  if (rounded > 3600) {
+    lagElement.textContent = `LIVE • ...`;
+  } else {
+    lagElement.textContent = `LIVE • -${rounded}s`;
+  }
 
 }
 
