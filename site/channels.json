@@ -310392,13 +310392,13 @@
     "logo": "https://i.postimg.cc/d3Yf3PHX/DRMLIVE-Aggressive-Logo.png",
     "group": "1-Playlist-Activation",
     "category": "Entertainment",
-    "stream_url": "https://mix.drmlive.net/mix/actchaljabsdk.mpd?token=YWJTTzZKeWI2amJwZ3FJY0hHb1RNeEdkSEtYc0E3bHJwbU9Hc1dFb1ZSSVJsUHZ2RnljT0x0TWkvVWN5MUFMaEJXZjJRRmg2T0NHWHRMZThMb0dtWUE9PQ==",
+    "stream_url": "https://mix.drmlive.net/mix/actchaljabsdk.mpd?token=YWJTTzZKeWI2amJwZ3FJY0hHb1RNMkRUdzZOa3hYNkRITXcxTmNuMStUNDRIQUhhbWxmUUs3eis3ZklBZ2IrbFB4V3VXMGthenFwdS9DZ3AxRDRtUlE9PQ==",
     "source_m3u": "playlist.m3u",
     "sources": [
       {
         "server": "playlist",
         "m3u": "playlist.m3u",
-        "stream_url": "https://mix.drmlive.net/mix/actchaljabsdk.mpd?token=YWJTTzZKeWI2amJwZ3FJY0hHb1RNeEdkSEtYc0E3bHJwbU9Hc1dFb1ZSSVJsUHZ2RnljT0x0TWkvVWN5MUFMaEJXZjJRRmg2T0NHWHRMZThMb0dtWUE9PQ=="
+        "stream_url": "https://mix.drmlive.net/mix/actchaljabsdk.mpd?token=YWJTTzZKeWI2amJwZ3FJY0hHb1RNMkRUdzZOa3hYNkRITXcxTmNuMStUNDRIQUhhbWxmUUs3eis3ZklBZ2IrbFB4V3VXMGthenFwdS9DZ3AxRDRtUlE9PQ=="
       }
     ],
     "fallbacks": [],
