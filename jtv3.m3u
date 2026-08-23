@@ -60,7 +60,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/Star_Gold_HD_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=021bd4635e8653bca6830adaca183b14:035ec746d6ee0d39cb7cb15963da8424
 #EXTVLCOPT:http-user-agent=Droovy
-#EXTHTTP:{"cookie": "__hdnea__=st=1787475603~exp=1787497203~acl=/*~hmac=7252b8d76c7d48611ab44362023c6ac31b2bda8c691554c22b7b0e71c2ea920f"}
+#EXTHTTP:{"cookie": "__hdnea__=st=1787471541~exp=1787475141~acl=/bpk-tv/Travel_XP_HD_BTS/WDVLive/*~hmac=9e138bc51da281d2c1983aa69330735dfea81749325bc1b8181dc907f1565b54"}
 https://jiotvpllive.cdn.jio.com/bpk-tv/Travel_XP_HD_BTS/WDVLive/index.mpd
 
 #EXTINF:-1 tvg-id="165" tvg-name="Zee Cinema HD" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/ZeeCinemaHD.png" group-title="Movies",Zee Cinema HD
@@ -7863,7 +7863,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/NDTV_Marathi_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=e6afa4754bc15dd28ab6806f417d319d:6a74ef2884813547109ee96098610387
 #EXTVLCOPT:http-user-agent=Droovy
-#EXTHTTP:{"cookie": "__hdnea__=st=1787459707~exp=1787481307~acl=/bpk-tv/Star_Gold_2_HD_BTS/WDVLive/*~hmac=66beeae9ce0161a581fa7e2d0f5e7d48fbd44a77b54f2439ffd3dc2522fe25c7"}
+#EXTHTTP:{"cookie": "__hdnea__=st=1787475603~exp=1787497203~acl=/*~hmac=7252b8d76c7d48611ab44362023c6ac31b2bda8c691554c22b7b0e71c2ea920f"}
 https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Gold_2_HD_BTS/WDVLive/index.mpd
 
 #EXTINF:-1 tvg-id="3097" tvg-name="Star Gold Romance" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Star_Gold_Romance.png" group-title="Movies",Star Gold Romance
