@@ -60,7 +60,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/Star_Gold_HD_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=021bd4635e8653bca6830adaca183b14:035ec746d6ee0d39cb7cb15963da8424
 #EXTVLCOPT:http-user-agent=Droovy
-#EXTHTTP:{"cookie": "__hdnea__=st=1787561914~exp=1787565514~acl=/bpk-tv/Travel_XP_HD_BTS/WDVLive/*~hmac=93a81feb1de46ed414283c7198b7af4ea4aa8e410c665bcbd8360733a0a2296f"}
+#EXTHTTP:{"cookie": "__hdnea__=st=1787571003~exp=1787592603~acl=/*~hmac=c8acdc9a08daef6c91c9de5abd0c3d65955de5a69cecfc6b1d9f0264fea9b832"}
 https://jiotvpllive.cdn.jio.com/bpk-tv/Travel_XP_HD_BTS/WDVLive/index.mpd
 
 #EXTINF:-1 tvg-id="165" tvg-name="Zee Cinema HD" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/ZeeCinemaHD.png" group-title="Movies",Zee Cinema HD
@@ -4690,7 +4690,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/Nat_Geo_Wild_HD_BTS/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=4b006dd7965e5777a7fa33dd636c2e5d:179f796bdf11b750bebd469a3aeae1d0
 #EXTVLCOPT:http-user-agent=Droovy
-#EXTHTTP:{"cookie": "__hdnea__=st=1787551816~exp=1787573416~acl=/bpk-tv/National_Geographic_HD_BTS/WDVLive/*~hmac=d0534c3018f9f47a71abbcb02222c446177fff269d51df673fa27249d8cd6ac4"}
+#EXTHTTP:{"cookie": "__hdnea__=st=1787571003~exp=1787592603~acl=/*~hmac=c8acdc9a08daef6c91c9de5abd0c3d65955de5a69cecfc6b1d9f0264fea9b832"}
 https://jiotvpllive.cdn.jio.com/bpk-tv/National_Geographic_HD_BTS/WDVLive/index.mpd
 
 #EXTINF:-1 tvg-id="1338" tvg-name="RT India" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/RT_TV.png" group-title="English",RT India
