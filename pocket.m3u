@@ -643,6 +643,16 @@ https://times-ott-live.akamaized.net/mnplus_wv_drm/index.mpd
 https://times-ott-live.akamaized.net/romedynow_wv_drm/index.mpd
 
 
+-- Movies
+
+#EXTINF:-1 tvg-id="LoopTamil" tvg-logo="https://yettelevision.com/assets/images/logo/channel_11892.png" tvg-region="Unknown" group-title="Movies",Loop Tamil
+https://live.yettelevision.com:5443/LiveApp/streams/P3wHx9NcLm7Qk2RtV5Yd.m3u8
+#EXTINF:-1 tvg-id="MoviesHD" tvg-logo="https://yettelevision.com/assets/images/logo/channel_11881.png" tvg-region="Unknown" group-title="Movies",Movies HD
+https://live.yettelevision.com:5443/LiveApp/streams/T7mQx9LpV2Nc8HdRw5Ka.m3u8
+#EXTINF:-1 tvg-id="TharunMovies" tvg-logo="https://livetv.ashokadigital.net/upload/logo/1739599242_IMG_20250215_111845_234.png" tvg-region="Chengalpattu" group-title="Movies",Tharun Movies
+https://streaming.livebox.co.in/tharunmovieshls/live.m3u8
+
+
 ==================================== D2H ==================================================
 
 #EXTINF:-1 tvg-id="1276" tvg-logo="https://dvdh7g0f0hwck.cloudfront.net/assets/images/channel/InvestigationDiscoveryHD_Thumbnail_c628b7d4-5cd1-471f-ba84-d171fae140ae.png" group-title="Infotainment",Discovery Investigation
@@ -1488,7 +1498,7 @@ http://144.217.77.42:8888//gta_tamil/index.m3u8
 #EXTINF:-1 tvg-id="YugamTV" tvg-logo="" tvg-region="Unknown" group-title="Overseas",Yugam TV
 http://198.144.149.206:8080/DINESH/YUGAM/index.m3u8?token=YAAL
 
-#EXTINF:-1  tvg-name="Analai Express" group-title="Overseas" tvg-logo="https://tataprime.files.wordpress.com/2024/03/20240314_0109167221661575844903220.png",Analai Express Cinema
+#EXTINF:-1  tvg-name="Analai Express" group-title="Movies" tvg-logo="https://tataprime.files.wordpress.com/2024/03/20240314_0109167221661575844903220.png",Analai Express Cinema
 http://198.144.149.206:8080/MONTAMIL_CINEMA/index.m3u8?token=GTR
 #EXTINF:-1 group-title="Overseas" tvg-logo="http://nammaoorutv.com/dashboard/upicons/download (8).png",Analai Express
 http://198.144.149.206:8080/ANALAI_MOVIE/index.m3u8?token=GTR
@@ -1503,14 +1513,8 @@ http://148.113.170.17:8091/rudhram/index.m3u8
 #EXTINF:-1  tvg-name="Sooriyan Tv" group-title="Overseas" tvg-logo="https://tataprime.files.wordpress.com/2024/03/20240319_2154502881783542987072490.png",Sooriyan Tv
 https://live20.bozztv.com/giatv/giatv-Infinittyott/Infinittyott/playlist.m3u8
 
-#EXTINF:-1 group-title="Overseas" tvg-logo="https://i.ibb.co/LSyydKj/Sooriyan-TV-Tamil.jpg",Sooriyan Cinema
-https://cdn.jwplayer.com/videos/LNdcgulf-o4j6Jv34.m3u8
-
-#EXTINF:-1  tvg-name="Yet TV" group-title="Overseas" tvg-logo="", Yet TV
-https://live.yettelevision.com:5443/LiveApp/streams/yettv.m3u8
-
-#EXTINF:-1 tvg-id="YETMax" tvg-logo="https://yettelevision.com/assets/images/logo/channel_11847.png" tvg-region="Unknown" group-title="Overseas",YET Max
-https://live.yettelevision.com:5443/LiveApp/streams/yettv2.m3u8
+#EXTINF:-1 group-title="Movies" tvg-logo="https://i.ibb.co/LSyydKj/Sooriyan-TV-Tamil.jpg",Sooriyan Cinema
+https://live20.bozztv.com/giatv/giatv-Sooriyantv/Sooriyantv/playlist.m3u8
 
 #EXTINF:-1  tvg-name="India Life" group-title="Overseas" tvg-logo="https://tataprime.files.wordpress.com/2024/05/20240515_1638207054808583530763768.png", India Life HD
 https://m6gdavepdn93-hls-live.5centscdn.com/pravasi/d0dbe915091d400bd8ee7f27f0791303.sdp/playlist.m3u8
@@ -1563,7 +1567,7 @@ https://cable92tataplay.akamaized.net/live/utv/index.m3u8
 https://cable91tataplay.akamaized.net/live/dharshantv/index.m3u8
 #EXTINF:-1 tvg-id="jio-3409" tvg-name="ROJA TV" tvg-logo="https://i.ibb.co/mVzFDt49/ROJA-LOGO-HD-5.png" group-title="Local Channels", ROJA TV
 https://live.rojatv.cloud/rojatv/rojatv/index.m3u8
-#EXTINF:-1 tvg-id="jio-3417" tvg-name="Roja Movies HD" group-title="Local Channels" tvg-logo="https://i.ibb.co/21by5dpD/1000135211.png",Roja Movies HD
+#EXTINF:-1 tvg-id="jio-3417" tvg-name="Roja Movies HD" group-title="Movies" tvg-logo="https://i.ibb.co/21by5dpD/1000135211.png",Roja Movies HD
 https://stream.rojatv.cloud/rojatv/rojatv/index.m3u8
 #EXTINF:-1 group-title="Local Channels" tvg-logo="https://jiotvimages.cdn.jio.com/dare_images/images/suryatvtamil.png",Suriya TV 
 https://stream.ottlive.co.in/suryatvtamil/index.m3u8
@@ -1571,6 +1575,12 @@ https://stream.ottlive.co.in/suryatvtamil/index.m3u8
 https://stream.ottlive.co.in/aryatvtamil/index.m3u8
 #EXTINF:-1 tvg-id="RockTV" tvg-logo="https://jiotvimages.cdn.jio.com/dare_images/images/suriyantvtamil.png" tvg-region="Salem" group-title="Local Channels",Rock TV
 https://stream.ottlive.co.in/suriyantvtamil/index.m3u8
+#EXTINF:-1 tvg-id="MNTV" tvg-logo="https://raw.githubusercontent.com/amazeyourself/tamil-local-iptv/refs/heads/main/logos/MNTV.png" tvg-region="Dharmapuri" group-title="Local Channels",MN TV
+https://mntv.livebox.co.in/mntvhls/live.m3u8
+#EXTINF:-1  tvg-name="Yet TV" group-title="Local Channels" tvg-logo="https://yettelevision.com/assets/images/logo/channel_1.png", Yet TV
+https://live.yettelevision.com:5443/LiveApp/streams/yettv.m3u8
+#EXTINF:-1 tvg-id="YETMax" tvg-logo="https://yettelevision.com/assets/images/logo/channel_11847.png" tvg-region="Unknown" group-title="Local Channels",YET Max
+https://live.yettelevision.com:5443/LiveApp/streams/yettv2.m3u8
 #EXTINF:-1 tvg-id="Tamil Ratna" tvg-logo="" tvg-region="Old" group-title="Local Channels",Tamil Ratna
 https://mumt04.tangotv.in/m18aqlK4TAMILRATNAM/index.m3u8
 #EXTINF:-1 tvg-id="OMTV" tvg-logo="" tvg-region="Unknown" group-title="Local Channels",OM TV
@@ -1585,18 +1595,12 @@ LIVEBOX
 https://account18.livebox.co.in/IMAGESEQUENCEhls/live.m3u8
 #EXTINF:-1  tvg-name="Irattai Pathai Tv" group-title="Local Channels" tvg-logo="https://tataprime.files.wordpress.com/2024/03/20240315_2114196845832868490079177.png",Irratai Pathai Tv
 https://account31.livebox.co.in/IRATTAIPAATHAITVhls/live.m3u8
-#EXTINF:-1 tvg-id="TharunMovies" tvg-logo="https://livetv.ashokadigital.net/upload/logo/1739599242_IMG_20250215_111845_234.png" tvg-region="Chengalpattu" group-title="Local Channels",Tharun Movies
-https://streaming.livebox.co.in/tharunmovieshls/live.m3u8
 #EXTINF:-1 tvg-id="7Green4K" tvg-logo="https://livetv.ashokadigital.net/upload/logo/1739599670_IMG_20250215_113627_583.png" tvg-region="Chengalpattu" group-title="Local Channels",7 Green 4K
 https://account33.livebox.co.in/7GREEN4Khls/live.m3u8
 #EXTINF:-1 tvg-id="UTVCBE" tvg-logo="https://raw.githubusercontent.com/amazeyourself/tamil-local-iptv/refs/heads/main/logos/UTVKovai.png" tvg-region="Coimbatore" group-title="Local Channels",UTV Coimbatore
 http://cdn.utvtamil.in/utvkovai/utv/playlist.m3u8
 #EXTINF:-1 tvg-id="IdhayamTV2" tvg-logo="https://livetv.ashokadigital.net/upload/logo/1786437660_c693de12-bd16-4691-b98b-e7055e31d6ac-Photoroom.png" tvg-region="Unknown" group-title="Local Channels",Idhayam TV
 https://tvstream.cloudlive24.com/live/8527530ab689bf8a710430c189aa2906.m3u8
-#EXTINF:-1 tvg-id="LoopTamil" tvg-logo="https://yettelevision.com/assets/images/logo/channel_11892.png" tvg-region="Unknown" group-title="Overseas",Loop Tamil
-http://15.204.120.59:5080/LiveApp/streams/P3wHx9NcLm7Qk2RtV5Yd.m3u8
-#EXTINF:-1 tvg-id="MoviesHD" tvg-logo="https://yettelevision.com/assets/images/logo/channel_11881.png" tvg-region="Unknown" group-title="Local Channels",Movies HD
-https://live.yettelevision.com:5443/LiveApp/streams/T7mQx9LpV2Nc8HdRw5Ka.m3u8
 #EXTINF:-1 tvg-id="" tvg-name="" tvg-language="Local Channels" tvg-logo="" tvg-country="IN" tvg-url="" group-title="Local Channels",MANASU TV
 https://stream6.livebox.co.in/manasutvhls/live.m3u8
 #EXTINF:-1  tvg-name="Annai" group-title="Local Channels" tvg-logo="https://i.ibb.co/F4htQDVY/Annai-TVHD.jpg",Annai TV
@@ -3544,9 +3548,9 @@ https://otte.live.fly.ww.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/uiffe4jhf0/
 ================================== PREMIUM 24/7 =======================================================
 
 #EXTINF:-1  tvg-name="Cinemania 4k" tvg-id="24.7.Dummy.us" group-title="Premium 24/7" tvg-logo="http://b1g.pw/logos2/CineMania4K_tamil.jpg",Cinemania 4K
-http://filex.homes:8080//live/87654321/12345678/507276.ts
+http://filex.homes:8080//live/1711377989/6282641817/507276.ts
 #EXTINF:-1  tvg-name="Cinemania" tvg-id="24.7.Dummy.us" group-title="Premium 24/7" tvg-logo="https://i.ibb.co/xFrH2L0/1000150257.jpg",Cinemania 1
-http://filex.homes:8080//live/87654321/12345678/507271.ts
+http://filex.homes:8080//live/3114654477/5787654467/507271.ts
 #EXTINF:-1  tvg-name="Cinemania" tvg-id="24.7.Dummy.us" group-title="Premium 24/7" tvg-logo="https://i.ibb.co/xFrH2L0/1000150257.jpg",Cinemania 2
 http://filex.homes:8080//live/87654321/12345678/507272.ts
 #EXTINF:-1  tvg-name="Cinemania" tvg-id="24.7.Dummy.us" group-title="Premium 24/7" tvg-logo="https://i.ibb.co/xFrH2L0/1000150257.jpg",Cinemania 3
@@ -3658,6 +3662,33 @@ https://linearjitp-playback.astro.com.my/dash-wv/linear/127/default_ott.mpd
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (Linux; Android 10; MiTV-AXSO0 Build/QTZCS200912.005) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36
 https://linearjitp-playback.astro.com.my/dash-wv/linear/131/default_ott.mpd
 
+-- YET
+
+#EXTINF:-1 tvg-logo="https://yetradio.com/assets/logo/yet_radio_tamil.png" type="radio" group-title="Tamil FM Radio",YET Radio
+https://play.yetradio.com/stream/yetradio
+#EXTINF:-1 tvg-logo="https://yetradio.com/admin_panel/upload/1775016471_yetnewhits.png" type="radio" group-title="Tamil FM Radio",YET Latest
+https://play.yetradio.com/stream/galaxyfm
+#EXTINF:-1 tvg-logo="https://yetradio.com/admin_panel/upload/1757047841_YET%20Radio%20Love.png" type="radio" group-title="Tamil FM Radio",YET Love
+https://play.yetradio.com/stream/yetlove
+#EXTINF:-1 tvg-logo="https://yetradio.com/admin_panel/upload/1779560446_BEATS3FINAL7.png" type="radio" group-title="Tamil FM Radio",YET Beats
+https://play.yetradio.com/stream/radiomaaza
+#EXTINF:-1 tvg-logo="https://yetradio.com/admin_panel/upload/1775140112_NewYETRADIOLOGO9.png" type="radio" group-title="Tamil FM Radio",Yet 90s
+https://play.yetradio.com/stream/90slove
+#EXTINF:-1 tvg-logo="https://yetradio.com/admin_panel/upload/1775139107_NewYETRADIOLOGO6.png" type="radio" group-title="Tamil FM Radio",AR Rahman
+https://play.yetradio.com/stream/arrahman
+#EXTINF:-1 tvg-logo="https://yetradio.com/admin_panel/upload/1775051793_StarFMVijay2.png" type="radio" group-title="Tamil FM Radio",Vijay Hits
+https://play.yetradio.com/stream/starhits
+#EXTINF:-1 tvg-logo="https://yetradio.com/admin_panel/upload/1775139159_NewYETRADIOLOGO7.png" type="radio" group-title="Tamil FM Radio",Suriya Hits
+https://play.yetradio.com/stream/stars2
+#EXTINF:-1 tvg-logo="https://yetradio.com/admin_panel/upload/1777178445_Gemini_Generated_Image_snvw1nsnvw1nsnvw.jpg" type="radio" group-title="Tamil FM Radio",Kamal Hits
+https://play.yetradio.com/stream/yetradio2
+#EXTINF:-1 tvg-logo="https://yetradio.com/admin_panel/upload/1750981734_RAAGAM14.png" type="radio" group-title="Tamil FM Radio",YET Raagam
+https://play.yetradio.com/stream/yetraagam
+#EXTINF:-1 tvg-logo="https://yetradio.com/admin_panel/upload/1757569510_Innisai.png" type="radio" group-title="Tamil FM Radio",YET Innisai
+https://play.yetradio.com/stream/innisai
+#EXTINF:-1 tvg-logo="https://yetradio.com/admin_panel/upload/1774845870_YetRemix.png" type="radio" group-title="Tamil FM Radio",YET Remix
+https://play.yetradio.com/stream/yetremix
+
 #EXTINF:-1 type="radio" group-title="Tamil FM Radio",Lankasri FM
 http://149.202.121.140:80/live/
 #EXTINF:-1 type="radio" group-title="Tamil FM Radio",Puducherry Fm Rainbow
@@ -3703,6 +3734,8 @@ https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudioragam/hlspbaudioraga
 #EXTINF:-1 type="radio" group-title="Tamil FM Radio",IBC tamil radio
 http://fm.ibctamil.com:6176/stream
 
+#EXTINF:-1 type="radio" group-title="Tamil FM Radio",Top 100
+https://stream.zeno.fm/1hwkbanbz3stv
 #EXTINF:-1 type="radio" group-title="Tamil FM Radio",Ilayaraja HD
 https://stream.zeno.fm/5u2c0yh0ekhvv
 #EXTINF:-1 type="radio" group-title="Tamil FM Radio",Ilayaraja 3D
