@@ -87,7 +87,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/CNTelugu_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=a23b609b33e254a48e4fc6fa7af0fd8d:4064c52328bfe9e6008776b48a431e4b
 #EXTVLCOPT:http-user-agent=Droovy
-#EXTHTTP:{"cookie": "__hdnea__=st=1787683696~exp=1787687296~acl=/bpk-tv/ZeeTVHD_BTS/WDVLive/*~hmac=d2cbc8997f2d3ba6b7e7d785451e0333cedac4ccfdb8cd26dfe1731f85e63a43"}
+#EXTHTTP:{"cookie": "__hdnea__=st=1787687293~exp=1787690893~acl=/bpk-tv/ZeeTVHD_BTS/WDVLive/*~hmac=44f55b42d71f70b7f75dcd06e64f549a7590c89b0ab2d0324832aa2427cb9c94"}
 https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTVHD_BTS/WDVLive/index.mpd
 
 #EXTINF:-1 tvg-id="173" tvg-name="Aaj Tak" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Aaj_Tak.png" group-title="News",Aaj Tak
@@ -2835,7 +2835,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/CNTamil_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=f45e69507f0f5aa1a6e82374efb0af25:f84348219837769feb5a26a7b1cd31dc
 #EXTVLCOPT:http-user-agent=Droovy
-#EXTHTTP:{"cookie": "__hdnea__=st=1787683520~exp=1787687120~acl=/bpk-tv/SonyBBCEarthHin_BTS/WDVLive/*~hmac=66ce0b70075ea8513ad687823558eb53412b0fcb5f3aefa15cd9ed5112042177"}
+#EXTHTTP:{"cookie": "__hdnea__=st=1787687011~exp=1787690611~acl=/bpk-tv/SonyBBCEarthHin_BTS/WDVLive/*~hmac=802868e423fc63fc7da7eef8eaab75a430cb92cb77906908573ff4db9ca2920e"}
 https://jiotvpllive.cdn.jio.com/bpk-tv/SonyBBCEarthHin_BTS/WDVLive/index.mpd
 
 #EXTINF:-1 tvg-id="824" tvg-name="Puthu Yugam" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Puthu_Yugam.png" group-title="Tamil",Puthu Yugam
