@@ -457,6 +457,9 @@ https://delta13tatasky.akamaized.net/out/i/5615195.mpd
 #EXTINF:-1 tvg-id="789" tvg-logo="https://tatalogo.pages.dev/1167.png" group-title="Movies",Tata Play Hollywood Local
 https://delta13tatasky.akamaized.net/out/i/6282177.mpd
 
+#EXTINF:-1 tvg-id="1260" tvg-logo="https://bigcchubchat.pages.dev/1260.png" group-title="Movies",Tata Play Tamil Classics
+http://tv.cloudcdn.me:80/live.ts?channelId=132370&uid=3037&deviceMac=00:1A:79:0A:3B:2B
+
 #EXTINF:-1 tvg-id="ts663" tvg-logo="https://ltsk-cdn.s3.eu-west-1.amazonaws.com/jumpstart/Temp_Live/cdn/HLS/Channel/imageContent-31376-jlxbt6kg-v2/imageContent-31376-jlxbt6kg-m2.png" group-title="Movies", Tata Play Tamil Cinema
 http://sbhgoldpro.org:80/play/live.php?mac=00:1A:79:1B:A5:64&stream=281614&extension=ts
 
@@ -701,6 +704,9 @@ http://mag.diamondtv.one:80/live/unur/rtdVDBNG2z/302020.ts
 
 #EXTINF: -1 tvg-id="Willow.us" tvg-logo="https://i.postimg.cc/RFNMQVQM/j-Na-Ow-Lv-R-400x400-photoaidcom-cropped.png" group-title="Sports", Willow Cricket
 http://mag.tivi-one-iptv.net:80/play/live.php?mac=A0:BB:3E:07:67:9C&stream=373197&extension=ts
+
+#EXTINF: -1 tvg-id="Willow2.us" tvg-logo="https://emby.tmsimg.com/assets/s100316_ll_h9_ab.png" group-title="Sports", Willow 2
+http://tv.cloudcdn.me:80/live.ts?channelId=287&uid=3037&deviceMac=00:1A:79:0A:3B:2B
 
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=290e09c837da78d5cd961978d390515c:b748836c71e6a4ca68ef5b5652db6247
