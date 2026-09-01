@@ -24,6 +24,9 @@
       <div class="header-right">
         <span id="channel-count">0 channels</span>
         <span class="live-pill">● LIVE</span>
+        
+        <!-- NEW: LOGIN BUTTON ADDED HERE -->
+        <button id="auth-nav-btn" class="gmax-login-nav-btn" style="margin-left: 10px;">Login</button>
       </div>
     </header>
 
@@ -98,6 +101,26 @@
       <span>Gmax-JioTV</span>
       <span>Powered by GmaxHub</span>
     </footer>
+  </div>
+
+  <!-- NEW: LOGIN MODAL ADDED HERE -->
+  <div id="login-modal" class="gmax-modal-overlay hidden">
+    <div class="gmax-modal-content">
+      <div class="gmax-modal-title">JioTV Login</div>
+      <div id="login-error" class="gmax-error-msg"></div>
+      
+      <div id="step-phone">
+        <input type="tel" id="input-phone" class="gmax-modal-input" placeholder="Jio Number (e.g. 9876543210)">
+        <button id="btn-send-otp" class="gmax-modal-btn">Send OTP</button>
+      </div>
+      
+      <div id="step-otp" class="hidden">
+        <input type="number" id="input-otp" class="gmax-modal-input" placeholder="Enter 6-digit OTP">
+        <button id="btn-verify-otp" class="gmax-modal-btn">Verify & Login</button>
+      </div>
+      
+      <button id="btn-cancel-login" class="gmax-modal-btn gmax-cancel-btn">Cancel</button>
+    </div>
   </div>
 
   <script src="./app.js" defer></script>
