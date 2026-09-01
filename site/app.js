@@ -8,7 +8,7 @@ const CHANNELS_URL = "./channels.json";
 
 // --- NEW: VERCEL BACKEND URL ---
 // Change this to your deployed Vercel domain once it is online
-const API_BASE = "https://your-vercel-domain.vercel.app/api"; 
+const API_BASE = "https://gmax-jiotv.vercel.app//api"; 
 // -------------------------------
 
 const CHANNELS_PER_PAGE = 60;
