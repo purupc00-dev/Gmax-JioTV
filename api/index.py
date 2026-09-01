@@ -38,10 +38,6 @@ class VerifyRequest(BaseModel):
 async def root_check():
     return {"status": "Online", "message": "Gmax-JioTV Vercel Server is running perfectly!"}
 
-@app.get("/api")
-async def api_check():
-    return {"status": "Online", "message": "API endpoints are active and ready."}
-
 @app.get("/api/channels")
 async def get_channels():
     url = "https://jiotvapi.media.jio.com/apis/v1.4/live/channels.json"
@@ -58,7 +54,7 @@ async def send_otp(req: OTPRequest):
     if not number.startswith("+91"):
         number = "+91" + number
         
-    # THE FIX: JioTV requires the phone number to be Base64 Encoded
+    # JioTV requires the phone number to be Base64 Encoded
     b64_number = base64.b64encode(number.encode('utf-8')).decode('utf-8')
     
     url = "https://jiotvapi.media.jio.com/apis/v1.0/login/sendotp"
@@ -74,7 +70,6 @@ async def verify_otp(req: VerifyRequest):
     if not number.startswith("+91"):
         number = "+91" + number
         
-    # THE FIX: Base64 encode the number here too
     b64_number = base64.b64encode(number.encode('utf-8')).decode('utf-8')
     
     url = "https://jiotvapi.media.jio.com/apis/v1.0/login/verifyotp"
