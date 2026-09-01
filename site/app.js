@@ -6,6 +6,11 @@
 
 const CHANNELS_URL = "./channels.json";
 
+// --- NEW: VERCEL BACKEND URL ---
+// Change this to your deployed Vercel domain once it is online
+const API_BASE = "https://your-vercel-domain.vercel.app/api"; 
+// -------------------------------
+
 const CHANNELS_PER_PAGE = 60;
 
 /*
@@ -88,6 +93,9 @@ const RECENT_KEY = "gmax-jiotv-recent";
 const RECENT_MAX = 12;
 let recentIds = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
 
+// --- NEW: AUTH STATE ---
+let jioAuth = JSON.parse(localStorage.getItem("gmax_jio_auth")) || null;
+// -----------------------
 
 /* =========================================================
    FAVORITES
@@ -345,6 +353,19 @@ const closePlayerButton =
   document.getElementById(
     "close-player"
   );
+
+// --- NEW: OTP DOM ELEMENTS ---
+const authNavBtn = document.getElementById("auth-nav-btn");
+const loginModal = document.getElementById("login-modal");
+const stepPhone = document.getElementById("step-phone");
+const stepOtp = document.getElementById("step-otp");
+const inputPhone = document.getElementById("input-phone");
+const inputOtp = document.getElementById("input-otp");
+const btnSendOtp = document.getElementById("btn-send-otp");
+const btnVerifyOtp = document.getElementById("btn-verify-otp");
+const btnCancelLogin = document.getElementById("btn-cancel-login");
+const loginError = document.getElementById("login-error");
+// -----------------------------
 
 
 /* =========================================================
@@ -1338,6 +1359,15 @@ async function openChannel(
   // Always strip old __hdnea__ then apply THIS channel's token only (fixes 403 double-token)
   let streamUrl = applyHdneaToUrl(config.url, config.cookie);
 
+  // --- NEW: VERCEL BACKEND OVERRIDE ---
+  // If the user is logged in, we ignore the static expiring URL and fetch a fresh one from Vercel.
+  if (jioAuth && jioAuth.ssotoken) {
+      const channelId = channel.id || channel.tvgId;
+      if (channelId) {
+          streamUrl = `${API_BASE}/play/${channelId}?ssotoken=${encodeURIComponent(jioAuth.ssotoken)}&uniqueid=${encodeURIComponent(jioAuth.uniqueid)}&crmid=${encodeURIComponent(jioAuth.crmid || "")}`;
+      }
+  }
+  // ------------------------------------
 
   if (
     !streamUrl
@@ -3195,16 +3225,16 @@ function injectCinematicPlayerStyles() {
         linear-gradient(
           145deg,
           rgba(
-            255,
-            255,
-            255,
-            .06
+          255,
+          255,
+          255,
+          .06
           ),
           rgba(
-            255,
-            255,
-            255,
-            .025
+          255,
+          255,
+          255,
+          .025
           )
         );
 
@@ -5947,6 +5977,103 @@ async function loadChannels() {
     `;
   }
 }
+
+
+/* =========================================================
+   NEW: OTP LOGIN SYSTEM START 
+========================================================= */
+
+function updateAuthUI() {
+    if (authNavBtn) authNavBtn.textContent = jioAuth ? "Logout" : "Login";
+}
+updateAuthUI();
+
+if (authNavBtn) {
+    authNavBtn.addEventListener("click", () => {
+        if (jioAuth) {
+            localStorage.removeItem("gmax_jio_auth");
+            jioAuth = null;
+            updateAuthUI();
+            alert("Logged out successfully.");
+        } else {
+            loginModal.classList.remove("hidden");
+            stepPhone.classList.remove("hidden");
+            stepOtp.classList.add("hidden");
+            loginError.textContent = "";
+        }
+    });
+}
+
+if (btnCancelLogin) {
+    btnCancelLogin.addEventListener("click", () => loginModal.classList.add("hidden"));
+}
+
+if (btnSendOtp) {
+    btnSendOtp.addEventListener("click", async () => {
+        const number = inputPhone.value.trim();
+        if (number.length < 10) return loginError.textContent = "Enter a valid 10-digit number.";
+        
+        btnSendOtp.textContent = "Sending...";
+        btnSendOtp.disabled = true;
+        try {
+            const res = await fetch(`${API_BASE}/send_otp`, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ number })
+            });
+            if (res.ok) {
+                stepPhone.classList.add("hidden");
+                stepOtp.classList.remove("hidden");
+                loginError.textContent = "";
+            } else {
+                loginError.textContent = "Failed to send OTP. Check number.";
+            }
+        } catch (e) {
+            loginError.textContent = "Server connection error.";
+        }
+        btnSendOtp.textContent = "Send OTP";
+        btnSendOtp.disabled = false;
+    });
+}
+
+if (btnVerifyOtp) {
+    btnVerifyOtp.addEventListener("click", async () => {
+        const number = inputPhone.value.trim();
+        const otp = inputOtp.value.trim();
+        if (!otp) return loginError.textContent = "Enter OTP.";
+        
+        btnVerifyOtp.textContent = "Verifying...";
+        btnVerifyOtp.disabled = true;
+        try {
+            const res = await fetch(`${API_BASE}/verify_otp`, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ number, otp })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                jioAuth = {
+                    ssotoken: data.ssoToken,
+                    uniqueid: data.sessionAttributes.uniqueId,
+                    crmid: data.sessionAttributes.subscriberId
+                };
+                localStorage.setItem("gmax_jio_auth", JSON.stringify(jioAuth));
+                loginModal.classList.add("hidden");
+                updateAuthUI();
+                alert("Login Successful! Channels will now load instantly.");
+            } else {
+                loginError.textContent = "Invalid OTP.";
+            }
+        } catch (e) {
+            loginError.textContent = "Verification error.";
+        }
+        btnVerifyOtp.textContent = "Verify & Login";
+        btnVerifyOtp.disabled = false;
+    });
+}
+
+/* =========================================================
+   NEW: OTP LOGIN SYSTEM END 
+========================================================= */
+
 
 /* =========================================================
    START
