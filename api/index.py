@@ -1,14 +1,13 @@
-import time
+import re
 import requests
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import re
 
-app = FastAPI(title="Gmax-JioTV Backend")
+app = FastAPI(title="Gmax-JioTV Backend Engine")
 
-# This allows your GitHub Pages site to talk to Vercel without CORS errors
+# Completely opens CORS so your GitHub Pages site is never blocked
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,6 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Standard JioTV Mobile App Headers
 MOBILE_HEADERS = {
     "os": "android",
     "appname": "RJIL_JioTV",
@@ -35,6 +35,16 @@ class VerifyRequest(BaseModel):
     number: str
     otp: str
 
+# --- HEALTH CHECKS (Fixes the 404 on your Vercel Homepage) ---
+@app.get("/")
+async def root_check():
+    return {"status": "Online", "message": "Gmax-JioTV Vercel Server is running perfectly!"}
+
+@app.get("/api")
+async def api_check():
+    return {"status": "Online", "message": "API endpoints are active and ready."}
+
+# --- JIOTV ENDPOINTS ---
 @app.get("/api/channels")
 async def get_channels():
     """Fetches the live channel list directly from Jio."""
@@ -48,7 +58,7 @@ async def get_channels():
 
 @app.post("/api/send_otp")
 async def send_otp(req: OTPRequest):
-    """Replaces login.php OTP sending."""
+    """Hits the JioTV OTP server."""
     number = req.number.strip()
     if not number.startswith("+91"):
         number = "+91" + number
@@ -61,7 +71,7 @@ async def send_otp(req: OTPRequest):
 
 @app.post("/api/verify_otp")
 async def verify_otp(req: VerifyRequest):
-    """Replaces login.php OTP verification."""
+    """Verifies OTP and returns your private authentication tokens."""
     number = req.number.strip()
     if not number.startswith("+91"):
         number = "+91" + number
@@ -82,7 +92,7 @@ async def verify_otp(req: VerifyRequest):
 
 @app.get("/api/get_stream")
 async def get_stream(id: str, ssotoken: str = "", uniqueid: str = "", crmid: str = ""):
-    """Replaces live.php. Fetches the stream URL and extracts the token."""
+    """The master proxy: Fetches the raw m3u8 URL and extracts the DRM token."""
     if not ssotoken or not uniqueid:
         raise HTTPException(status_code=401, detail="Missing auth tokens")
 
@@ -96,11 +106,11 @@ async def get_stream(id: str, ssotoken: str = "", uniqueid: str = "", crmid: str
         
         if res.status_code == 200 and "url" in data:
             stream_url = data["url"]
-            # Extract the __hdnea__ token from the URL so the JS player can use it
+            # Extract the __hdnea__ token from the URL
             token_match = re.search(r'__hdnea__=([^&]+)', stream_url)
             token = "__hdnea__=" + token_match.group(1) if token_match else ""
             
-            # Clean the URL to hand to the player
+            # Remove all queries to get the clean base URL
             clean_url = stream_url.split('?')[0]
             
             return JSONResponse(content={"url": clean_url, "token": token})
