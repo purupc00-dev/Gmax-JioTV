@@ -48,21 +48,28 @@ async def get_channels():
     except Exception as e:
         raise HTTPException(status_code=500, detail="Failed to fetch channels")
 
+
 @app.post("/api/send_otp")
 async def send_otp(req: OTPRequest):
     number = req.number.strip()
     if not number.startswith("+91"):
         number = "+91" + number
         
-    # JioTV requires the phone number to be Base64 Encoded
+    # Base64 Encode the number for JioTV
     b64_number = base64.b64encode(number.encode('utf-8')).decode('utf-8')
     
     url = "https://jiotvapi.media.jio.com/apis/v1.0/login/sendotp"
     try:
         res = requests.post(url, headers=MOBILE_HEADERS, json={"number": b64_number}, timeout=10)
+        
+        # FIX: Handle JioTV's empty 204 success response so Python doesn't crash!
+        if res.status_code == 204:
+            return JSONResponse(content={"message": "OTP Sent Successfully"}, status_code=200)
+            
         return JSONResponse(content=res.json(), status_code=res.status_code)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/api/verify_otp")
 async def verify_otp(req: VerifyRequest):
@@ -83,9 +90,19 @@ async def verify_otp(req: VerifyRequest):
     }
     try:
         res = requests.post(url, headers=MOBILE_HEADERS, json=payload, timeout=10)
-        return JSONResponse(content=res.json(), status_code=res.status_code)
+        data = res.json()
+        
+        # FIX: Restructure the response so app.js can easily grab the tokens
+        if res.status_code == 200 and "ssoToken" in data:
+            return JSONResponse(content=data, status_code=200)
+        elif res.status_code == 200 and "data" in data and "ssoToken" in data["data"]:
+            return JSONResponse(content=data["data"], status_code=200)
+        else:
+            return JSONResponse(content=data, status_code=400)
+            
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/get_stream")
 async def get_stream(id: str, ssotoken: str = "", uniqueid: str = "", crmid: str = ""):
