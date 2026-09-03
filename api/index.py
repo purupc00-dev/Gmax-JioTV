@@ -80,7 +80,7 @@ async def send_otp(request: Request):
     # Base64 encode the phone number, exactly like the PHP script does
     b64_number = base64.b64encode(number.encode('utf-8')).decode('utf-8')
 
-    url = "https://jiotvapi.media.jio.com/apis/v1.0/login/sendotp"
+    url = "https://jiotvapi.media.jio.com/userservice/apis/v1/loginotp/send"
     try:
         res = requests.post(url, headers=MOBILE_HEADERS, json={"number": b64_number}, timeout=10)
 
@@ -167,7 +167,7 @@ async def verify_otp(request: Request):
         }
     }
     
-    url = "https://jiotvapi.media.jio.com/apis/v1.0/login/verifyotp"
+    url = "https://jiotvapi.media.jio.com/userservice/apis/v1/loginotp/verify"
     try:
         res = requests.post(url, headers=MOBILE_HEADERS, json=payload, timeout=10)
         try:
