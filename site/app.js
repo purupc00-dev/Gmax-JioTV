@@ -408,15 +408,21 @@ if (btnSendOtp) {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ number })
             });
+            const data = await res.json().catch(() => ({}));
             if (res.ok) {
                 stepPhone.classList.add("hidden");
                 stepOtp.classList.remove("hidden");
                 loginError.textContent = "";
             } else {
-                loginError.textContent = "Failed to send OTP. Check number.";
+                // Show the real reason instead of a generic message so
+                // failures are actually diagnosable.
+                console.error("send_otp failed", res.status, data);
+                loginError.textContent =
+                    data.error || data.message || `Failed to send OTP (HTTP ${res.status}).`;
             }
         } catch (e) {
-            loginError.textContent = "Server connection error.";
+            console.error("send_otp network error", e);
+            loginError.textContent = `Server connection error: ${e.message}`;
         }
         btnSendOtp.textContent = "Send OTP";
         btnSendOtp.disabled = false;
@@ -436,8 +442,8 @@ if (btnVerifyOtp) {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ number, otp })
             });
+            const data = await res.json().catch(() => ({}));
             if (res.ok) {
-                const data = await res.json();
                 jioAuth = {
                     ssotoken: data.ssoToken,
                     uniqueid: data.sessionAttributes.uniqueId,
@@ -448,10 +454,13 @@ if (btnVerifyOtp) {
                 updateAuthUI();
                 alert("Login Successful! Channels will now load instantly.");
             } else {
-                loginError.textContent = "Invalid OTP.";
+                console.error("verify_otp failed", res.status, data);
+                loginError.textContent =
+                    data.error || data.message || `Invalid OTP (HTTP ${res.status}).`;
             }
         } catch (e) {
-            loginError.textContent = "Verification error.";
+            console.error("verify_otp network error", e);
+            loginError.textContent = `Verification error: ${e.message}`;
         }
         btnVerifyOtp.textContent = "Verify & Login";
         btnVerifyOtp.disabled = false;
