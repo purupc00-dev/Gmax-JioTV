@@ -7,7 +7,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Gmax-JioTV API")
 
-# Fully open CORS to prevent GitHub Pages from blocking the request
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,7 +15,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Standard JioTV Mobile App Headers
 MOBILE_HEADERS = {
     "User-Agent": "okhttp/4.2.2",
     "appname": "RJIL_JioTV",
@@ -28,121 +26,141 @@ MOBILE_HEADERS = {
 
 @app.get("/")
 @app.get("/api")
-async def root_check():
-    return {"status": "Online", "message": "Gmax-JioTV API is running smoothly!"}
+async def root():
+    return {"status": "Online", "message": "Gmax-JioTV API ready"}
 
-# --- SEND OTP ---
-# Listening on both paths guarantees Vercel won't 404 the request
+# ---------- SEND OTP ----------
 @app.post("/send_otp")
 @app.post("/api/send_otp")
 async def send_otp(request: Request):
     try:
-        req = await request.json()
-    except Exception:
-        return JSONResponse(content={"error": "Invalid JSON sent from frontend"}, status_code=400)
-        
-    number = req.get("number", "").strip()
-    if not number:
-        return JSONResponse(content={"error": "Phone number is empty"}, status_code=400)
-        
-    if not number.startswith("+91"):
-        number = "+91" + number
-        
-    # Base64 encode the phone number, exactly like the PHP script does
-    b64_number = base64.b64encode(number.encode('utf-8')).decode('utf-8')
-    
-    url = "https://jiotvapi.media.jio.com/apis/v1.0/login/sendotp"
-    try:
-        res = requests.post(url, headers=MOBILE_HEADERS, json={"number": b64_number}, timeout=10)
-        
-        # Jio returns HTTP 204 (No Content) on successful OTP dispatch
-        if res.status_code == 204:
-            return JSONResponse(content={"message": "OTP Sent Successfully"}, status_code=200)
-            
-        # Parse error responses from JioTV
-        try:
-            return JSONResponse(content=res.json(), status_code=res.status_code)
-        except Exception:
-            return JSONResponse(content={"error": "Invalid response from Jio", "raw": res.text}, status_code=400)
-    except Exception as e:
-        return JSONResponse(content={"error": f"Server error: {str(e)}"}, status_code=500)
+        body = await request.json()
+    except:
+        return JSONResponse({"error": "Invalid JSON"}, status_code=400)
 
-# --- VERIFY OTP ---
+    number = str(body.get("number", "")).strip()
+    if not number:
+        return JSONResponse({"error": "Phone number required"}, status_code=400)
+
+    if not number.startswith("+91"):
+        number = "+91" + number[-10:]
+
+    b64 = base64.b64encode(number.encode()).decode()
+    url = "https://jiotvapi.media.jio.com/apis/v1.0/login/sendotp"
+
+    try:
+        r = requests.post(url, headers=MOBILE_HEADERS, json={"number": b64}, timeout=12)
+        if r.status_code == 204:
+            return {"message": "OTP Sent Successfully"}
+        try:
+            return JSONResponse(r.json(), status_code=r.status_code)
+        except:
+            return JSONResponse({"error": "Jio error", "raw": r.text}, status_code=400)
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+# ---------- VERIFY OTP ----------
 @app.post("/verify_otp")
 @app.post("/api/verify_otp")
 async def verify_otp(request: Request):
     try:
-        req = await request.json()
-    except Exception:
-        return JSONResponse(content={"error": "Invalid JSON sent from frontend"}, status_code=400)
-        
-    number = req.get("number", "").strip()
+        body = await request.json()
+    except:
+        return JSONResponse({"error": "Invalid JSON"}, status_code=400)
+
+    number = str(body.get("number", "")).strip()
+    otp = str(body.get("otp", "")).strip()
+
+    if not number or not otp:
+        return JSONResponse({"error": "number and otp required"}, status_code=400)
+
     if not number.startswith("+91"):
-        number = "+91" + number
-        
-    b64_number = base64.b64encode(number.encode('utf-8')).decode('utf-8')
-    otp = str(req.get("otp", "")).strip()
-    
+        number = "+91" + number[-10:]
+
+    b64 = base64.b64encode(number.encode()).decode()
+
     payload = {
-        "number": b64_number,
+        "number": b64,
         "otp": otp,
         "deviceInfo": {
             "consumptionDeviceName": "JioTV",
-            "info": {"type": "android", "platform": {"name": "android", "version": "11"}, "androidId": "gmax_auth"}
+            "info": {
+                "type": "android",
+                "platform": {"name": "android", "version": "11"},
+                "androidId": "gmax_" + number[-6:]
+            }
         }
     }
-    
+
     url = "https://jiotvapi.media.jio.com/apis/v1.0/login/verifyotp"
     try:
-        res = requests.post(url, headers=MOBILE_HEADERS, json=payload, timeout=10)
-        try:
-            data = res.json()
-        except Exception:
-            return JSONResponse(content={"error": "Invalid response from Jio", "raw": res.text}, status_code=400)
+        r = requests.post(url, headers=MOBILE_HEADERS, json=payload, timeout=12)
+        data = r.json()
 
-        # Normalize the auth structure for app.js
-        if res.status_code == 200:
+        if r.status_code == 200:
+            # Normalize – sometimes nested under "data"
             if "ssoToken" in data:
-                return JSONResponse(content=data, status_code=200)
-            elif "data" in data and "ssoToken" in data["data"]:
-                return JSONResponse(content=data["data"], status_code=200)
-                
-        return JSONResponse(content=data, status_code=res.status_code)
-    except Exception as e:
-        return JSONResponse(content={"error": f"Server error: {str(e)}"}, status_code=500)
+                return data
+            if "data" in data and "ssoToken" in data["data"]:
+                return data["data"]
+            return data
 
-# --- GET STREAM MANIFEST & TOKEN ---
+        return JSONResponse(data, status_code=r.status_code)
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+# ---------- GET FRESH STREAM ----------
 @app.get("/get_stream")
 @app.get("/api/get_stream")
 async def get_stream(request: Request):
-    id = request.query_params.get("id", "")
-    ssotoken = request.query_params.get("ssotoken", "")
-    uniqueid = request.query_params.get("uniqueid", "")
-    crmid = request.query_params.get("crmid", "")
+    channel_id = request.query_params.get("id", "").strip()
+    ssotoken = request.query_params.get("ssotoken", "").strip()
+    uniqueid = request.query_params.get("uniqueid", "").strip()
+    crmid = request.query_params.get("crmid", "").strip()
 
-    if not ssotoken or not uniqueid:
-        return JSONResponse(content={"error": "Missing auth tokens"}, status_code=401)
+    if not channel_id or not ssotoken or not uniqueid:
+        return JSONResponse({"error": "Missing id / ssotoken / uniqueid"}, status_code=401)
 
     url = "https://jiotvapi.media.jio.com/playback/apis/v1/geturl?langId=6"
     headers = MOBILE_HEADERS.copy()
-    headers.update({"ssotoken": ssotoken, "uniqueId": uniqueid, "crmid": crmid})
-    
+    headers.update({
+        "ssotoken": ssotoken,
+        "uniqueId": uniqueid,
+        "crmid": crmid or uniqueid,
+        "deviceid": "gmax_device",
+        "devicetype": "phone",
+        "os": "android",
+        "appname": "RJIL_JioTV",
+        "versionCode": "370",
+        "lbcookie": "1"
+    })
+
     try:
-        res = requests.post(url, headers=headers, json={"channel_id": id, "stream_type": "Seek"}, timeout=10)
-        try:
-            data = res.json()
-        except Exception:
-            return JSONResponse(content={"error": "Invalid manifest response from Jio"}, status_code=400)
-            
-        if res.status_code == 200 and "url" in data:
+        r = requests.post(
+            url,
+            headers=headers,
+            json={"channel_id": channel_id, "stream_type": "Seek"},
+            timeout=12
+        )
+        data = r.json()
+
+        if r.status_code == 200 and "url" in data:
             stream_url = data["url"]
-            # Extract the __hdnea__ DRM token
-            token_match = re.search(r'__hdnea__=([^&]+)', stream_url)
-            token = "__hdnea__=" + token_match.group(1) if token_match else ""
-            clean_url = stream_url.split('?')[0]
-            
-            return JSONResponse(content={"url": clean_url, "token": token})
+            # Extract __hdnea__ token
+            token_match = re.search(r'(__hdnea__=[^&]+)', stream_url)
+            token = token_match.group(1) if token_match else ""
+            clean_url = stream_url.split("?")[0]
+
+            return {
+                "url": clean_url,
+                "token": token,
+                "full_url": stream_url,
+                "raw": data
+            }
         else:
-            return JSONResponse(content={"error": "Failed to resolve stream", "details": data}, status_code=400)
+            return JSONResponse(
+                {"error": "Failed to get stream", "details": data},
+                status_code=400
+            )
     except Exception as e:
-        return JSONResponse(content={"error": f"Server error: {str(e)}"}, status_code=500)
+        return JSONResponse({"error": str(e)}, status_code=500)
