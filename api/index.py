@@ -110,8 +110,26 @@ async def send_otp(request: Request):
         try:
             return JSONResponse(content=res.json(), status_code=res.status_code)
         except Exception:
+            content_type = res.headers.get("content-type", "unknown")
+            snippet = res.text[:300]
+            print(f"[send_otp] Non-JSON reply. status={res.status_code} "
+                  f"content-type={content_type} body={snippet!r}")
+            looks_like_block_page = "<html" in res.text.lower() or "<!doctype" in res.text.lower()
+            hint = (
+                " This looks like an HTML block/error page rather than a Jio API "
+                "response - almost certainly Jio's geo-block, since this endpoint "
+                "only accepts requests from Indian IPs. Check that the Vercel "
+                "function is actually deployed to bom1 (Mumbai)."
+                if looks_like_block_page else
+                " Jio returned a non-JSON body - the endpoint or headers it expects "
+                "may have changed."
+            )
             return JSONResponse(
-                content={"error": "Invalid response from Jio", "raw": res.text},
+                content={
+                    "error": f"Invalid response from Jio (HTTP {res.status_code}, "
+                             f"content-type: {content_type}).{hint}",
+                    "raw": snippet,
+                },
                 status_code=400,
             )
     except requests.exceptions.RequestException as e:
