@@ -51,6 +51,15 @@ MOBILE_HEADERS = {
     "Content-Type": "application/json"
 }
 
+# Jio's numeric category IDs -> readable names (frontend buckets these further
+# via keyword matching, so this only needs to be roughly right).
+CATEGORY_MAP = {
+    0: "All", 5: "Entertainment", 6: "Movies", 7: "Kids", 8: "Sports",
+    9: "Lifestyle", 10: "Infotainment", 12: "News", 13: "Music",
+    15: "Devotional", 16: "Business", 17: "Educational", 18: "Shopping",
+    19: "JioDarshan",
+}
+
 @app.get("/")
 @app.get("/api")
 async def root_check():
@@ -219,5 +228,88 @@ async def get_stream(request: Request):
             return JSONResponse(content={"url": clean_url, "token": token})
         else:
             return JSONResponse(content={"error": "Failed to resolve stream", "details": data}, status_code=400)
+    except Exception as e:
+        return JSONResponse(content={"error": f"Server error: {str(e)}"}, status_code=500)
+
+# --- GET LIVE CHANNEL CATALOG ---
+# Pulls the real, current channel list straight from Jio (correct channel_id,
+# category, logo) instead of the static local channels.json. This matters
+# because get_stream needs Jio's *actual* numeric channel_id - IDs sourced
+# from third-party M3U playlists don't reliably match, which is why some
+# channels play and others silently fail.
+@app.get("/get_channels")
+@app.get("/api/get_channels")
+async def get_channels(request: Request):
+    ssotoken = request.query_params.get("ssotoken", "")
+    uniqueid = request.query_params.get("uniqueid", "")
+    crmid = request.query_params.get("crmid", "")
+
+    url = (
+        "https://jiotv.data.cdn.jio.com/apis/v3.0/getMobileChannelList/get/"
+        "?os=android&devicetype=phone&usertype=JIO&langId=6"
+    )
+    headers = MOBILE_HEADERS.copy()
+    # Auth headers are optional here - the catalog itself is generally public,
+    # but pass them through when we have them in case Jio uses them to tailor
+    # results (e.g. marking channels the account is actually entitled to).
+    if ssotoken:
+        headers.update({
+            "ssotoken": ssotoken,
+            "uniqueId": uniqueid,
+            "crmid": crmid,
+        })
+
+    try:
+        res = requests.get(url, headers=headers, timeout=15)
+        print(f"[get_channels] Jio responded {res.status_code}, "
+              f"{len(res.content)} bytes")
+
+        try:
+            data = res.json()
+        except Exception:
+            content_type = res.headers.get("content-type", "unknown")
+            snippet = res.text[:300]
+            print(f"[get_channels] Non-JSON reply. status={res.status_code} "
+                  f"content-type={content_type} body={snippet!r}")
+            return JSONResponse(
+                content={
+                    "error": f"Invalid response from Jio (HTTP {res.status_code}, "
+                             f"content-type: {content_type}). The channel list "
+                             f"endpoint or its params may have changed.",
+                    "raw": snippet,
+                },
+                status_code=400,
+            )
+
+        raw_channels = data.get("result", [])
+        if not isinstance(raw_channels, list) or not raw_channels:
+            return JSONResponse(
+                content={
+                    "error": "Jio returned no channels.",
+                    "raw": data,
+                },
+                status_code=400,
+            )
+
+        channels = []
+        for i, ch in enumerate(raw_channels):
+            cid = ch.get("channel_id")
+            name = ch.get("channel_name")
+            if cid is None or not name:
+                continue
+            channels.append({
+                "id": str(cid),
+                "name": name,
+                "logo": ch.get("logoUrl", ""),
+                "category": CATEGORY_MAP.get(ch.get("channelCategoryId"), "Entertainment"),
+                "isHD": bool(ch.get("isHD", False)),
+                "sort_order": i,
+                "source_m3u": "jio_live",
+            })
+
+        return JSONResponse(content={"channels": channels, "count": len(channels)})
+    except requests.exceptions.RequestException as e:
+        print(f"[get_channels] Request to Jio failed: {e}")
+        return JSONResponse(content={"error": f"Could not reach Jio: {str(e)}"}, status_code=502)
     except Exception as e:
         return JSONResponse(content={"error": f"Server error: {str(e)}"}, status_code=500)
