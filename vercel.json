@@ -6,11 +6,9 @@
       "use": "@vercel/python"
     }
   ],
+  {
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/api/index.py"
-    }
+    { "source": "/api/(.*)", "destination": "/api/index.py" }
   ],
   "regions": ["bom1"]
 }
