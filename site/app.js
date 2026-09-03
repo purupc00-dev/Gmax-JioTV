@@ -383,6 +383,7 @@ if (authNavBtn) {
             jioAuth = null;
             updateAuthUI();
             alert("Logged out successfully.");
+            loadChannels(); // fall back to the static channel list
         } else {
             loginModal.classList.remove("hidden");
             stepPhone.classList.remove("hidden");
@@ -452,7 +453,8 @@ if (btnVerifyOtp) {
                 localStorage.setItem("gmax_jio_auth", JSON.stringify(jioAuth));
                 loginModal.classList.add("hidden");
                 updateAuthUI();
-                alert("Login Successful! Channels will now load instantly.");
+                alert("Login Successful! Loading your JioTV channel list...");
+                loadChannels(); // refresh grid with the live, account-matched catalog
             } else {
                 console.error("verify_otp failed", res.status, data);
                 loginError.textContent =
@@ -6007,8 +6009,104 @@ function bindRecentNav() {
    LOAD CHANNELS
 ========================================================= */
 
+// Normalizes one channel record (from either the static channels.json or the
+// live Jio catalog) and applies it to global state + the UI. Shared so both
+// sources go through identical sorting/rendering logic.
+function applyChannelList(data, sourceLabel) {
+  if (!Array.isArray(data)) {
+    throw new Error(`${sourceLabel} did not return an array.`);
+  }
+
+  allChannels = data
+    .filter(
+      (channel) =>
+        channel &&
+        (channel.name || channel.stream_url || channel.url)
+    )
+    .map((ch) => {
+      // Decode &amp; etc. and force main category
+      const name = decodeHtmlEntities(ch.name || "");
+      const category = normalizeCategory(
+        ch.category || ch.group || "",
+        name
+      );
+      return { ...ch, name, category };
+    });
+
+  // jtvplus6 first (original playlist order), then 7/8, then other M3Us at the bottom
+  allChannels.sort((a, b) => {
+    const rank = (c) => {
+      const m = String(
+        c.source_m3u ||
+          (c.sources && c.sources[0] && c.sources[0].m3u) ||
+          ""
+      ).toLowerCase();
+      if (m.includes("jtvplus6")) return 0;
+      if (m.includes("jtvplus7")) return 1;
+      if (m.includes("jtvplus8")) return 2;
+      if (m.includes("jio_live")) return 0; // keep Jio's own live order up front
+      if (m.includes("jtv")) return 3;
+      return 4;
+    };
+    const d = rank(a) - rank(b);
+    if (d !== 0) return d;
+    const oa = Number(a.sort_order);
+    const ob = Number(b.sort_order);
+    if (Number.isFinite(oa) && Number.isFinite(ob) && oa !== ob) return oa - ob;
+    return String(a.name || "").localeCompare(String(b.name || ""));
+  });
+
+  filteredChannels = [...allChannels];
+
+  // Header: only channel count (no "0 M3Us loaded")
+  if (channelCount) {
+    channelCount.textContent = `${allChannels.length.toLocaleString()} channels`;
+  }
+  if (resultsCount) {
+    resultsCount.textContent = `${allChannels.length.toLocaleString()} channels`;
+  }
+
+  buildCategories();
+  applyFilters();
+  renderRecentSlider();
+  bindRecentNav();
+  openRequestedChannel();
+}
+
+// Tries to fetch the live channel catalog straight from Jio (correct
+// channel_id/category/logo for the logged-in account) via the backend.
+// Returns the channel array on success, or null if it should fall back
+// to the static local channels.json.
+async function fetchLiveChannels() {
+  if (!jioAuth || !jioAuth.ssotoken) return null;
+  try {
+    const params = new URLSearchParams({
+      ssotoken: jioAuth.ssotoken,
+      uniqueid: jioAuth.uniqueid || "",
+      crmid: jioAuth.crmid || "",
+    });
+    const res = await fetch(`${API_BASE}/get_channels?${params.toString()}`);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !Array.isArray(data.channels) || !data.channels.length) {
+      console.warn("Live channel list unavailable, falling back to static list", data);
+      return null;
+    }
+    return data.channels;
+  } catch (e) {
+    console.warn("Live channel list fetch failed, falling back to static list", e);
+    return null;
+  }
+}
+
 async function loadChannels() {
   try {
+    const liveChannels = await fetchLiveChannels();
+    if (liveChannels) {
+      applyChannelList(liveChannels, "Jio live catalog");
+      return;
+    }
+
+    // Not logged in, or the live fetch failed - use the bundled static list.
     const response = await fetch(CHANNELS_URL, { cache: "no-store" });
 
     if (!response.ok) {
@@ -6016,64 +6114,7 @@ async function loadChannels() {
     }
 
     const data = await response.json();
-
-    if (!Array.isArray(data)) {
-      throw new Error("channels.json is not an array.");
-    }
-
-    allChannels = data
-      .filter(
-        (channel) =>
-          channel &&
-          (channel.name || channel.stream_url || channel.url)
-      )
-      .map((ch) => {
-        // Decode &amp; etc. and force main category
-        const name = decodeHtmlEntities(ch.name || "");
-        const category = normalizeCategory(
-          ch.category || ch.group || "",
-          name
-        );
-        return { ...ch, name, category };
-      });
-
-    // jtvplus6 first (original playlist order), then 7/8, then other M3Us at the bottom
-    allChannels.sort((a, b) => {
-      const rank = (c) => {
-        const m = String(
-          c.source_m3u ||
-            (c.sources && c.sources[0] && c.sources[0].m3u) ||
-            ""
-        ).toLowerCase();
-        if (m.includes("jtvplus6")) return 0;
-        if (m.includes("jtvplus7")) return 1;
-        if (m.includes("jtvplus8")) return 2;
-        if (m.includes("jtv")) return 3;
-        return 4;
-      };
-      const d = rank(a) - rank(b);
-      if (d !== 0) return d;
-      const oa = Number(a.sort_order);
-      const ob = Number(b.sort_order);
-      if (Number.isFinite(oa) && Number.isFinite(ob) && oa !== ob) return oa - ob;
-      return String(a.name || "").localeCompare(String(b.name || ""));
-    });
-
-    filteredChannels = [...allChannels];
-
-    // Header: only channel count (no "0 M3Us loaded")
-    if (channelCount) {
-      channelCount.textContent = `${allChannels.length.toLocaleString()} channels`;
-    }
-    if (resultsCount) {
-      resultsCount.textContent = `${allChannels.length.toLocaleString()} channels`;
-    }
-
-    buildCategories();
-    applyFilters();
-    renderRecentSlider();
-    bindRecentNav();
-    openRequestedChannel();
+    applyChannelList(data, "channels.json");
 
   } catch (error) {
     console.error("Channel loading failed:", error);
