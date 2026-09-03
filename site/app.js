@@ -417,8 +417,8 @@ if (btnSendOtp) {
                 // Show the real reason instead of a generic message so
                 // failures are actually diagnosable.
                 console.error("send_otp failed", res.status, data);
-                loginError.textContent =
-                    data.error || data.message || `Failed to send OTP (HTTP ${res.status}).`;
+                const base = data.error || data.message || `Failed to send OTP (HTTP ${res.status}).`;
+                loginError.textContent = data.raw ? `${base} [raw: ${data.raw.slice(0, 150)}]` : base;
             }
         } catch (e) {
             console.error("send_otp network error", e);
