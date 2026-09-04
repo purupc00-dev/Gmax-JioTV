@@ -275,7 +275,7 @@ async def get_channels(request: Request):
 
     url = (
         "https://jiotv.data.cdn.jio.com/apis/v3.0/getMobileChannelList/get/"
-        "?os=android&devicetype=phone&usertype=JIO&langId=6"
+        "?langId=6&os=android&devicetype=phone&usertype=tvYR7NSNn7rymo3F&version=285"
     )
     headers = MOBILE_HEADERS.copy()
     # Auth headers are optional here - the catalog itself is generally public,
