@@ -184,13 +184,42 @@ async def verify_otp(request: Request):
         except Exception:
             return JSONResponse(content={"error": "Invalid response from Jio", "raw": res.text}, status_code=400)
 
-        # Normalize the auth structure for app.js
+        # Normalize the auth structure for app.js. Jio nests the real session
+        # info as sessionAttributes.user.{unique,subscriberId} - flatten that
+        # here so the frontend just reads ssoToken/uniqueId/crm directly and
+        # can't silently end up with "uniqueid=undefined" again.
         if res.status_code == 200:
-            if "ssoToken" in data:
-                return JSONResponse(content=data, status_code=200)
-            elif "data" in data and "ssoToken" in data["data"]:
-                return JSONResponse(content=data["data"], status_code=200)
-                
+            sso_token = data.get("ssoToken")
+            session_attrs = data.get("sessionAttributes") or {}
+            user = session_attrs.get("user") or {}
+            unique_id = (
+                user.get("unique")
+                or session_attrs.get("uniqueId")
+                or data.get("uniqueId")
+            )
+            crm = (
+                user.get("subscriberId")
+                or session_attrs.get("subscriberId")
+                or data.get("crm")
+                or ""
+            )
+
+            if sso_token and unique_id:
+                return JSONResponse(
+                    content={"ssoToken": sso_token, "uniqueId": unique_id, "crm": crm},
+                    status_code=200,
+                )
+
+            print(f"[verify_otp] Could not find uniqueId in Jio's response: {data}")
+            return JSONResponse(
+                content={
+                    "error": "Login succeeded but the session info Jio returned was in an "
+                             "unexpected shape - could not extract uniqueId.",
+                    "raw": data,
+                },
+                status_code=502,
+            )
+
         return JSONResponse(content=data, status_code=res.status_code)
     except Exception as e:
         return JSONResponse(content={"error": f"Server error: {str(e)}"}, status_code=500)
