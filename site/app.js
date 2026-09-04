@@ -447,9 +447,16 @@ if (btnVerifyOtp) {
             if (res.ok) {
                 jioAuth = {
                     ssotoken: data.ssoToken,
-                    uniqueid: data.sessionAttributes.uniqueId,
-                    crmid: data.sessionAttributes.subscriberId
+                    uniqueid: data.uniqueId,
+                    crmid: data.crm || ""
                 };
+                if (!jioAuth.ssotoken || !jioAuth.uniqueid) {
+                    console.error("verify_otp response missing session fields", data);
+                    loginError.textContent = "Login succeeded but session info was incomplete. Try again.";
+                    btnVerifyOtp.textContent = "Verify & Login";
+                    btnVerifyOtp.disabled = false;
+                    return;
+                }
                 localStorage.setItem("gmax_jio_auth", JSON.stringify(jioAuth));
                 loginModal.classList.add("hidden");
                 updateAuthUI();
