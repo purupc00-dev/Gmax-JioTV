@@ -1,4 +1,5 @@
 import re
+import os
 import base64
 import requests
 from fastapi import FastAPI, Request
@@ -51,14 +52,15 @@ MOBILE_HEADERS = {
     "Content-Type": "application/json"
 }
 
-# Jio's numeric category IDs -> readable names (frontend buckets these further
-# via keyword matching, so this only needs to be roughly right).
-CATEGORY_MAP = {
-    0: "All", 5: "Entertainment", 6: "Movies", 7: "Kids", 8: "Sports",
-    9: "Lifestyle", 10: "Infotainment", 12: "News", 13: "Music",
-    15: "Devotional", 16: "Business", 17: "Educational", 18: "Shopping",
-    19: "JioDarshan",
-}
+# Optional residential proxy for reaching Jio. Jio's official JioTV Go docs
+# confirm the streaming/DRM API specifically requires a residential Indian
+# IP - datacenter IPs (including Vercel's bom1 region) can pass login/OTP
+# but get silently degraded or blocked on actual playback. If you have a
+# residential/mobile proxy, set the JIOTV_PROXY env var in Vercel to it,
+# e.g. "http://username:password@proxy_host:proxy_port". Left unset, every
+# call behaves exactly as before (direct request, no proxy).
+JIOTV_PROXY_URL = os.environ.get("JIOTV_PROXY", "").strip()
+REQUEST_PROXIES = {"http": JIOTV_PROXY_URL, "https": JIOTV_PROXY_URL} if JIOTV_PROXY_URL else None
 
 @app.get("/")
 @app.get("/api")
@@ -91,7 +93,7 @@ async def send_otp(request: Request):
 
     url = "https://jiotvapi.media.jio.com/userservice/apis/v1/loginotp/send"
     try:
-        res = requests.post(url, headers=MOBILE_HEADERS, json={"number": b64_number}, timeout=10)
+        res = requests.post(url, headers=MOBILE_HEADERS, json={"number": b64_number}, timeout=10, proxies=REQUEST_PROXIES)
 
         # Log to Vercel function logs so we can actually see what Jio said
         print(f"[send_otp] Jio responded {res.status_code}: {res.text[:500]}")
@@ -178,7 +180,7 @@ async def verify_otp(request: Request):
     
     url = "https://jiotvapi.media.jio.com/userservice/apis/v1/loginotp/verify"
     try:
-        res = requests.post(url, headers=MOBILE_HEADERS, json=payload, timeout=10)
+        res = requests.post(url, headers=MOBILE_HEADERS, json=payload, timeout=10, proxies=REQUEST_PROXIES)
         try:
             data = res.json()
         except Exception:
@@ -241,7 +243,7 @@ async def get_stream(request: Request):
     headers.update({"ssotoken": ssotoken, "uniqueId": uniqueid, "crmid": crmid})
     
     try:
-        res = requests.post(url, headers=headers, json={"channel_id": id, "stream_type": "Seek"}, timeout=10)
+        res = requests.post(url, headers=headers, json={"channel_id": id, "stream_type": "Seek"}, timeout=10, proxies=REQUEST_PROXIES)
         try:
             data = res.json()
         except Exception:
@@ -257,88 +259,5 @@ async def get_stream(request: Request):
             return JSONResponse(content={"url": clean_url, "token": token})
         else:
             return JSONResponse(content={"error": "Failed to resolve stream", "details": data}, status_code=400)
-    except Exception as e:
-        return JSONResponse(content={"error": f"Server error: {str(e)}"}, status_code=500)
-
-# --- GET LIVE CHANNEL CATALOG ---
-# Pulls the real, current channel list straight from Jio (correct channel_id,
-# category, logo) instead of the static local channels.json. This matters
-# because get_stream needs Jio's *actual* numeric channel_id - IDs sourced
-# from third-party M3U playlists don't reliably match, which is why some
-# channels play and others silently fail.
-@app.get("/get_channels")
-@app.get("/api/get_channels")
-async def get_channels(request: Request):
-    ssotoken = request.query_params.get("ssotoken", "")
-    uniqueid = request.query_params.get("uniqueid", "")
-    crmid = request.query_params.get("crmid", "")
-
-    url = (
-        "https://jiotv.data.cdn.jio.com/apis/v3.0/getMobileChannelList/get/"
-        "?langId=6&os=android&devicetype=phone&usertype=tvYR7NSNn7rymo3F&version=285"
-    )
-    headers = MOBILE_HEADERS.copy()
-    # Auth headers are optional here - the catalog itself is generally public,
-    # but pass them through when we have them in case Jio uses them to tailor
-    # results (e.g. marking channels the account is actually entitled to).
-    if ssotoken:
-        headers.update({
-            "ssotoken": ssotoken,
-            "uniqueId": uniqueid,
-            "crmid": crmid,
-        })
-
-    try:
-        res = requests.get(url, headers=headers, timeout=15)
-        print(f"[get_channels] Jio responded {res.status_code}, "
-              f"{len(res.content)} bytes")
-
-        try:
-            data = res.json()
-        except Exception:
-            content_type = res.headers.get("content-type", "unknown")
-            snippet = res.text[:300]
-            print(f"[get_channels] Non-JSON reply. status={res.status_code} "
-                  f"content-type={content_type} body={snippet!r}")
-            return JSONResponse(
-                content={
-                    "error": f"Invalid response from Jio (HTTP {res.status_code}, "
-                             f"content-type: {content_type}). The channel list "
-                             f"endpoint or its params may have changed.",
-                    "raw": snippet,
-                },
-                status_code=400,
-            )
-
-        raw_channels = data.get("result", [])
-        if not isinstance(raw_channels, list) or not raw_channels:
-            return JSONResponse(
-                content={
-                    "error": "Jio returned no channels.",
-                    "raw": data,
-                },
-                status_code=400,
-            )
-
-        channels = []
-        for i, ch in enumerate(raw_channels):
-            cid = ch.get("channel_id")
-            name = ch.get("channel_name")
-            if cid is None or not name:
-                continue
-            channels.append({
-                "id": str(cid),
-                "name": name,
-                "logo": ch.get("logoUrl", ""),
-                "category": CATEGORY_MAP.get(ch.get("channelCategoryId"), "Entertainment"),
-                "isHD": bool(ch.get("isHD", False)),
-                "sort_order": i,
-                "source_m3u": "jio_live",
-            })
-
-        return JSONResponse(content={"channels": channels, "count": len(channels)})
-    except requests.exceptions.RequestException as e:
-        print(f"[get_channels] Request to Jio failed: {e}")
-        return JSONResponse(content={"error": f"Could not reach Jio: {str(e)}"}, status_code=502)
     except Exception as e:
         return JSONResponse(content={"error": f"Server error: {str(e)}"}, status_code=500)
