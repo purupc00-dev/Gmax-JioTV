@@ -1475,20 +1475,14 @@ async function openChannel(
       const channelId = channel.id || channel.tvgId;
       if (channelId) {
           try {
-              // Add fast abort controller so Vercel API doesn't hang the player
-              const controller = new AbortController();
-              const timeoutId = setTimeout(() => controller.abort(), 6000); 
-              const res = await fetch(`${API_BASE}/get_stream?id=${channelId}&ssotoken=${encodeURIComponent(jioAuth.ssotoken)}&uniqueid=${encodeURIComponent(jioAuth.uniqueid)}&crmid=${encodeURIComponent(jioAuth.crmid || "")}`, {
-                  signal: controller.signal
-              });
-              clearTimeout(timeoutId);
+              const res = await fetch(`${API_BASE}/get_stream?id=${channelId}&ssotoken=${encodeURIComponent(jioAuth.ssotoken)}&uniqueid=${encodeURIComponent(jioAuth.uniqueid)}&crmid=${encodeURIComponent(jioAuth.crmid || "")}`);
               const streamData = await res.json();
               if (streamData.url) {
                   streamUrl = streamData.url;
                   dynamicToken = streamData.token || "";
               }
           } catch (e) {
-              console.error("Vercel stream fetch failed or timed out", e);
+              console.error("Vercel stream fetch failed", e);
           }
       }
   }
@@ -1599,16 +1593,14 @@ async function openChannel(
   await destroyPlayer();
 
   // Start the Watchdog BEFORE we try to play the stream
-  // Fast Reload Fix: 10 seconds timeout, forcing reconnectInFlight override
+  // Using 6 seconds (6000ms) to account for slight manifest loading delays
   clearTimeout(playbackWatchdogTimer);
   playbackWatchdogTimer = setTimeout(() => {
-    if (video.readyState <= 2) {
-      console.warn("Watchdog triggered: Fast Reloading (stuck stream).");
-      // Bypass the reconnect lock to force the next stream source instantly
-      reconnectInFlight = false;
-      handleStreamError("Stream timeout (Fast Reload)");
+    if (video.readyState <= 2 && !reconnectInFlight) {
+      console.warn("Watchdog triggered: Video stuck on black screen.");
+      handleStreamError("Stream timeout (Black screen)");
     }
-  }, 10000);
+  }, 6000);
 
   let streamLoadedSuccessfully = false;
 
@@ -1687,10 +1679,10 @@ function getShakaStreamingConfig() {
       inaccurateManifestTolerance: 2,
       segmentPrefetchLimit: 3,
       retryParameters: {
-        maxAttempts: 2, // Fast Fail for reloading
-        baseDelay: 300,
-        backoffFactor: 1.5,
-        timeout: 8000,  // Fast timeout
+        maxAttempts: 5,
+        baseDelay: 400,
+        backoffFactor: 1.6,
+        timeout: 20000,
       },
       stallEnabled: true,
       stallThreshold: 1.5,
@@ -1717,10 +1709,10 @@ function getShakaStreamingConfig() {
     },
     manifest: {
       retryParameters: {
-        maxAttempts: 2, // Fast Fail for MPD manifests
+        maxAttempts: 4,
         baseDelay: 300,
         backoffFactor: 1.5,
-        timeout: 6000,  // Stops stuck .mpd requests fast
+        timeout: 15000,
       },
       dash: {
         ignoreMinBufferTime: true,
