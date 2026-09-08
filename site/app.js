@@ -373,6 +373,7 @@ const loginError = document.getElementById("login-error");
 
 function updateAuthUI() {
     if (authNavBtn) authNavBtn.textContent = jioAuth ? "Logout" : "Login";
+     authNavBtn.style.display = "none"; // <-- ADD THIS LINE TO HIDE IT
 }
 updateAuthUI();
 
@@ -714,7 +715,7 @@ function getActiveStreamConfig() {
   const ch = currentChannel;
   if (!ch) return { url: "", cookie: "", kid: "", key: "" };
 
-  // Prefer ordered `sources` (jtvplus6→7→8→star→sony→…) when present
+  // Prefer ordered `sources` when present (allows merging multiple playlists)
   const sources = Array.isArray(ch.sources) && ch.sources.length
     ? ch.sources
     : null;
@@ -723,7 +724,7 @@ function getActiveStreamConfig() {
     const idx = Math.min(Math.max(currentFallbackIndex, 0), sources.length - 1);
     const s = sources[idx] || sources[0];
     return {
-      url: s.stream_url || getStreamUrl(ch),
+      url: s.stream_url || s.url || getStreamUrl(ch),
       cookie: s.cookie || ch.cookie || "",
       kid: s.key_id || ch.key_id || "",
       key: s.key || ch.key || "",
@@ -6024,39 +6025,56 @@ function applyChannelList(data, sourceLabel) {
     throw new Error(`${sourceLabel} did not return an array.`);
   }
 
-  allChannels = data
-    .filter(
-      (channel) =>
-        channel &&
-        (channel.name || channel.stream_url || channel.url)
-    )
-    .map((ch) => {
-      // Decode &amp; etc. and force main category
-      const name = decodeHtmlEntities(ch.name || "");
-      const category = normalizeCategory(
-        ch.category || ch.group || "",
-        name
-      );
-      return { ...ch, name, category };
-    });
+  const channelMap = new Map();
 
-  // jtvplus6 first (original playlist order), then 7/8, then other M3Us at the bottom
-  allChannels.sort((a, b) => {
-    const rank = (c) => {
-      const m = String(
-        c.source_m3u ||
-          (c.sources && c.sources[0] && c.sources[0].m3u) ||
-          ""
-      ).toLowerCase();
-      if (m.includes("jtvplus6")) return 0;
-      if (m.includes("jtvplus7")) return 1;
-      if (m.includes("jtvplus8")) return 2;
-      if (m.includes("jio_live")) return 0; // keep Jio's own live order up front
-      if (m.includes("jtv")) return 3;
-      return 4;
+  data.forEach((ch) => {
+    if (!ch || (!ch.name && !ch.stream_url && !ch.url)) return;
+
+    const name = decodeHtmlEntities(ch.name || "");
+    const category = normalizeCategory(ch.category || ch.group || "", name);
+    // Use ID for grouping, or fallback to normalized name to catch duplicates across playlists
+    const channelId = getChannelId(ch) || name.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    const streamUrl = ch.stream_url || ch.url || "";
+    
+    const sourceData = {
+      stream_url: streamUrl,
+      cookie: ch.cookie || "",
+      key_id: ch.key_id || "",
+      key: ch.key || "",
+      m3u: ch.source_m3u || ""
     };
-    const d = rank(a) - rank(b);
-    if (d !== 0) return d;
+
+    if (channelMap.has(channelId)) {
+      const existing = channelMap.get(channelId);
+      if (!existing.sources) {
+        existing.sources = [{
+          stream_url: existing.stream_url || existing.url || "",
+          cookie: existing.cookie || "",
+          key_id: existing.key_id || "",
+          key: existing.key || "",
+          m3u: existing.source_m3u || ""
+        }];
+      }
+      // Append if it's a new unique URL (this builds the fallback mechanism without dead links breaking the player)
+      const isDuplicateUrl = existing.sources.some((s) => s.stream_url === streamUrl);
+      if (!isDuplicateUrl && streamUrl) {
+        existing.sources.push(sourceData);
+      }
+    } else {
+      const newCh = { ...ch, name, category };
+      // Prepare sources array for robust fallback
+      if (!newCh.sources && streamUrl) {
+        newCh.sources = [sourceData];
+      }
+      channelMap.set(channelId, newCh);
+    }
+  });
+
+  allChannels = Array.from(channelMap.values());
+
+  // Normal sort without main playlist bias
+  allChannels.sort((a, b) => {
     const oa = Number(a.sort_order);
     const ob = Number(b.sort_order);
     if (Number.isFinite(oa) && Number.isFinite(ob) && oa !== ob) return oa - ob;
@@ -6065,7 +6083,6 @@ function applyChannelList(data, sourceLabel) {
 
   filteredChannels = [...allChannels];
 
-  // Header: only channel count (no "0 M3Us loaded")
   if (channelCount) {
     channelCount.textContent = `${allChannels.length.toLocaleString()} channels`;
   }
