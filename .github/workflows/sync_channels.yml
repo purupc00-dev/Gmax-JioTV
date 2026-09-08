@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -32,20 +32,25 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          # Ensure common external modules are present just in case
+          pip install requests bs4
 
-      - name: Refresh every paired M3U and rebuild all channels
-        run: python update_json.py
+      - name: Run Global Updater & Merger
+        run: python update_and_merge.py
 
-      - name: Commit refreshed playlists and merged channel JSON
+      - name: Commit and Push Changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # Add all M3U files and the merged JSON file
           git add '*.m3u' site/channels.json
 
+          # Check if there are any changes to commit
           if git diff --cached --quiet; then
-            echo "No playlist or channel changes."
+            echo "No playlist or channel changes detected."
             exit 0
           fi
 
-          git commit -m "Auto-refresh all live TV sources"
+          git commit -m "Auto-refresh all live TV sources & merge channels.json"
           git push origin HEAD:main
