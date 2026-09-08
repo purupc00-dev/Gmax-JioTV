@@ -1,6 +1,6 @@
 import urllib.request
 import urllib.error
-url = 'https://jioplus.mxiptvzone01.workers.dev/'
+url = 'https://premiumplugx.com/VIP/pluglist.php '
 
 headers = {
     'User-Agent': 'OTT Navigator'
