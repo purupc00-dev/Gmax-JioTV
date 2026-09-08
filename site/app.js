@@ -372,10 +372,11 @@ const loginError = document.getElementById("login-error");
 ========================================================= */
 
 function updateAuthUI() {
-    if (authNavBtn) authNavBtn.textContent = jioAuth ? "Logout" : "Login";
-     authNavBtn.style.display = "none"; // <-- ADD THIS LINE TO HIDE IT
-}
-updateAuthUI();
+    if (authNavBtn) { // <-- Make sure to add this opening brace
+        authNavBtn.textContent = jioAuth ? "Logout" : "Login";
+        authNavBtn.style.display = "none"; // <-- ADD THIS LINE TO HIDE IT
+    } // <-- And this closing brace
+}updateAuthUI();
 
 if (authNavBtn) {
     authNavBtn.addEventListener("click", () => {
