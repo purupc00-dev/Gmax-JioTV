@@ -372,10 +372,10 @@ const loginError = document.getElementById("login-error");
 ========================================================= */
 
 function updateAuthUI() {
-    if (authNavBtn) { // <-- Make sure to add this opening brace
+    if (authNavBtn) { 
         authNavBtn.textContent = jioAuth ? "Logout" : "Login";
-        authNavBtn.style.display = "none"; // <-- ADD THIS LINE TO HIDE IT
-    } // <-- And this closing brace
+        authNavBtn.style.display = "none"; 
+    } 
 }updateAuthUI();
 
 if (authNavBtn) {
@@ -417,8 +417,6 @@ if (btnSendOtp) {
                 stepOtp.classList.remove("hidden");
                 loginError.textContent = "";
             } else {
-                // Show the real reason instead of a generic message so
-                // failures are actually diagnosable.
                 console.error("send_otp failed", res.status, data);
                 const base = data.error || data.message || `Failed to send OTP (HTTP ${res.status}).`;
                 loginError.textContent = data.raw ? `${base} [raw: ${data.raw.slice(0, 150)}]` : base;
@@ -6032,9 +6030,9 @@ function applyChannelList(data, sourceLabel) {
   if (!Array.isArray(data)) {
     throw new Error(`${sourceLabel} did not return an array.`);
   }
-data = data.filter(channel =>
-  String(channel.source_m3u || "").toLowerCase().includes("jtvplus7.m3u")
-);
+
+  // REMOVED the hard filter that was deleting channels here.
+
   const channelMap = new Map();
 
   data.forEach((ch) => {
@@ -6066,10 +6064,16 @@ data = data.filter(channel =>
           m3u: existing.source_m3u || ""
         }];
       }
+      
       // Append if it's a new unique URL (this builds the fallback mechanism without dead links breaking the player)
       const isDuplicateUrl = existing.sources.some((s) => s.stream_url === streamUrl);
       if (!isDuplicateUrl && streamUrl) {
-        existing.sources.push(sourceData);
+        // NEW FIX: Prioritize jtv3.m3u as the first fallback source to play the working link first
+        if (String(sourceData.m3u).toLowerCase().includes("jtv3.m3u")) {
+          existing.sources.unshift(sourceData);
+        } else {
+          existing.sources.push(sourceData);
+        }
       }
     } else {
       const newCh = { ...ch, name, category };
@@ -6083,8 +6087,15 @@ data = data.filter(channel =>
 
   allChannels = Array.from(channelMap.values());
 
-  // Normal sort without main playlist bias
+  // NEW FIX: Prioritize jtvplus7 channels in the visual grid, then sort normally
   allChannels.sort((a, b) => {
+    const aHasJtv7 = a.sources && a.sources.some(s => String(s.m3u).toLowerCase().includes("jtvplus7.m3u"));
+    const bHasJtv7 = b.sources && b.sources.some(s => String(s.m3u).toLowerCase().includes("jtvplus7.m3u"));
+    
+    if (aHasJtv7 && !bHasJtv7) return -1;
+    if (!aHasJtv7 && bHasJtv7) return 1;
+
+    // Normal sort
     const oa = Number(a.sort_order);
     const ob = Number(b.sort_order);
     if (Number.isFinite(oa) && Number.isFinite(ob) && oa !== ob) return oa - ob;
