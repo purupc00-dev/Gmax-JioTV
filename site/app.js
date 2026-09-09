@@ -20,7 +20,7 @@ const CHANNELS_PER_PAGE = 60;
  * Live edge safety offset (seconds behind real-time).
  * Slightly higher = fewer freezes on unstable networks.
  */
-const LIVE_DELAY_SECONDS = 12;
+const LIVE_DELAY_SECONDS = 5;
 
 /*
  * If actual playback falls this many seconds further behind
