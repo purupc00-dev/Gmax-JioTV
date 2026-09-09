@@ -1412,6 +1412,10 @@ async function handleStreamError(err) {
       setLoadingSourceMessage(nextIdx, total);
       showPlayerLoading(true);
       hidePlayerErrorOverlay();
+      
+      // --- NEW FIX: Unlock before awaiting next channel to allow immediate subsequent fallbacks ---
+      reconnectInFlight = false;
+      
       await openChannel(currentChannel, nextIdx);
     } else {
       // WE RAN OUT OF FALLBACKS! Show the actual error overlay.
@@ -1421,7 +1425,10 @@ async function handleStreamError(err) {
       await destroyPlayer();
     }
   } finally {
-    reconnectInFlight = false;
+    // --- NEW FIX: Only release if all sources exhausted, otherwise handled by next iterations ---
+    if (currentFallbackIndex >= totalSourceCount(currentChannel) - 1) {
+      reconnectInFlight = false;
+    }
   }
 }
 
