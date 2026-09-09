@@ -6025,7 +6025,9 @@ function applyChannelList(data, sourceLabel) {
   if (!Array.isArray(data)) {
     throw new Error(`${sourceLabel} did not return an array.`);
   }
-
+data = data.filter(channel =>
+  String(channel.source_m3u || "").toLowerCase().includes("mixiptv.m3u")
+);
   const channelMap = new Map();
 
   data.forEach((ch) => {
