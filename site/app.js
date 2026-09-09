@@ -6026,7 +6026,7 @@ function applyChannelList(data, sourceLabel) {
     throw new Error(`${sourceLabel} did not return an array.`);
   }
 data = data.filter(channel =>
-  String(channel.source_m3u || "").toLowerCase().includes("jtv3.m3u")
+  String(channel.source_m3u || "").toLowerCase().includes("jtvplus7.m3u")
 );
   const channelMap = new Map();
 
