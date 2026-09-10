@@ -1,5 +1,5 @@
 #EXTM3U url-tvg="https://avkb.short.gy/jioepg.xml.gz" tvg-url="https://avkb.short.gy/jioepg.xml.gz" refresh="3600"
-# Generated 2026-09-10T21:21:17+00:00 | php-dangal-play-11-universal
+# Generated 2026-09-10T22:21:20+00:00 | php-dangal-play-11-universal
 #EXTINF:-1 tvg-id="1132" tvg-name="Star Plus HD" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Star_Plus_HD.png" tvg-category="Entertainment" tvg-language="hin" group-title="Jio TV+ | Entertainment" group-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ32BfOcij5y0NkYztgiMZ3AFXmBjXlAIYiuKm2U49BBLqpI4ZWuR92-LA&s=10",Star Plus HD
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
@@ -1531,6 +1531,8 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/TLCHDEnglish_MOB/WDVLive/index.mpd|User-A
 #EXTINF:-1 tvg-id="482" tvg-name="Colors Cineplex" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Colors_Cineplex.png" tvg-category="Movies" tvg-language="hin" group-title="Jio TV+ | Movies" group-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ32BfOcij5y0NkYztgiMZ3AFXmBjXlAIYiuKm2U49BBLqpI4ZWuR92-LA&s=10",Colors Cineplex
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=c7cda772f66f5ac3acc5ae38445d80ff:b54ed17e8f2fafeddcf587bf8a5506b1
 #KODIPROP:inputstream.adaptive.manifest_headers=User-Agent=%40shoebbro&Referer=https%3A%2F%2Fwww.jiotv.com%2F&Origin=https%3A%2F%2Fwww.jiotv.com&Cookie=__hdnea__%3Dst%3D1789075133~exp%3D1789096733~acl%3D%2F*~hmac%3D382628d0e84bb6f7320dd49cc33666a6967339594414a032357dd4e40611329d
 #KODIPROP:inputstream.adaptive.stream_headers=User-Agent=%40shoebbro&Referer=https%3A%2F%2Fwww.jiotv.com%2F&Origin=https%3A%2F%2Fwww.jiotv.com&Cookie=__hdnea__%3Dst%3D1789075133~exp%3D1789096733~acl%3D%2F*~hmac%3D382628d0e84bb6f7320dd49cc33666a6967339594414a032357dd4e40611329d
 #EXTVLCOPT:http-user-agent=@shoebbro
@@ -18599,9 +18601,6 @@ https://jcevents.hotstar.com/bpk-tv/fbab6dccfbe54c4fb38ec3ff6291fdb3_CTV/Fallbac
 #EXTHTTP:{"Origin":"https://www.hotstar.com","Referer":"https://www.hotstar.com/","Cookie":"hdntl=exp=1789130130~acl=%2f*~id=cbcdc06ccb0579e7dc39165a18f6b58d~data=hdntl~hmac=299f44fff0a4db5a4c50fee10d3d90a85ef68267e32f2f64d63297d1882535aa"}
 #EXTGRP:JioHotstar
 https://jcevents.hotstar.com/bpk-tv/305f6c39f663997943fadd41d113ac21_CTV/Fallback/index.m3u8?|cookie=hdntl=exp=1789130130~acl=%2f*~id=cbcdc06ccb0579e7dc39165a18f6b58d~data=hdntl~hmac=299f44fff0a4db5a4c50fee10d3d90a85ef68267e32f2f64d63297d1882535aa&referer=https://www.hotstar.com/&origin=https://www.hotstar.com&user-agent=Hotstar;in.startv.hotstar/25.02.24.8.11169@Premium Plugx(Android/15)
-#EXTINF:-1 tvg-name="League One 2026-27 [English]" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/4248160_53014_STG_LUT_fc-web.png" tvg-category="Sports" group-title="FanCode" group-logo="https://www.google.com/s2/favicons?domain=fancode.com&sz=128",League One 2026-27 [English]
-#EXTGRP:FanCode
-https://in-mc-flive.fancode.com/mumbai/4248160_english_hls_5556cd96ef36476_1ta-di_h264/1080p.m3u8?hdntl=Expires=1789152676~_GO=Generated~acl=/mumbai/4248160_english_hls_5556cd96ef36476_1ta-di_h264/*~Signature=AWDec-FIHh5-4tOAYpnhSBdV6oWOVGt28LdDHQsQbyopwGKSppotVe2-nN_P6lEa5GH3wd0xEpaptQ0UNHIqMec0qEID
 #EXTINF:-1 tvg-id="sonyliv-1090542011" tvg-name="Manchester United vs Sabah - MD 1 - 11 Sep 2026 | UEFA Champions League 2026-27" tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000023491/1788527714323822_UCL_26_MD1_Manchester-United-vs-Sabah_live_landscape_thumb.jpg" tvg-category="Sports" group-title="Sonyliv events" group-logo="https://www.google.com/s2/favicons?domain=sonyliv.com&sz=128", Manchester United vs Sabah - MD 1 - 11 Sep 2026 | UEFA Champions League 2026-27
 #EXTGRP:Sonyliv events
 https://sonydaimenew.akamaized.net/hls/live/2022319/Footlive1009/ENG/master.m3u8?hdnea=exp=1789113036~acl=/*~id=30801735672264146727205511552387~hmac=16b843a32b1c062b8d907f519dea4afad5e76b7a3d50c329619d71ab2f693b7e
