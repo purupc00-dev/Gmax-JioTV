@@ -1398,35 +1398,31 @@ async function handleStreamError(err) {
   console.warn("Silent reconnect:", err);
   if (reconnectInFlight || !currentChannel) return;
   reconnectInFlight = true;
-  clearTimeout(playbackWatchdogTimer); // Stop watchdog during fallback transition
+  clearTimeout(playbackWatchdogTimer);
 
-  try {
-    const total = totalSourceCount(currentChannel);
-    const maxIdx = total - 1;
+  const total = totalSourceCount(currentChannel);
+  const maxIdx = total - 1;
 
-    if (currentFallbackIndex < maxIdx) {
-      // Try next fallback
-      const nextIdx = currentFallbackIndex + 1;
-      setLoadingSourceMessage(nextIdx, total);
-      showPlayerLoading(true);
-      hidePlayerErrorOverlay();
-      
-      // --- NEW FIX: Unlock before awaiting next channel to allow immediate subsequent fallbacks ---
+  if (currentFallbackIndex < maxIdx) {
+    const nextIdx = currentFallbackIndex + 1;
+    setLoadingSourceMessage(nextIdx, total);
+    showPlayerLoading(true);
+    hidePlayerErrorOverlay();
+    
+    // --- NEW FIX: Use setTimeout to safely escape the error loop and swallow duplicate errors ---
+    // This stops it from skipping over 200 OK links by spacing out retry execution
+    setTimeout(() => {
       reconnectInFlight = false;
-      
-      await openChannel(currentChannel, nextIdx);
-    } else {
-      // WE RAN OUT OF FALLBACKS! Show the actual error overlay.
-      showPlayerLoading(false);
-      const errorMsg = `All ${total} sources failed to play.`;
-      showPlayerErrorOverlay(errorMsg);
-      await destroyPlayer();
-    }
-  } finally {
-    // --- NEW FIX: Only release if all sources exhausted, otherwise handled by next iterations ---
-    if (currentFallbackIndex >= totalSourceCount(currentChannel) - 1) {
-      reconnectInFlight = false;
-    }
+      openChannel(currentChannel, nextIdx).catch(() => {});
+    }, 500);
+
+  } else {
+    // WE RAN OUT OF FALLBACKS! Show the actual error overlay.
+    showPlayerLoading(false);
+    const errorMsg = `All ${total} sources failed to play.`;
+    showPlayerErrorOverlay(errorMsg);
+    await destroyPlayer();
+    reconnectInFlight = false;
   }
 }
 
@@ -1599,15 +1595,16 @@ async function openChannel(
 
   await destroyPlayer();
 
-  // Start the Watchdog BEFORE we try to play the stream
-  // Using 6 seconds (6000ms) to account for slight manifest loading delays
+  // --- NEW FIX: Start the Watchdog BEFORE we try to play the stream ---
+  // Increased to 15 seconds (15000ms) so perfectly working 200 OK links
+  // don't get aggressively skipped while they are still downloading DRM.
   clearTimeout(playbackWatchdogTimer);
   playbackWatchdogTimer = setTimeout(() => {
     if (video.readyState <= 2 && !reconnectInFlight) {
       console.warn("Watchdog triggered: Video stuck on black screen.");
       handleStreamError("Stream timeout (Black screen)");
     }
-  }, 6000);
+  }, 15000);
 
   let streamLoadedSuccessfully = false;
 
