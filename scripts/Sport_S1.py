@@ -24,21 +24,16 @@ def generate_m3u(data, output_file):
         logo = item.get('logo', '')
         category = item.get('category', item.get('group', 'Sports'))
         
-        # Check different possible keys for the URL
-        url = item.get('url', item.get('link', item.get('mpd_url', '')))
+        # FIXED: Look for 'stream_url' instead of just 'url'
+        url = item.get('stream_url', '')
         cookie = item.get('cookie', '')
 
         if not url:
             continue
 
-        # Extract DRM keys if they exist in this JSON
-        kid = item.get('keyId', '')
+        # FIXED: Look for 'key_id' instead of 'keyId'
+        kid = item.get('key_id', '')
         key = item.get('key', '')
-        if item.get('clearkey') and isinstance(item.get('clearkey'), dict):
-            for k, v in item.get('clearkey').items():
-                kid = k
-                key = v
-                break
 
         # Apply GmaxHub Branding
         lines.append(f'#EXTINF:-1 tvg-name="{name} | GmaxHub" tvg-logo="{logo}" group-title="{category}", {name} | GmaxHub')
@@ -59,7 +54,12 @@ def generate_m3u(data, output_file):
         else:
             lines.append(f'#EXTHTTP:{{"User-Agent":"{user_agent}"}}')
 
-        lines.append(url)
+        # Append the Jio cookie directly to the URL string for maximum player compatibility
+        if cookie and ('jiotv' in url or 'jio.com' in url):
+            separator = '&' if '?' in url else '?'
+            lines.append(f"{url}{separator}{cookie}")
+        else:
+            lines.append(url)
 
     # Automatically create the Playlists folder if it doesn't exist yet
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
