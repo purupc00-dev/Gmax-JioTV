@@ -62,7 +62,7 @@ jobs:
             exit 0
           fi
 
-          git commit -m "GmaxHub JioTV Server 1 Updated ✅ ($(date -u '+%Y-%m-%d %H:%M UTC'))"
+          git commit -m "GmaxHub JioTV S1 Updated ✅ ($(date -u '+%Y-%m-%d %H:%M UTC'))"
 
           max_retries=5
           attempt=1
