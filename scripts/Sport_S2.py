@@ -2,6 +2,7 @@ import json
 import re
 import requests
 import os
+import sys
 from datetime import datetime, timezone, timedelta
 
 # ---------- configuration ----------
@@ -35,51 +36,57 @@ def get_cookie_expiry(cookie: str) -> str:
     return format_expiry(exp_match.group(1)) if exp_match else ""
 
 
-def extract_hdnea(final_url: str) -> str | None:
-    """Return the full __hdnea__ query string (including prefix) from a URL."""
-    match = re.search(r"(__hdnea__=[^&]+)", final_url)
-    return match.group(1) if match else None
-
-
 def main():
     print("=" * 60)
     print("GmaxHub Sport Server 2 (Star Sports JSON Pipeline)")
     print("=" * 60)
 
     try:
-        # Fetch channels
+        # 1. Fetch channel details from API
         print(f"\n[*] Fetching channels from {CHANNELS_URL}...")
         channels_resp = requests.get(CHANNELS_URL, timeout=30)
         channels_resp.raise_for_status()
         channels = channels_resp.json()
 
-        # Fetch cookies with browser headers to avoid Cloudflare HTML challenge blocks
+        # 2. Fetch M3U source for Cookies
         print(f"[*] Fetching cookies from {COOKIES_URL}...")
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept": "application/json,text/plain,*/*"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         }
-        cookies_resp = requests.get(COOKIES_URL, headers=headers, timeout=30)
-        cookies_resp.raise_for_status()
+        m3u_resp = requests.get(COOKIES_URL, headers=headers, timeout=30)
+        m3u_resp.raise_for_status()
 
-        if not cookies_resp.text.strip():
-            print("[-] Error: Cookie response is completely empty.")
-            return
+        m3u_content = m3u_resp.text
+        if not m3u_content.strip():
+            print("[-] Error: M3U source is completely empty.")
+            sys.exit(1)
 
-        try:
-            cookie_data = cookies_resp.json()
-        except json.JSONDecodeError:
-            print(f"[-] Error: Cookie URL did not return valid JSON. Response preview: {cookies_resp.text[:150]}")
-            return
+        # 3. Parse M3U to map tvg-id -> cookie string
+        hdnea_map = {}
+        current_id = None
+        
+        for line in m3u_content.splitlines():
+            line = line.strip()
+            if line.startswith("#EXTINF:"):
+                # Extract the tvg-id (e.g., tvg-id="460")
+                match = re.search(r'tvg-id="(\d+)"', line)
+                if match:
+                    current_id = match.group(1)
+                else:
+                    current_id = None
+            elif line.startswith("#EXTHTTP:") and current_id:
+                # Extract the cookie string from the JSON-like tag
+                cookie_match = re.search(r'"cookie":"([^"]+)"', line)
+                if cookie_match:
+                    cookie_val = cookie_match.group(1)
+                    # If it starts directly with st= instead of __hdnea__=st=, prepend it
+                    if cookie_val.startswith("st="):
+                        cookie_val = "__hdnea__=" + cookie_val
+                    
+                    hdnea_map[current_id] = cookie_val
+                current_id = None  # Reset after processing to avoid leaks
 
-        # Build a lookup: channel_id -> final_url
-        failed_map = {
-            str(item["channel_id"]): item["error_details"]["final_url"]
-            for item in cookie_data.get("failed_results", [])
-            if "error_details" in item and "final_url" in item["error_details"]
-        }
-
-        # Build combined output (Star Sports only) with GmaxHub branding
+        # 4. Build combined output (Star Sports only) with GmaxHub branding
         combined = []
 
         for ch in channels:
@@ -88,14 +95,10 @@ def main():
                 continue  # skip non–Star Sports channels
 
             cid = str(ch["id"])
-            final_url = failed_map.get(cid)
-            if not final_url:
-                print(f"  [-] Warning: no cookie URL for channel {cid} ({name})")
-                continue
-
-            hdnea_full = extract_hdnea(final_url)
-            if not hdnea_full:
-                print(f"  [-] Warning: no __hdnea__ token found for channel {cid}")
+            hdnea_token = hdnea_map.get(cid)
+            
+            if not hdnea_token:
+                print(f"  [-] Warning: no cookie found in M3U for channel {cid} ({name})")
                 continue
 
             # Ensure GmaxHub branding is added without duplicating it
@@ -105,17 +108,15 @@ def main():
                 "id": cid,
                 "name": branded_name,
                 "stream_url": ch["url"],
-                "cookie": hdnea_full,
-                "cookie_expires": get_cookie_expiry(hdnea_full),
+                "cookie": hdnea_token,
+                "cookie_expires": get_cookie_expiry(hdnea_token),
                 "key_id": ch["keyId"],
                 "key": ch["key"],
                 "logo": ch["logo"],
             })
 
-        # Ensure output directory exists
+        # 5. Write result
         os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
-
-        # Write result
         with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
             json.dump(combined, f, indent=2, ensure_ascii=False)
 
@@ -124,7 +125,7 @@ def main():
 
     except Exception as e:
         print(f"\n[-] Error in Star Sports pipeline: {e}")
-        raise
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
