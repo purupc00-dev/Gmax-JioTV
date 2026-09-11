@@ -14,7 +14,6 @@ NAME_FILTER = re.compile(r"star\s*sports", re.IGNORECASE)
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
-
 def format_expiry(exp_ts: str) -> str:
     """Convert a unix timestamp string to 'D/M/YYYY H:MM:SS AM/PM IST'."""
     try:
@@ -99,6 +98,7 @@ def main():
                 print(f"  [-] Warning: no __hdnea__ token found for channel {cid}")
                 continue
 
+            # Ensure GmaxHub branding is added without duplicating it
             branded_name = f"{name} | GmaxHub" if not name.endswith("| GmaxHub") else name
 
             combined.append({
