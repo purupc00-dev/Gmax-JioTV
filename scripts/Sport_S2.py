@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 
 # ---------- configuration ----------
 CHANNELS_URL = "https://sportlink18.pages.dev/jtvp.json"
-COOKIES_URL  = "https://raw.githubusercontent.com/qwerty180506/json/refs/heads/main/sportsbiscuit.json"
+COOKIES_URL  = "https://raw.githubusercontent.com/purupc00-dev/Gmax-JioTV/refs/heads/main/Playlists/JioTV_S10.m3u"
 OUTPUT_FILE  = "Playlists/Sport_S2.json"
 
 # Only keep channels whose name matches this pattern (case-insensitive)
