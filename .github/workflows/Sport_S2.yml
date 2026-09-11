@@ -1,4 +1,4 @@
-name: Update Sport Server 2
+name: Update Sport Server
 
 on:
   schedule:
@@ -54,6 +54,12 @@ jobs:
 
       - name: Commit and Push Changes
         run: |
+          # Safe abort if Python script failed to create the file
+          if [ ! -f "Playlists/Sport_S2.json" ]; then
+            echo "[-] Playlists/Sport_S2.json was not generated. Skipping commit."
+            exit 1
+          fi
+
           git add Playlists/Sport_S2.json
 
           if git diff --cached --quiet; then
