@@ -1,0 +1,86 @@
+name: Update Sport Server 1
+
+on:
+  schedule:
+    - cron: '0 */3 * * *' # Runs exactly every 3 hours
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'scripts/Sport_S1.py' # Updated path
+
+jobs:
+  update-playlist:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: update-sport-s1 # Updated group name
+      cancel-in-progress: true
+      
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch and Reset to Remote
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pytz
+
+      - name: Run Script
+        env:
+          TZ: Asia/Kolkata
+        run: |
+          python scripts/Sport_S1.py # Updated path
+
+      - name: Commit and Push Changes
+        run: |
+          git add Playlists/Sport_S1.m3u # Updated path
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "GmaxHub Sport S1 Updated ✅ ($(date -u '+%Y-%m-%d %H:%M UTC'))"
+
+          max_retries=5
+          attempt=1
+
+          until [ $attempt -gt $max_retries ]
+          do
+            echo "Push attempt $attempt..."
+            git fetch origin main
+            git rebase origin/main
+
+            if git push origin main; then
+              echo "Push succeeded."
+              exit 0
+            else
+              echo "Push failed, retrying ($attempt/$max_retries)..."
+              attempt=$((attempt+1))
+              sleep $((RANDOM % 5 + 1))
+            fi
+          done
+
+          echo "Push failed after $max_retries attempts."
+          exit 1
