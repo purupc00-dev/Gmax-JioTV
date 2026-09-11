@@ -2,6 +2,7 @@ import urllib.request
 import json
 import re
 import os
+from urllib.parse import quote  # Added for URL encoding
 
 def fetch_cookie(m3u_url):
     req = urllib.request.Request(m3u_url, headers={'User-Agent': 'OTT Navigator'})
@@ -25,22 +26,28 @@ def generate_m3u(data, cookie, output_file):
         name = item.get('name', 'Unknown')
         logo = item.get('logo', '')
         group = item.get('group', 'Other')
-        mpd = item.get('mpd_url', '')
-        kid = item.get('keyId', '').strip()
-        key = item.get('key', '').strip()
+        
+        # FIX 1 & 3: Strip trailing '?' and skip empty MPD URLs
+        mpd = item.get('mpd_url', '').rstrip('?')
+        if not mpd:
+            continue
+            
+        # FIX 2: Lowercase and strip KID/Key
+        kid = item.get('keyId', '').strip().lower()
+        key = item.get('key', '').strip().lower()
 
         if len(kid) < 32:
             kid = kid.zfill(32)
         if len(key) < 32:
             key = key.zfill(32)
 
-        # Build the full URL with query parameters
+        # FIX 4: URL-Encode the parameters safely for the JS web parser
         url_with_params = (
             f"{mpd}?|"
-            f"cookie={cookie}&"
-            f"referer=https://www.hotstar.com/&"
-            f"origin=https://www.hotstar.com&"
-            f"user-agent={user_agent}"
+            f"cookie={quote(cookie)}&"
+            f"referer={quote('https://www.hotstar.com/')}&"
+            f"origin={quote('https://www.hotstar.com')}&"
+            f"user-agent={quote(user_agent)}"
         )
 
         # Fully rebranded to Gmax
