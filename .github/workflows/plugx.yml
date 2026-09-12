@@ -1,41 +1,92 @@
-name: Update Plugx Playlist
+name: Update JioTV Server 11
 
 on:
   schedule:
-    # Runs automatically every 2 hours. You can adjust this if needed!
-    - cron: '0 */2 * * *'
-  # This allows you to manually click a "Run workflow" button on GitHub
-  workflow_dispatch: 
-
-permissions:
-  contents: write
+    - cron: '0 */4 * * *' # Runs every 4 hours
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'scripts/JioTV_S11.py'
 
 jobs:
   update-playlist:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
+    concurrency:
+      group: update-jiotv-s11
+      cancel-in-progress: true
+      
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
-      - name: Setup Python
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch and Reset to Remote
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install requests
 
-      - name: Run Plugx Fetcher Script
-        run: python plugx.py
+      - name: Run Script
+        env:
+          TZ: Asia/Kolkata
+        run: |
+          python scripts/JioTV_S11.py
 
       - name: Commit and Push Changes
         run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add plugx.m3u
-          
-          # This checks if the file actually changed before committing, preventing errors!
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-refresh Premium Plugx playlist" && git push)
+          # Safe abort if Python script failed to create the file
+          if [ ! -f "Playlists/JioTV_S11.m3u" ]; then
+            echo "[-] Playlists/JioTV_S11.m3u was not generated. Skipping commit."
+            exit 1
+          fi
+
+          git add Playlists/JioTV_S11.m3u
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "GmaxHub JioTV S11 Updated ✅ ($(date -u '+%Y-%m-%d %H:%M UTC'))"
+
+          max_retries=5
+          attempt=1
+
+          until [ $attempt -gt $max_retries ]
+          do
+            echo "Push attempt $attempt..."
+            git fetch origin main
+            git rebase origin/main
+
+            if git push origin main; then
+              echo "Push succeeded."
+              exit 0
+            else
+              echo "Push failed, retrying ($attempt/$max_retries)..."
+              attempt=$((attempt+1))
+              sleep $((RANDOM % 5 + 1))
+            fi
+          done
+
+          echo "Push failed after $max_retries attempts."
+          exit 1
