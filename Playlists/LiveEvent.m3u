@@ -1,6 +1,6 @@
 #EXTM3U
 #PLAYLIST:GmaxHub Live Events
-#LAST_UPDATE:07:18 AM 09-12-2026
+#LAST_UPDATE:12:53 PM 09-12-2026
 #GmaxHub - Live Sports & Events Pipeline
 #Created by - GmaxHub
 
@@ -69,6 +69,54 @@ https://bl.rutube.ru/livestream/c5f202caee6c91618c60155c61501a9d/index.m3u8?s=xp
 #EXTVLCOPT:http-origin=http://www.fawanews.sc/
 http://193.47.62.41/hls/kkkka.m3u8?
 
+#EXTINF:-1 tvg-id="866_1" tvg-name="Motorsport: MotoGP (TNT SPORTS - AQ) | GmaxHub" tvg-logo="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgiy9chJNhw1XEU4gM-u6aLV0OGAHC38TO344gN3HFWqeOk5068zqJsQOYTyud9BoDV44JPX0pT2Jr7iVFa-IHUrB80G5N76Q_jUG9qiKNF5Wehb0-DqS6tQ46OpeQFfPfq_K-6icHx6-EZxHj-9cTG5WaqhPNQcqeIOba-XGnMg7ybLyKfEIkFUH5iUg8/s1600/1000009835.png" group-title="Motorsport",Motorsport: MotoGP (TNT SPORTS - AQ) | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=f3df7843080ae743bf865dc5fdf64c68:567c863bc12eb74788ea74888c042e1b
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/puehlftk5j/out/v1/f7f0da1ee112481ca0024e6d4dd97f4a/cenc.mpd
+
+#EXTINF:-1 tvg-id="866_2" tvg-name="Motorsport: MotoGP (SPOTV - AQ) | GmaxHub" tvg-logo="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgiy9chJNhw1XEU4gM-u6aLV0OGAHC38TO344gN3HFWqeOk5068zqJsQOYTyud9BoDV44JPX0pT2Jr7iVFa-IHUrB80G5N76Q_jUG9qiKNF5Wehb0-DqS6tQ46OpeQFfPfq_K-6icHx6-EZxHj-9cTG5WaqhPNQcqeIOba-XGnMg7ybLyKfEIkFUH5iUg8/s1600/1000009835.png" group-title="Motorsport",Motorsport: MotoGP (SPOTV - AQ) | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=7eea72d6075245a99ee3255603d58853:6848ef60575579bf4d415db1032153ed
+#EXTVLCOPT:http-user-agent=GmaxHub
+https://qp-pldt-live-grp-13-prod.akamaized.net/out/u/dr_spotv2hd.mpd
+
+#EXTINF:-1 tvg-id="866_3" tvg-name="Motorsport: MotoGP (MotoGP - AQ) | GmaxHub" tvg-logo="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgiy9chJNhw1XEU4gM-u6aLV0OGAHC38TO344gN3HFWqeOk5068zqJsQOYTyud9BoDV44JPX0pT2Jr7iVFa-IHUrB80G5N76Q_jUG9qiKNF5Wehb0-DqS6tQ46OpeQFfPfq_K-6icHx6-EZxHj-9cTG5WaqhPNQcqeIOba-XGnMg7ybLyKfEIkFUH5iUg8/s1600/1000009835.png" group-title="Motorsport",Motorsport: MotoGP (MotoGP - AQ) | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=e03f302ec4dabcccca82cc9f76731ec9:53ea1027d2bf2893a552cf15bc0366de
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/wjeweupwyc/out/v1/8197c8e055c94a868623653ac55c10bf/cenc.mpd
+
+#EXTINF:-1 tvg-id="866_4" tvg-name="Motorsport: MotoGP (FANCODE - AQ) | GmaxHub" tvg-logo="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgiy9chJNhw1XEU4gM-u6aLV0OGAHC38TO344gN3HFWqeOk5068zqJsQOYTyud9BoDV44JPX0pT2Jr7iVFa-IHUrB80G5N76Q_jUG9qiKNF5Wehb0-DqS6tQ46OpeQFfPfq_K-6icHx6-EZxHj-9cTG5WaqhPNQcqeIOba-XGnMg7ybLyKfEIkFUH5iUg8/s1600/1000009835.png" group-title="Motorsport",Motorsport: MotoGP (FANCODE - AQ) | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=1994b1df7dfd2e8a8d7b9bf3fb900285:22a1444b3da18e139191665b3d652835
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+https://otte.cache.aiv-cdn.net/iad-nitro/live/clients/dash/enc/avqlywnuzx/out/v1/aefca6420f944a9482e117f315de535f/cenc.mpd
+
+#EXTINF:-1 tvg-id="866_5" tvg-name="Motorsport: MotoGP (CRICFy LIVE) | GmaxHub" tvg-logo="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgiy9chJNhw1XEU4gM-u6aLV0OGAHC38TO344gN3HFWqeOk5068zqJsQOYTyud9BoDV44JPX0pT2Jr7iVFa-IHUrB80G5N76Q_jUG9qiKNF5Wehb0-DqS6tQ46OpeQFfPfq_K-6icHx6-EZxHj-9cTG5WaqhPNQcqeIOba-XGnMg7ybLyKfEIkFUH5iUg8/s1600/1000009835.png" group-title="Motorsport",Motorsport: MotoGP (CRICFy LIVE) | GmaxHub
+#KODIPROP:inputstream=inputstream.ffmpeg
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTVLCOPT:http-referrer=https://streamscenter.online/
+#EXTVLCOPT:http-origin=https://streamscenter.online
+https://edgestream1.pro/hls/hbfkazbkaznc49.m3u8?
+
+#EXTINF:-1 tvg-id="866_6" tvg-name="Motorsport: MotoGP (LOW SERVER) | GmaxHub" tvg-logo="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgiy9chJNhw1XEU4gM-u6aLV0OGAHC38TO344gN3HFWqeOk5068zqJsQOYTyud9BoDV44JPX0pT2Jr7iVFa-IHUrB80G5N76Q_jUG9qiKNF5Wehb0-DqS6tQ46OpeQFfPfq_K-6icHx6-EZxHj-9cTG5WaqhPNQcqeIOba-XGnMg7ybLyKfEIkFUH5iUg8/s1600/1000009835.png" group-title="Motorsport",Motorsport: MotoGP (LOW SERVER) | GmaxHub
+#KODIPROP:inputstream=inputstream.ffmpeg
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTVLCOPT:http-referrer=http://www.fawanews.sc/
+#EXTVLCOPT:http-origin=http://www.fawanews.sc/
+http://193.47.62.41/hls/kkkka.m3u8?
+
 #EXTINF:-1 tvg-id="1089_1" tvg-name="WWE: SmackDown (CRICFy LIVE) | GmaxHub" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/WWE_Logo.svg/2243px-WWE_Logo.svg.png" group-title="Boxing",WWE: SmackDown (CRICFy LIVE) | GmaxHub
 #EXTVLCOPT:http-user-agent=GmaxHub
 #EXTVLCOPT:http-referrer=https://gooz.aapmains.net
@@ -109,6 +157,81 @@ https://edgestream2.pro/hls/zeuryuegn48.m3u8
 #EXTVLCOPT:http-origin=http://www.fawanews.sc/
 http://193.47.62.49/hls/ZSZSZSX.m3u8
 
+#EXTINF:-1 tvg-id="8963_1" tvg-name="Boxing: J. Silva vs M. J. Delgado (PARAMOUNT+ - AQ) | GmaxHub" tvg-logo="https://img.sofascore.com/api/v1/unique-tournament/19906/image" group-title="Boxing",Boxing: J. Silva vs M. J. Delgado (PARAMOUNT+ - AQ) | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=6d3507f47a80d989950c3bd2278d30fe:496c078d72d4a546e82de8eea05be12c
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+https://otte.cache.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/t3ey0k5x8k/out/v1/cb09787e966f4bf7b482fb42397b50aa/cenc.mpd
+
+#EXTINF:-1 tvg-id="8963_2" tvg-name="Boxing: J. Silva vs M. J. Delgado (TNT SPORTS - AQ) | GmaxHub" tvg-logo="https://img.sofascore.com/api/v1/unique-tournament/19906/image" group-title="Boxing",Boxing: J. Silva vs M. J. Delgado (TNT SPORTS - AQ) | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=69a5aa835a061ce64a630d1046727e40:d02feac8a999bd06bf4059bf33411749
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+https://otte.cache.aiv-cdn.net/iad-nitro/live/clients/dash/enc/rhf2dwosdt/out/v1/ee550d2a68d846c797e6ce4de2e8b76d/cenc.mpd
+
+#EXTINF:-1 tvg-id="8963_3" tvg-name="Boxing: J. Silva vs M. J. Delgado (PARAMOUNT+ ES) | GmaxHub" tvg-logo="https://img.sofascore.com/api/v1/unique-tournament/19906/image" group-title="Boxing",Boxing: J. Silva vs M. J. Delgado (PARAMOUNT+ ES) | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=3a376a2894284643366752b4a70bbc60:c380c60e90e5da5f7c153f466ae233a3
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+https://otte.cache.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/qfzueywygj/out/v1/06e47cdb7418412d853429f602e29ece/cenc.mpd
+
+#EXTINF:-1 tvg-id="8963_4" tvg-name="Boxing: J. Silva vs M. J. Delgado (PARAMOUNT+ POR) | GmaxHub" tvg-logo="https://img.sofascore.com/api/v1/unique-tournament/19906/image" group-title="Boxing",Boxing: J. Silva vs M. J. Delgado (PARAMOUNT+ POR) | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=4b3ab571ebb83f9b16dfc7294f03c3f0:b2f7336e74e92194c1f22979577c6400
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+https://otte.cache.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/qw044y2yl3/out/v1/bd297c0904ac493a88956afbe4220a39/cenc.mpd
+
+#EXTINF:-1 tvg-id="8963_5" tvg-name="Boxing: J. Silva vs M. J. Delgado (CRICFy LIVE) | GmaxHub" tvg-logo="https://img.sofascore.com/api/v1/unique-tournament/19906/image" group-title="Boxing",Boxing: J. Silva vs M. J. Delgado (CRICFy LIVE) | GmaxHub
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTVLCOPT:http-referrer=https://gooz.aapmains.net
+https://chatgpt.hereisman.net/playlist/55823/load-playlist?
+
+#EXTINF:-1 tvg-id="8963_6" tvg-name="Boxing: J. Silva vs M. J. Delgado (HD QUALITY) | GmaxHub" tvg-logo="https://img.sofascore.com/api/v1/unique-tournament/19906/image" group-title="Boxing",Boxing: J. Silva vs M. J. Delgado (HD QUALITY) | GmaxHub
+#KODIPROP:inputstream=inputstream.ffmpeg
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTVLCOPT:http-referrer=https://streamscenter.online/
+#EXTVLCOPT:http-origin=https://streamscenter.online
+https://edgestream3.pro/hls/zeuryuegn48.m3u8?
+
+#EXTINF:-1 tvg-id="8963_7" tvg-name="Boxing: J. Silva vs M. J. Delgado (CRICFy HD) | GmaxHub" tvg-logo="https://img.sofascore.com/api/v1/unique-tournament/19906/image" group-title="Boxing",Boxing: J. Silva vs M. J. Delgado (CRICFy HD) | GmaxHub
+#KODIPROP:inputstream=inputstream.ffmpeg
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTVLCOPT:http-user-agent=GmaxHub
+https://ubuntu.fromthyheart.site/dailymotion/live/playlist/25.m3u8
+
+#EXTINF:-1 tvg-id="8963_8" tvg-name="Boxing: J. Silva vs M. J. Delgado (LOW SERVER) | GmaxHub" tvg-logo="https://img.sofascore.com/api/v1/unique-tournament/19906/image" group-title="Boxing",Boxing: J. Silva vs M. J. Delgado (LOW SERVER) | GmaxHub
+#KODIPROP:inputstream=inputstream.ffmpeg
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTVLCOPT:http-referrer=http://www.fawanews.sc/
+#EXTVLCOPT:http-origin=http://www.fawanews.sc/
+http://193.47.62.50/hls/JGGGQQQQQQq.m3u8?
+
+#EXTINF:-1 tvg-id="8963_9" tvg-name="Boxing: J. Silva vs M. J. Delgado (UFC TV - AQ) | GmaxHub" tvg-logo="https://img.sofascore.com/api/v1/unique-tournament/19906/image" group-title="Boxing",Boxing: J. Silva vs M. J. Delgado (UFC TV - AQ) | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=a49085f8da5e65af1efff0edac830b1f:4659bc58a85c062e3fe0c039a446fe47
+#EXTVLCOPT:http-user-agent=GmaxHub
+https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/9v8cttmhcw/out/v1/df4c5196e3d74e7d8f484fc25d9034f1/cenc.mpd
+
+#EXTINF:-1 tvg-id="8963_10" tvg-name="Boxing: J. Silva vs M. J. Delgado (SportsNet - AQ) | GmaxHub" tvg-logo="https://img.sofascore.com/api/v1/unique-tournament/19906/image" group-title="Boxing",Boxing: J. Silva vs M. J. Delgado (SportsNet - AQ) | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=60de674d9db66df9ba090e06871d3554:18071eac168232fc3d45549049c1de6b
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/ccupb3gevq/out/v1/d9d54c61efab463981d1a7d04ceeb44c/cenc.mpd
+
 #EXTINF:-1 tvg-id="11180_1" tvg-name="Cricket: CPL (TNT SPORTS - AQ) | GmaxHub" tvg-logo="https://img.sofascore.com/api/v1/unique-tournament/11167/image" group-title="Cricket",Cricket: CPL (TNT SPORTS - AQ) | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
@@ -136,6 +259,69 @@ https://saseries.akamaized.net/hls/live/2110097/tapmad123321/master.m3u8
 #KODIPROP:inputstream.adaptive.license_key=69a5aa835a061ce64a630d1046727e40:d02feac8a999bd06bf4059bf33411749
 #EXTVLCOPT:http-user-agent=GmaxHub
 https://otte.live.fly.ww.aiv-cdn.net/fra-nitro/live/clients/dash/enc/rhf2dwosdt/out/v1/ee550d2a68d846c797e6ce4de2e8b76d/cenc.mpd
+
+#EXTINF:-1 tvg-id="11560_1" tvg-name="Cricket: England vs Pakistan (WILLOW - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18833/image/dark" group-title="Cricket",Cricket: England vs Pakistan (WILLOW - AQ) | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=4b449e62d6400a82c000f057837d3c34:6726fe4c78a06a3861c5403c716ea96f
+#EXTVLCOPT:http-user-agent=GmaxHub
+https://otte.cache.aiv-cdn.net/iad-nitro/live/clients/dash/enc/kbatzaazbo/out/v1/e12d4e78342c47348c272f5d5979eeec/cenc.mpd
+
+#EXTINF:-1 tvg-id="11560_2" tvg-name="Cricket: England vs Pakistan (SKY CRICKET - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18833/image/dark" group-title="Cricket",Cricket: England vs Pakistan (SKY CRICKET - AQ) | GmaxHub
+#KODIPROP:inputstream=inputstream.ffmpeg
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTVLCOPT:http-user-agent=Mozilla
+https://bl.rutube.ru/livestream/7c13a51576b9ff2601f08f5d57dd5169/index.m3u8?s=uiXES2ePt7xTpQnbJxn7Dg&e=2074684474&scheme=https
+
+#EXTINF:-1 tvg-id="11560_3" tvg-name="Cricket: England vs Pakistan (WILLOW - ALT) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18833/image/dark" group-title="Cricket",Cricket: England vs Pakistan (WILLOW - ALT) | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=4b449e62d6400a82c000f057837d3c34:6726fe4c78a06a3861c5403c716ea96f
+#EXTVLCOPT:http-user-agent=GmaxHub
+https://abfjk4haaaaaaaamkitc5445rybm6.bia-cf.live.pv-cdn.net/iad-nitro/live/clients/dash/enc/kbatzaazbo/out/v1/e12d4e78342c47348c272f5d5979eeec/cenc.mpd
+
+#EXTINF:-1 tvg-id="11560_4" tvg-name="Cricket: England vs Pakistan (TAPMAD - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18833/image/dark" group-title="Cricket",Cricket: England vs Pakistan (TAPMAD - AQ) | GmaxHub
+#KODIPROP:inputstream=inputstream.ffmpeg
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTVLCOPT:http-referrer=https://tapmad.com/
+https://saseries.akamaized.net/hls/live/2110097/2353jkiL-tapmad/master.m3u8
+
+#EXTINF:-1 tvg-id="11560_5" tvg-name="Cricket: England vs Pakistan (TAMASHA - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18833/image/dark" group-title="Cricket",Cricket: England vs Pakistan (TAMASHA - AQ) | GmaxHub
+#KODIPROP:inputstream=inputstream.ffmpeg
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTVLCOPT:http-user-agent=GmaxHub
+https://cdn06khi-n.tamashaweb.com:8087/jazzauth/PAKvsEng-Test-SVOD-abr/playlist.m3u8
+
+#EXTINF:-1 tvg-id="11560_6" tvg-name="Cricket: England vs Pakistan (FOX CRICKET HD) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18833/image/dark" group-title="Cricket",Cricket: England vs Pakistan (FOX CRICKET HD) | GmaxHub
+#KODIPROP:inputstream=inputstream.ffmpeg
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTVLCOPT:http-user-agent=GmaxHub
+https://raw.githubusercontent.com/IPTVFlixBD/OopsTv/refs/heads/main/nwp/809389.m3u8
+
+#EXTINF:-1 tvg-id="11560_7" tvg-name="Cricket: England vs Pakistan (TEN SPORTS HD) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18833/image/dark" group-title="Cricket",Cricket: England vs Pakistan (TEN SPORTS HD) | GmaxHub
+#KODIPROP:inputstream=inputstream.ffmpeg
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTVLCOPT:http-user-agent=GmaxHub
+https://raw.githubusercontent.com/IPTVFlixBD/OopsTv/refs/heads/main/nwp/809396.m3u8
+
+#EXTINF:-1 tvg-id="11560_8" tvg-name="Cricket: England vs Pakistan (SonyLiv) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18833/image/dark" group-title="Cricket",Cricket: England vs Pakistan (SonyLiv) | GmaxHub
+#KODIPROP:inputstream=inputstream.ffmpeg
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:155.0) Gecko/20100101 Firefox/155.0
+#EXTVLCOPT:http-referrer=https://www.sonyliv.com/
+#EXTVLCOPT:http-origin=https://www.sonyliv.com
+https://sonymtmnew-akamaized.pages.dev/hls/live/2037142/criclive1109/ENG/master.m3u8
+
+#EXTINF:-1 tvg-id="11560_9" tvg-name="Cricket: England vs Pakistan (LOW SERVER) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18833/image/dark" group-title="Cricket",Cricket: England vs Pakistan (LOW SERVER) | GmaxHub
+#KODIPROP:inputstream=inputstream.ffmpeg
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTVLCOPT:http-referrer=http://www.fawanews.sc/
+#EXTVLCOPT:http-origin=http://www.fawanews.sc/
+http://193.47.62.41/hls/DDDDAAA.m3u8?
 
 #EXTINF:-1 tvg-id="11903_1" tvg-name="Cricket: ETPL (WILLOW - AQ) | GmaxHub" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQujBtPOgUpOHILwHzxdBP5T8Q4sgCfxOGrHdlJCHp2Rfd4Ep2UFJLSLbRP&s=10" group-title="Cricket",Cricket: ETPL (WILLOW - AQ) | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -173,83 +359,15 @@ http://tvsen5.aynascope.net/willowhd/index.m3u8
 #EXTVLCOPT:http-user-agent=GmaxHub
 https://otte.cache.aiv-cdn.net/iad-nitro/live/clients/dash/enc/b3b3fkmrbl/out/v1/1084d5c9a97a4c5b9f9554c88f486646/cenc.mpd
 
-#EXTINF:-1 tvg-id="12551_1" tvg-name="Football: Al-Ahli vs Al-Hazem (FOX DEPORTES - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/955/image/dark" group-title="Football",Football: Al-Ahli vs Al-Hazem (FOX DEPORTES - AQ) | GmaxHub
+#EXTINF:-1 tvg-id="12579_1" tvg-name="Football: Borussia Dortmund vs SC Paderborn 07 (beIN ENGLISH - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/35/image/dark" group-title="Football",Football: Borussia Dortmund vs SC Paderborn 07 (beIN ENGLISH - AQ) | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=d1a163914db8ffad2c3e94f979896a0d:9728800a3959aafdd5b0bcfbf3768811
-#EXTVLCOPT:http-user-agent=GmaxHub
-https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/vkpoljjpkj/out/v1/502bcf68b3514cd28a220e6f0a43816f/cenc.mpd
-
-#EXTINF:-1 tvg-id="12551_2" tvg-name="Football: Al-Ahli vs Al-Hazem (SPORT TV HD) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/955/image/dark" group-title="Football",Football: Al-Ahli vs Al-Hazem (SPORT TV HD) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-https://tmaxapp.site/pt658svs/sporttv5.m3u8
-
-#EXTINF:-1 tvg-id="12551_3" tvg-name="Football: Al-Ahli vs Al-Hazem (LOW SERVER) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/955/image/dark" group-title="Football",Football: Al-Ahli vs Al-Hazem (LOW SERVER) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=http://www.fawanews.sc/
-#EXTVLCOPT:http-origin=http://www.fawanews.sc/
-http://193.47.62.42/hls/B222.m3u8?
-
-#EXTINF:-1 tvg-id="12555_1" tvg-name="Football: 1. FC Union Berlin vs FC Schalke 04 (PEACOCK - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/35/image/dark" group-title="Football",Football: 1. FC Union Berlin vs FC Schalke 04 (PEACOCK - AQ) | GmaxHub
-#KODIPROP:inputstream=inputstream.adaptive
-#KODIPROP:inputstream.adaptive.manifest_type=mpd
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=7d9e22ee341d0dce40baf1de57c76646:8353517d365379aa941735af270d4781
+#KODIPROP:inputstream.adaptive.license_key=335dad778109954503dcbb21dc92015f:24bfd75d436cbf73168a2a2dccd40281
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
-https://otte.cache.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/aqs71ak123/out/v1/122fdb8684cd451ea46f534e614b5b73/cenc.mpd
+https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/ghwcl6hv68/out/v1/83536910d8034e9b9895a20fbe1c1687/cenc.mpd
 
-#EXTINF:-1 tvg-id="12555_2" tvg-name="Football: 1. FC Union Berlin vs FC Schalke 04 (SPORT TV - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/35/image/dark" group-title="Football",Football: 1. FC Union Berlin vs FC Schalke 04 (SPORT TV - AQ) | GmaxHub
-#KODIPROP:inputstream=inputstream.adaptive
-#KODIPROP:inputstream.adaptive.manifest_type=mpd
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=51c0ef23b17297e5c01cd7f36dd0a6ce:8823f713ba6fdb9bbe0a2ad82d309a4b
-#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
-https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/w8kwdfmlgs/out/v1/3aa321e477504937a439b602e078eb18/cenc.mpd
-
-#EXTINF:-1 tvg-id="12555_3" tvg-name="Football: 1. FC Union Berlin vs FC Schalke 04 (SKY BUNDESLIGA HD) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/35/image/dark" group-title="Football",Football: 1. FC Union Berlin vs FC Schalke 04 (SKY BUNDESLIGA HD) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-https://tmaxapp.site/ligue6sc6/skybundesliga1.m3u8
-
-#EXTINF:-1 tvg-id="12555_4" tvg-name="Football: 1. FC Union Berlin vs FC Schalke 04 (HD SERVER) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/35/image/dark" group-title="Football",Football: 1. FC Union Berlin vs FC Schalke 04 (HD SERVER) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=http://www.fawanews.sc/
-#EXTVLCOPT:http-origin=http://www.fawanews.sc/
-https://www.rtmpcdn.com/live/a71542ed-3604-4b11-bcf5-3b7616128d41.m3u8?
-
-#EXTINF:-1 tvg-id="12555_5" tvg-name="Football: 1. FC Union Berlin vs FC Schalke 04 (LOW SERVER) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/35/image/dark" group-title="Football",Football: 1. FC Union Berlin vs FC Schalke 04 (LOW SERVER) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=http://www.fawanews.sc/
-#EXTVLCOPT:http-origin=http://www.fawanews.sc/
-http://193.47.62.57/hls/ZYYYQQQ.m3u8?
-
-#EXTINF:-1 tvg-id="12557_1" tvg-name="Football: Venezia vs Fiorentina (DAZN SPORTS - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/23/image/dark" group-title="Football",Football: Venezia vs Fiorentina (DAZN SPORTS - AQ) | GmaxHub
-#KODIPROP:inputstream=inputstream.adaptive
-#KODIPROP:inputstream.adaptive.manifest_type=mpd
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=a49241169a558d33100b0b7705faf604:37c9a31483da978c57a85802e29e4661
-#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
-https://otte.cache.aiv-cdn.net/lhr-nitro/live/clients/dash/enc/9g7xuqwo2j/out/v1/1de525984f7a4f20bca1229e1441b850/cenc.mpd
-
-#EXTINF:-1 tvg-id="12557_2" tvg-name="Football: Venezia vs Fiorentina (PARAMOUNT+ - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/23/image/dark" group-title="Football",Football: Venezia vs Fiorentina (PARAMOUNT+ - AQ) | GmaxHub
-#KODIPROP:inputstream=inputstream.adaptive
-#KODIPROP:inputstream.adaptive.manifest_type=mpd
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=6a2219368fe0106673a21e9b48e1a053:e386c37d6fdbae53f0f3d83631125272
-#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
-https://otte.cache.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/rnio177wfs/out/v1/07c8169d9e164f88842b81e9a355b07a/cenc.mpd
-
-#EXTINF:-1 tvg-id="12557_3" tvg-name="Football: Venezia vs Fiorentina (FUBO SPORTS - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/23/image/dark" group-title="Football",Football: Venezia vs Fiorentina (FUBO SPORTS - AQ) | GmaxHub
+#EXTINF:-1 tvg-id="12588_1" tvg-name="Football: Liverpool FC vs Fulham (FUBO SPORTS - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/17/image/dark" group-title="Football",Football: Liverpool FC vs Fulham (FUBO SPORTS - AQ) | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
@@ -257,7 +375,7 @@ https://otte.cache.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/rnio177wfs/out/v1
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
 https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/3b7qwiqzk3/out/v1/9f14895badca43e6a716db021dcd0c31/cenc.mpd
 
-#EXTINF:-1 tvg-id="12557_4" tvg-name="Football: Venezia vs Fiorentina (beIN ENGLISH - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/23/image/dark" group-title="Football",Football: Venezia vs Fiorentina (beIN ENGLISH - AQ) | GmaxHub
+#EXTINF:-1 tvg-id="12591_1" tvg-name="Football: Genoa vs Frosinone (beIN ENGLISH - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/23/image/dark" group-title="Football",Football: Genoa vs Frosinone (beIN ENGLISH - AQ) | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
@@ -265,105 +383,13 @@ https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/3b7qwiqzk3/out/v1
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
 https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/q4u5nwaogz/out/v1/18de6d3e65934f3a8de4358e69eab86c/cenc.mpd
 
-#EXTINF:-1 tvg-id="12557_5" tvg-name="Football: Venezia vs Fiorentina (CBS SPORTS - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/23/image/dark" group-title="Football",Football: Venezia vs Fiorentina (CBS SPORTS - AQ) | GmaxHub
-#KODIPROP:inputstream=inputstream.adaptive
-#KODIPROP:inputstream.adaptive.manifest_type=mpd
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=d9623774ac5c8c351aafe97c5fe70267:5164e6d05164a2d65fa8fcc962aa4861
-#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
-https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/5qz8wmdome/out/v1/b9323e853dce427eac214b77bd48a204/cenc.mpd
-
-#EXTINF:-1 tvg-id="12557_6" tvg-name="Football: Venezia vs Fiorentina (DAZN SPORTS HD) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/23/image/dark" group-title="Football",Football: Venezia vs Fiorentina (DAZN SPORTS HD) | GmaxHub
+#EXTINF:-1 tvg-id="12591_2" tvg-name="Football: Genoa vs Frosinone (SPORT TV HD) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/23/image/dark" group-title="Football",Football: Genoa vs Frosinone (SPORT TV HD) | GmaxHub
 #KODIPROP:inputstream=inputstream.ffmpeg
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTVLCOPT:http-user-agent=GmaxHub
-https://tmaxapp.site/8wirwjs76erftg/dazn1it.m3u8
+https://tmaxapp.site/pt658svs/sporttv1.m3u8
 
-#EXTINF:-1 tvg-id="12557_7" tvg-name="Football: Venezia vs Fiorentina (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/23/image/dark" group-title="Football",Football: Venezia vs Fiorentina (CRICFy LIVE) | GmaxHub
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=https://gooz.aapmains.net
-https://chatgpt.hereisman.net/playlist/56190/load-playlist?
-
-#EXTINF:-1 tvg-id="12557_8" tvg-name="Football: Venezia vs Fiorentina (SPORT TV HD) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/23/image/dark" group-title="Football",Football: Venezia vs Fiorentina (SPORT TV HD) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-https://tmaxapp.site/pt658svs/sporttv2.m3u8
-
-#EXTINF:-1 tvg-id="12557_9" tvg-name="Football: Venezia vs Fiorentina (LOW SERVER) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/23/image/dark" group-title="Football",Football: Venezia vs Fiorentina (LOW SERVER) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=http://www.fawanews.sc/
-#EXTVLCOPT:http-origin=http://www.fawanews.sc/
-http://193.47.62.49/hls/GE333Q.m3u8?
-
-#EXTINF:-1 tvg-id="12558_1" tvg-name="Football: Sevilla vs Valencia (PREMIER SPORTS - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/8/image/dark" group-title="Football",Football: Sevilla vs Valencia (PREMIER SPORTS - AQ) | GmaxHub
-#KODIPROP:inputstream=inputstream.adaptive
-#KODIPROP:inputstream.adaptive.manifest_type=mpd
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=1a5df53609ebc9857898c490f4724918:77f62980d582ec541280796acf8b2d19
-#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
-https://otte.cache.aiv-cdn.net/iad-nitro/live/clients/dash/enc/bcj3iscpd6/out/v1/fcd137b391214f7cb99dd4d7be90ca87/cenc.mpd
-
-#EXTINF:-1 tvg-id="12558_2" tvg-name="Football: Sevilla vs Valencia (CazéTV - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/8/image/dark" group-title="Football",Football: Sevilla vs Valencia (CazéTV - AQ) | GmaxHub
-#KODIPROP:inputstream=inputstream.adaptive
-#KODIPROP:inputstream.adaptive.manifest_type=mpd
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=34475edab991ad5e92548aebd710410a:501b209cccd323ac00bf5ac15b406cb4
-#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
-https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/3ynrpdanq2/out/v1/81fd4c26584044d2b1a1cc5b32fa9af0/cenc.mpd?
-
-#EXTINF:-1 tvg-id="12558_3" tvg-name="Football: Sevilla vs Valencia (M+ LaLiga HD) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/8/image/dark" group-title="Football",Football: Sevilla vs Valencia (M+ LaLiga HD) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-https://tmaxapp.site/ligue6sc6/mlaliga1.m3u8
-
-#EXTINF:-1 tvg-id="12558_4" tvg-name="Football: Sevilla vs Valencia (DAZN SPORTS HD) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/8/image/dark" group-title="Football",Football: Sevilla vs Valencia (DAZN SPORTS HD) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-https://tmaxapp.site/8wirwjs76erftg/dazn1de.m3u8
-
-#EXTINF:-1 tvg-id="12558_5" tvg-name="Football: Sevilla vs Valencia (ESPN DEPORTES HD) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/8/image/dark" group-title="Football",Football: Sevilla vs Valencia (ESPN DEPORTES HD) | GmaxHub
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=https://gooz.aapmains.net
-https://chatgpt.hereisman.net/playlist/56191/load-playlist?
-
-#EXTINF:-1 tvg-id="12558_6" tvg-name="Football: Sevilla vs Valencia (LOW SERVER) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/8/image/dark" group-title="Football",Football: Sevilla vs Valencia (LOW SERVER) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=http://www.fawanews.sc/
-#EXTVLCOPT:http-origin=http://www.fawanews.sc/
-http://193.47.62.53/hls/OFFFQQ.m3u8?
-
-#EXTINF:-1 tvg-id="12559_1" tvg-name="Football: Stade Rennais vs Olympique de Marseille (PRIME VIDEO - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/34/image/dark" group-title="Football",Football: Stade Rennais vs Olympique de Marseille (PRIME VIDEO - AQ) | GmaxHub
-#KODIPROP:inputstream=inputstream.adaptive
-#KODIPROP:inputstream.adaptive.manifest_type=mpd
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=62dbac124bbef865507610070019f875:3dca8ca0a86cca296de7f91583d88939
-#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
-https://otte.cache.aiv-cdn.net/lhr-nitro/live/clients/dash/enc/6a8fhgbjrg/out/v1/c0fe2f18b6624d9b987f254d8b4ddf30/cenc.mpd
-
-#EXTINF:-1 tvg-id="12559_2" tvg-name="Football: Stade Rennais vs Olympique de Marseille (CazéTV - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/34/image/dark" group-title="Football",Football: Stade Rennais vs Olympique de Marseille (CazéTV - AQ) | GmaxHub
-#KODIPROP:inputstream=inputstream.adaptive
-#KODIPROP:inputstream.adaptive.manifest_type=mpd
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=ac7abaa9c9481aacfbdac64fc3ec3312:c0c504a2ed2e70b879a650b8770a38c6
-#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
-https://otte.cache.aiv-cdn.net/gru-nitro/live/clients/dash/enc/vzeco5ty0v/out/v1/44c6b8f31a2544e3b2a9bb41ed5e241e/cenc.mpd
-
-#EXTINF:-1 tvg-id="12559_3" tvg-name="Football: Stade Rennais vs Olympique de Marseille (LOW SERVER) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/34/image/dark" group-title="Football",Football: Stade Rennais vs Olympique de Marseille (LOW SERVER) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=http://www.fawanews.sc/
-#EXTVLCOPT:http-origin=http://www.fawanews.sc/
-http://193.47.62.49/hls/GE333QQ.m3u8?
-
-#EXTINF:-1 tvg-id="12560_1" tvg-name="Football: West Ham United vs Wrexham (beIN ENGLISH - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18/image/dark" group-title="Football",Football: West Ham United vs Wrexham (beIN ENGLISH - AQ) | GmaxHub
+#EXTINF:-1 tvg-id="12606_1" tvg-name="Football: Derby County vs Birmingham City (beIN ENGLISH - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18/image/dark" group-title="Football",Football: Derby County vs Birmingham City (beIN ENGLISH - AQ) | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
@@ -371,77 +397,51 @@ http://193.47.62.49/hls/GE333QQ.m3u8?
 #EXTVLCOPT:http-user-agent=GmaxHub
 https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/8m8cd46i1t/out/v1/83985c68e4174e90a58a1f2c024be4c9/cenc.mpd
 
-#EXTINF:-1 tvg-id="12560_2" tvg-name="Football: West Ham United vs Wrexham (FANCODE - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18/image/dark" group-title="Football",Football: West Ham United vs Wrexham (FANCODE - AQ) | GmaxHub
-#KODIPROP:inputstream=inputstream.adaptive
-#KODIPROP:inputstream.adaptive.manifest_type=mpd
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=1994b1df7dfd2e8a8d7b9bf3fb900285:22a1444b3da18e139191665b3d652835
-#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
-https://otte.cache.aiv-cdn.net/iad-nitro/live/clients/dash/enc/avqlywnuzx/out/v1/aefca6420f944a9482e117f315de535f/cenc.mpd
-
-#EXTINF:-1 tvg-id="12560_3" tvg-name="Football: West Ham United vs Wrexham (SKY FOOTBALL HD) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18/image/dark" group-title="Football",Football: West Ham United vs Wrexham (SKY FOOTBALL HD) | GmaxHub
+#EXTINF:-1 tvg-id="12606_2" tvg-name="Football: Derby County vs Birmingham City (SKY FOOTBALL HD) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18/image/dark" group-title="Football",Football: Derby County vs Birmingham City (SKY FOOTBALL HD) | GmaxHub
 #KODIPROP:inputstream=inputstream.ffmpeg
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTVLCOPT:http-user-agent=GmaxHub
 https://tmaxapp.site/8wirwjs76erftg/skysportsfootball.m3u8
 
-#EXTINF:-1 tvg-id="12560_4" tvg-name="Football: West Ham United vs Wrexham (SKY MAIN EVENT) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18/image/dark" group-title="Football",Football: West Ham United vs Wrexham (SKY MAIN EVENT) | GmaxHub
+#EXTINF:-1 tvg-id="12606_3" tvg-name="Football: Derby County vs Birmingham City (CBS NETWORK HD) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18/image/dark" group-title="Football",Football: Derby County vs Birmingham City (CBS NETWORK HD) | GmaxHub
 #KODIPROP:inputstream=inputstream.ffmpeg
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTVLCOPT:http-user-agent=GmaxHub
-https://tmaxapp.site/8wirwjs76erftg/skysportsmainevent.m3u8
+https://tmaxapp.site/8wirwjs76erftg/cbsnet.m3u8
 
-#EXTINF:-1 tvg-id="12560_5" tvg-name="Football: West Ham United vs Wrexham (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18/image/dark" group-title="Football",Football: West Ham United vs Wrexham (CRICFy LIVE) | GmaxHub
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=https://gooz.aapmains.net
-https://chatgpt.hereisman.net/playlist/56192/load-playlist?
-
-#EXTINF:-1 tvg-id="12560_6" tvg-name="Football: West Ham United vs Wrexham (LOW SERVER) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18/image/dark" group-title="Football",Football: West Ham United vs Wrexham (LOW SERVER) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=http://www.fawanews.sc/
-#EXTVLCOPT:http-origin=http://www.fawanews.sc/
-http://193.47.62.53/hls/OFFFQ.m3u8?
-
-#EXTINF:-1 tvg-id="12561_1" tvg-name="Football: AZ Alkmaar vs Willem II Tilburg (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/37/image/dark" group-title="Football",Football: AZ Alkmaar vs Willem II Tilburg (CRICFy LIVE) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=http://www.fawanews.sc/
-#EXTVLCOPT:http-origin=http://www.fawanews.sc/
-http://193.47.62.42/hls/W333QQQQQQ.m3u8?
-
-#EXTINF:-1 tvg-id="12562_1" tvg-name="Football: Burgos Club de Fútbol vs AD Ceuta (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/54/image/dark" group-title="Football",Football: Burgos Club de Fútbol vs AD Ceuta (CRICFy LIVE) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=http://www.fawanews.sc/
-#EXTVLCOPT:http-origin=http://www.fawanews.sc/
-http://193.47.62.57/hls/ZYYYQQ.m3u8?
-
-#EXTINF:-1 tvg-id="12563_1" tvg-name="Baseball: Chicago Cubs vs Pittsburgh Pirates (TSN SPORTS - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Chicago Cubs vs Pittsburgh Pirates (TSN SPORTS - AQ) | GmaxHub
+#EXTINF:-1 tvg-id="12607_1" tvg-name="Football: West Bromwich Albion vs Queens Park Rangers (CBS SPORTS - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18/image/dark" group-title="Football",Football: West Bromwich Albion vs Queens Park Rangers (CBS SPORTS - AQ) | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=cc91508324ce9dcaf425a43d58f1d9d4:643e5474d9edd87c7d9091c8c97994ca
+#KODIPROP:inputstream.adaptive.license_key=d9623774ac5c8c351aafe97c5fe70267:5164e6d05164a2d65fa8fcc962aa4861
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
-https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/dev1hjwzh9/out/v1/a5f0ee7ad7b24906b14f43bebbbe4678/cenc.mpd
+https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/5qz8wmdome/out/v1/b9323e853dce427eac214b77bd48a204/cenc.mpd
 
-#EXTINF:-1 tvg-id="12563_2" tvg-name="Baseball: Chicago Cubs vs Pittsburgh Pirates (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Chicago Cubs vs Pittsburgh Pirates (CRICFy LIVE) | GmaxHub
+#EXTINF:-1 tvg-id="12610_1" tvg-name="Football: Middlesbrough vs Norwich City (CBS SPORTS - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18/image/dark" group-title="Football",Football: Middlesbrough vs Norwich City (CBS SPORTS - AQ) | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=d9623774ac5c8c351aafe97c5fe70267:5164e6d05164a2d65fa8fcc962aa4861
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/5qz8wmdome/out/v1/b9323e853dce427eac214b77bd48a204/cenc.mpd
+
+#EXTINF:-1 tvg-id="12614_1" tvg-name="Football: Watford vs Stoke City (beIN ENGLISH - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/18/image/dark" group-title="Football",Football: Watford vs Stoke City (beIN ENGLISH - AQ) | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=0b42be2664d7e811d04f3e504e0924c5:ae24090123b8c72ac5404dc152847cb8
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/8m8cd46i1t/out/v1/83985c68e4174e90a58a1f2c024be4c9/cenc.mpd?
+
+#EXTINF:-1 tvg-id="12617_1" tvg-name="Football: 1. FC Magdeburg vs 1. FC Kaiserslautern (beIN ENGLISH - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/44/image/dark" group-title="Football",Football: 1. FC Magdeburg vs 1. FC Kaiserslautern (beIN ENGLISH - AQ) | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=335dad778109954503dcbb21dc92015f:24bfd75d436cbf73168a2a2dccd40281
 #EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=https://gooz.aapmains.net
-https://chatgpt.hereisman.net/playlist/56189/load-playlist?
+https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/ghwcl6hv68/out/v1/83536910d8034e9b9895a20fbe1c1687/cenc.mpd
 
-#EXTINF:-1 tvg-id="12563_3" tvg-name="Baseball: Chicago Cubs vs Pittsburgh Pirates (HD SERVER) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Chicago Cubs vs Pittsburgh Pirates (HD SERVER) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=https://streamscenter.online/
-#EXTVLCOPT:http-origin=https://streamscenter.online
-https://edgestream4.pro/hls/dazhfiach15.m3u8?
-
-#EXTINF:-1 tvg-id="12564_1" tvg-name="Baseball: Detroit Tigers vs Colorado Rockies (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Detroit Tigers vs Colorado Rockies (CRICFy LIVE) | GmaxHub
+#EXTINF:-1 tvg-id="12652_1" tvg-name="Baseball: Detroit Tigers vs Colorado Rockies (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Detroit Tigers vs Colorado Rockies (CRICFy LIVE) | GmaxHub
 #KODIPROP:inputstream=inputstream.ffmpeg
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTVLCOPT:http-user-agent=GmaxHub
@@ -449,15 +449,7 @@ https://edgestream4.pro/hls/dazhfiach15.m3u8?
 #EXTVLCOPT:http-origin=https://streamscenter.online
 https://edgestream4.pro/hls/16yuitzaerghbhc16.m3u8?
 
-#EXTINF:-1 tvg-id="12565_1" tvg-name="Baseball: Washington Nationals vs Los Angeles Angels (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Washington Nationals vs Los Angeles Angels (CRICFy LIVE) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=https://streamscenter.online/
-#EXTVLCOPT:http-origin=https://streamscenter.online
-https://edgestream6.pro/hls/ihfazugfyjcazich17.m3u8?
-
-#EXTINF:-1 tvg-id="12566_1" tvg-name="Baseball: New York Yankees vs New York Mets (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: New York Yankees vs New York Mets (CRICFy LIVE) | GmaxHub
+#EXTINF:-1 tvg-id="12653_1" tvg-name="Baseball: New York Yankees vs New York Mets (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: New York Yankees vs New York Mets (CRICFy LIVE) | GmaxHub
 #KODIPROP:inputstream=inputstream.ffmpeg
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTVLCOPT:http-user-agent=GmaxHub
@@ -465,7 +457,28 @@ https://edgestream6.pro/hls/ihfazugfyjcazich17.m3u8?
 #EXTVLCOPT:http-origin=https://streamscenter.online
 https://edgestream6.pro/hls/Czajafjihafch18.m3u8?
 
-#EXTINF:-1 tvg-id="12567_1" tvg-name="Baseball: Toronto Blue Jays vs Baltimore Orioles (TSN SPORTS - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Toronto Blue Jays vs Baltimore Orioles (TSN SPORTS - AQ) | GmaxHub
+#EXTINF:-1 tvg-id="12654_1" tvg-name="Baseball: Chicago Cubs vs Pittsburgh Pirates (TSN SPORTS - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Chicago Cubs vs Pittsburgh Pirates (TSN SPORTS - AQ) | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cc91508324ce9dcaf425a43d58f1d9d4:643e5474d9edd87c7d9091c8c97994ca
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/dev1hjwzh9/out/v1/a5f0ee7ad7b24906b14f43bebbbe4678/cenc.mpd
+
+#EXTINF:-1 tvg-id="12654_2" tvg-name="Baseball: Chicago Cubs vs Pittsburgh Pirates (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Chicago Cubs vs Pittsburgh Pirates (CRICFy LIVE) | GmaxHub
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTVLCOPT:http-referrer=https://gooz.aapmains.net
+https://chatgpt.hereisman.net/playlist/56189/load-playlist?
+
+#EXTINF:-1 tvg-id="12654_3" tvg-name="Baseball: Chicago Cubs vs Pittsburgh Pirates (HD SERVER) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Chicago Cubs vs Pittsburgh Pirates (HD SERVER) | GmaxHub
+#KODIPROP:inputstream=inputstream.ffmpeg
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTVLCOPT:http-referrer=https://streamscenter.online/
+#EXTVLCOPT:http-origin=https://streamscenter.online
+https://edgestream4.pro/hls/dazhfiach15.m3u8?
+
+#EXTINF:-1 tvg-id="12655_1" tvg-name="Baseball: Toronto Blue Jays vs Baltimore Orioles (TSN SPORTS - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Toronto Blue Jays vs Baltimore Orioles (TSN SPORTS - AQ) | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
@@ -473,7 +486,7 @@ https://edgestream6.pro/hls/Czajafjihafch18.m3u8?
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
 https://otte.cache.aiv-cdn.net/iad-nitro/live/clients/dash/enc/rhf2dwosdt/out/v1/ee550d2a68d846c797e6ce4de2e8b76d/cenc.mpd
 
-#EXTINF:-1 tvg-id="12567_2" tvg-name="Baseball: Toronto Blue Jays vs Baltimore Orioles (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Toronto Blue Jays vs Baltimore Orioles (CRICFy LIVE) | GmaxHub
+#EXTINF:-1 tvg-id="12655_2" tvg-name="Baseball: Toronto Blue Jays vs Baltimore Orioles (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Toronto Blue Jays vs Baltimore Orioles (CRICFy LIVE) | GmaxHub
 #KODIPROP:inputstream=inputstream.ffmpeg
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTVLCOPT:http-user-agent=GmaxHub
@@ -481,15 +494,23 @@ https://otte.cache.aiv-cdn.net/iad-nitro/live/clients/dash/enc/rhf2dwosdt/out/v1
 #EXTVLCOPT:http-origin=https://streamscenter.online
 https://edgestream4.pro/hls/bzagLHzach19.m3u8?
 
-#EXTINF:-1 tvg-id="12569_1" tvg-name="Baseball: Tampa Bay Rays vs Houston Astros (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Tampa Bay Rays vs Houston Astros (CRICFy LIVE) | GmaxHub
+#EXTINF:-1 tvg-id="12656_1" tvg-name="Baseball: Washington Nationals vs Los Angeles Angels (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Washington Nationals vs Los Angeles Angels (CRICFy LIVE) | GmaxHub
 #KODIPROP:inputstream=inputstream.ffmpeg
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTVLCOPT:http-user-agent=GmaxHub
 #EXTVLCOPT:http-referrer=https://streamscenter.online/
 #EXTVLCOPT:http-origin=https://streamscenter.online
-https://edgestream4.pro/hls/jkzahzadach20.m3u8?
+https://edgestream6.pro/hls/ihfazugfyjcazich17.m3u8?
 
-#EXTINF:-1 tvg-id="12570_1" tvg-name="Baseball: Boston Red Sox vs Kansas City Royals (TSN SPORTS - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Boston Red Sox vs Kansas City Royals (TSN SPORTS - AQ) | GmaxHub
+#EXTINF:-1 tvg-id="12658_1" tvg-name="Baseball: Miami Marlins vs Los Angeles Dodgers (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Miami Marlins vs Los Angeles Dodgers (CRICFy LIVE) | GmaxHub
+#KODIPROP:inputstream=inputstream.ffmpeg
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTVLCOPT:http-referrer=https://streamscenter.online/
+#EXTVLCOPT:http-origin=https://streamscenter.online
+https://edgestream7.pro/hls/ijfnakfidch22.m3u8?
+
+#EXTINF:-1 tvg-id="12659_1" tvg-name="Baseball: Boston Red Sox vs Kansas City Royals (TSN SPORTS - AQ) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Boston Red Sox vs Kansas City Royals (TSN SPORTS - AQ) | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
@@ -497,7 +518,7 @@ https://edgestream4.pro/hls/jkzahzadach20.m3u8?
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
 https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/cscevwljkq/out/v1/972185041b244140860b7d56398e9aaf/cenc.mpd
 
-#EXTINF:-1 tvg-id="12570_2" tvg-name="Baseball: Boston Red Sox vs Kansas City Royals (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Boston Red Sox vs Kansas City Royals (CRICFy LIVE) | GmaxHub
+#EXTINF:-1 tvg-id="12659_2" tvg-name="Baseball: Boston Red Sox vs Kansas City Royals (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Boston Red Sox vs Kansas City Royals (CRICFy LIVE) | GmaxHub
 #KODIPROP:inputstream=inputstream.ffmpeg
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTVLCOPT:http-user-agent=GmaxHub
@@ -505,7 +526,15 @@ https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/cscevwljkq/out/v1
 #EXTVLCOPT:http-origin=https://streamscenter.online
 https://edgestream5.pro/hls/ojzkajnach21.m3u8?
 
-#EXTINF:-1 tvg-id="12571_1" tvg-name="Baseball: Milwaukee Brewers vs Cincinnati Reds (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Milwaukee Brewers vs Cincinnati Reds (CRICFy LIVE) | GmaxHub
+#EXTINF:-1 tvg-id="12661_1" tvg-name="Baseball: Tampa Bay Rays vs Houston Astros (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Tampa Bay Rays vs Houston Astros (CRICFy LIVE) | GmaxHub
+#KODIPROP:inputstream=inputstream.ffmpeg
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTVLCOPT:http-referrer=https://streamscenter.online/
+#EXTVLCOPT:http-origin=https://streamscenter.online
+https://edgestream4.pro/hls/jkzahzadach20.m3u8?
+
+#EXTINF:-1 tvg-id="12662_1" tvg-name="Baseball: Milwaukee Brewers vs Cincinnati Reds (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Milwaukee Brewers vs Cincinnati Reds (CRICFy LIVE) | GmaxHub
 #KODIPROP:inputstream=inputstream.ffmpeg
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTVLCOPT:http-user-agent=GmaxHub
@@ -513,51 +542,11 @@ https://edgestream5.pro/hls/ojzkajnach21.m3u8?
 #EXTVLCOPT:http-origin=https://streamscenter.online
 https://edgestream5.pro/hls/fskjanach24.m3u8?
 
-#EXTINF:-1 tvg-id="12572_1" tvg-name="Baseball: Atlanta Braves vs Philadelphia Phillies (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Atlanta Braves vs Philadelphia Phillies (CRICFy LIVE) | GmaxHub
+#EXTINF:-1 tvg-id="12663_1" tvg-name="Baseball: Atlanta Braves vs Philadelphia Phillies (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Atlanta Braves vs Philadelphia Phillies (CRICFy LIVE) | GmaxHub
 #KODIPROP:inputstream=inputstream.ffmpeg
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTVLCOPT:http-user-agent=GmaxHub
 #EXTVLCOPT:http-referrer=https://streamscenter.online/
 #EXTVLCOPT:http-origin=https://streamscenter.online
 https://edgestream6.pro/hls/jnzkdzjfanch23.m3u8?
-
-#EXTINF:-1 tvg-id="12573_1" tvg-name="Baseball: St. Louis Cardinals vs Chicago White Sox (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: St. Louis Cardinals vs Chicago White Sox (CRICFy LIVE) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=https://streamscenter.online/
-#EXTVLCOPT:http-origin=https://streamscenter.online
-https://edgestream5.pro/hls/dzjhkfazbka26.m3u8?
-
-#EXTINF:-1 tvg-id="12574_1" tvg-name="Baseball: Minnesota Twins vs Cleveland Guardians (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Minnesota Twins vs Cleveland Guardians (CRICFy LIVE) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=https://streamscenter.online/
-#EXTVLCOPT:http-origin=https://streamscenter.online
-https://edgestream5.pro/hls/kjhfzua25.m3u8?
-
-#EXTINF:-1 tvg-id="12575_1" tvg-name="Baseball: Arizona Diamondbacks vs Texas Rangers (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Arizona Diamondbacks vs Texas Rangers (CRICFy LIVE) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=https://streamscenter.online/
-#EXTVLCOPT:http-origin=https://streamscenter.online
-https://edgestream6.pro/hls/hefbafbakx28.m3u8?
-
-#EXTINF:-1 tvg-id="12576_1" tvg-name="Baseball: San Francisco Giants vs San Diego Padres (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: San Francisco Giants vs San Diego Padres (CRICFy LIVE) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=https://streamscenter.online/
-#EXTVLCOPT:http-origin=https://streamscenter.online
-https://edgestream4.pro/hls/hfzljfahzcax29.m3u8?
-
-#EXTINF:-1 tvg-id="12577_1" tvg-name="Baseball: Athletics vs Seattle Mariners (CRICFy LIVE) | GmaxHub" tvg-logo="http://api.sofascore.com/api/v1/unique-tournament/11205/image/dark" group-title="Baseball",Baseball: Athletics vs Seattle Mariners (CRICFy LIVE) | GmaxHub
-#KODIPROP:inputstream=inputstream.ffmpeg
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTVLCOPT:http-referrer=https://streamscenter.online/
-#EXTVLCOPT:http-origin=https://streamscenter.online
-https://edgestream1.pro/hls/jzabfazkbf27.m3u8?
 
