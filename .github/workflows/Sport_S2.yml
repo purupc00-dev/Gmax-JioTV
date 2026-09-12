@@ -67,7 +67,7 @@ jobs:
             exit 0
           fi
 
-          git commit -m "GmaxHub Sport Server 2 Updated ✅ ($(date -u '+%Y-%m-%d %H:%M UTC'))"
+          git commit -m "GmaxHub Sport S2 Updated ✅ ($(date -u '+%Y-%m-%d %H:%M UTC'))"
 
           max_retries=5
           attempt=1
