@@ -1,32 +1,38 @@
-name: Update JTV PLUS 7 Playlist
+name: Update JioTV Server 13
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   schedule:
-    - cron: '0 */1 * * *'
+    - cron: '0 */3 * * *'
   workflow_dispatch:
   push:
     branches:
       - main
     paths:
-      - 'jtvplus7.py'
+      - 'scripts/JioTV_S13.py'
+
 jobs:
   update-playlist:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     concurrency:
-      group: update-jtv2
+      group: update-jiotv-s13
       cancel-in-progress: true
+      
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       - name: Configure Git
         run: |
-          git config --global user.name "sportlive18"
-          git config --global user.email "271363488+sportlive18@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Fetch and Reset to Remote
         run: |
@@ -41,24 +47,30 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests pytz
+          pip install requests
 
       - name: Run Script
         env:
           TZ: Asia/Kolkata
         run: |
-          python jtvplus7.py
+          python scripts/JioTV_S13.py
 
       - name: Commit and Push Changes
         run: |
-          git add jtvplus7.m3u
+          # Safe abort if Python script failed to create the file
+          if [ ! -f "Playlists/JioTV_S13.m3u" ]; then
+            echo "[-] Playlists/JioTV_S13.m3u was not generated. Skipping commit."
+            exit 1
+          fi
+
+          git add Playlists/JioTV_S13.m3u
 
           if git diff --cached --quiet; then
             echo "No changes to commit."
             exit 0
           fi
 
-          git commit -m "JIOTV Updated ✅ ($(date -u '+%Y-%m-%d %H:%M UTC'))"
+          git commit -m "GmaxHub JioTV S13 Updated ✅ ($(date -u '+%Y-%m-%d %H:%M UTC'))"
 
           max_retries=5
           attempt=1
@@ -79,4 +91,5 @@ jobs:
             fi
           done
 
-          echo "Push
+          echo "Push failed after $max_retries attempts."
+          exit 1
