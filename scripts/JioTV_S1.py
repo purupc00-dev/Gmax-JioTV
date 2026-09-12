@@ -9,13 +9,13 @@ from datetime import datetime
 from urllib.parse import urlparse, urlunparse
 
 CHANNELS_URL = "https://raw.githubusercontent.com/qwerty180506/json/refs/heads/main/Geoplus.json"
-COOKIE_URL = "https://raw.githubusercontent.com/qwerty180506/json/refs/heads/main/biscuit.json"
+COOKIE_URL = "https://raw.githubusercontent.com/purupc00-dev/Gmax-JioTV/refs/heads/main/Playlists/JioTV_S10.m3u"
 SPORTS_COOKIE_URL = "https://raw.githubusercontent.com/qwerty180506/json/refs/heads/main/sportsbiscuit.json"
 
 M3U_FILE = "Playlists/JioTV_S1.m3u"
 JSON_FILE = "Playlists/JioTV_S1.json"
 
-USER_AGENT = "GmaxHub"
+USER_AGENT = "plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0"
 MAX_RETRIES = 4
 RETRY_DELAY = 5
 
@@ -46,23 +46,32 @@ def get_json(url: str) -> Any:
     raise Exception(f"Failed to fetch {url} after {MAX_RETRIES} attempts: {last_error}")
 
 
-# ---------------- COOKIE ----------------
+# ---------------- M3U COOKIE EXTRACTOR ----------------
 def get_normal_cookie() -> str:
+    """Fetches the JioTV_S10.m3u file and uses regex to extract the __hdnea__ cookie."""
     try:
-        data = get_json(COOKIE_URL)
+        fresh_url = f"{COOKIE_URL}?t={int(time.time())}"
+        resp = requests.get(
+            fresh_url,
+            headers={"Cache-Control": "no-cache", "Pragma": "no-cache", "User-Agent": "Mozilla/5.0"},
+            timeout=20
+        )
+        resp.raise_for_status()
+        text = resp.text
+        
+        # Regex surgically targets: __hdnea__=st=...~exp=...~acl=/*~hmac=...
+        match = re.search(r'(__hdnea__=st=\d+~exp=\d+~acl=[^~"]+~hmac=[a-f0-9]+)', text)
+        
+        if match:
+            cookie = match.group(1)
+            print("[OK] Successfully extracted __hdnea__ cookie from JioTV_S10.m3u")
+            return cookie
+        else:
+            print("[WARN] Could not find a valid __hdnea__ cookie in JioTV_S10.m3u")
+            
     except Exception as e:
-        print(f"[WARN] Cookie fetch failed: {e}")
-        return ""
-
-    if isinstance(data, str):
-        return data
-    if isinstance(data, list):
-        for item in data:
-            if isinstance(item, dict) and item.get("cookie"):
-                return item["cookie"]
-        return ""
-    if isinstance(data, dict):
-        return data.get("cookie") or ""
+        print(f"[WARN] Cookie fetch from S10 M3U failed: {e}")
+        
     return ""
 
 
@@ -159,11 +168,25 @@ def create_channel_entry(channel, normal_cookie="", sports_cookies=None):
             lines.append("#KODIPROP:inputstream.adaptive.license_type=clearkey")
             lines.append(f'#KODIPROP:inputstream.adaptive.license_key={channel["license_url"]}')
 
-    if normal_cookie and channel_id not in sports_cookies:
-        cookie_json = json.dumps({"cookie": normal_cookie})
+    lines.append(f"#EXTVLCOPT:http-user-agent={USER_AGENT}")
+
+    # Apply the extracted S10 cookie universally (to normal AND sports channels)
+    if normal_cookie:
+        cookie_json = json.dumps({
+            "cookie": normal_cookie,
+            "Origin": "https://www.jiotv.com/",
+            "Referer": "https://www.jiotv.com/"
+        })
+        lines.append(f"#EXTVLCOPT:http-cookie={normal_cookie}")
+        lines.append(f"#EXTHTTP:{cookie_json}")
+    else:
+        # Fallback if no cookie was found
+        cookie_json = json.dumps({
+            "Origin": "https://www.jiotv.com/",
+            "Referer": "https://www.jiotv.com/"
+        })
         lines.append(f"#EXTHTTP:{cookie_json}")
 
-    lines.append(f"#EXTVLCOPT:http-user-agent={USER_AGENT}")
     lines.append(final_url)
 
     return "\n".join(lines)
@@ -180,7 +203,7 @@ def build_channel_object(channel, normal_cookie="", sports_cookies=None):
         "id":     str(channel.get("id") or ""),
         "name":   f"{channel.get('name') or ''} | GmaxHub",
         "url":    resolve_url(channel, sports_cookies),
-        "cookie": normal_cookie if str(channel.get("id") or "") not in sports_cookies else "",
+        "cookie": normal_cookie, # Applied to all channels
         "keyId":  key_id,
         "key":    key,
         "logo":   channel.get("logo") or "",
