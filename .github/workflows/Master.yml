@@ -23,18 +23,19 @@ jobs:
           python-version: '3.x'
 
       - name: Run Master Script
-        run: python Master.py
+        # Pointing to the new location of your script
+        run: python Scripts/Master.py
 
       - name: Commit and Push Changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Stage the new Master.json file
-          git add Master.json
+          # Stage the new Master.json file from the Playlists folder
+          git add Playlists/Master.json
           
           # Force the commit with the green tick and the exact system time
           git commit --allow-empty -m "Gmaxhub Master playlist updated ✅ $(date)"
           
-          # Push to the repository
+          # Push to the repository main branch
           git push
