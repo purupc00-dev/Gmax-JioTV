@@ -1,0 +1,40 @@
+name: Gmaxhub Master playlist updated ✅
+
+on:
+  schedule:
+    # Runs at minute 0 past every 2nd hour
+    - cron: '0 */2 * * *'
+  # Allows manual triggering
+  workflow_dispatch: 
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run Master Script
+        run: python Master.py
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Stage the new Master.json file
+          git add Master.json
+          
+          # Force the commit with the green tick and the exact system time
+          git commit --allow-empty -m "Gmaxhub Master playlist updated ✅ $(date)"
+          
+          # Push to the repository
+          git push
