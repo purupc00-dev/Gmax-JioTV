@@ -16,7 +16,7 @@ const CONFIG = {
   EPG_SOURCES: [
     // Baseline/broad coverage first — unverified quality, only used to
     // fill gaps for channels nothing else covers
-    "aio", "tsepg1", "tsepg2", "klivjio", "klivairtel", "klivfiltered", "iptvepgorg", "rbgy",
+    "aio", "tsepg1", "tsepg2", "klivjio", "klivairtel", "klivfiltered", "rbgy",
     // Trusted, richer 2-day+catchup guides go LAST so they always win over
     // the baseline sources above for any channel id both happen to cover
     "jiotv", "tataplay",
