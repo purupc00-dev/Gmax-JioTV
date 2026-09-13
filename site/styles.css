@@ -167,7 +167,7 @@ img {
   pointer-events: none;
 }
 
-#search-input {
+.nav-search-input {
   width: 100%;
   padding: 11px 40px 11px 40px;
   border: 1px solid var(--border);
@@ -179,11 +179,11 @@ img {
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-#search-input::placeholder {
+.nav-search-input::placeholder {
   color: #5c6578;
 }
 
-#search-input:focus {
+.nav-search-input:focus {
   border-color: rgba(255, 63, 129, 0.55);
   box-shadow: 0 0 0 3px rgba(255, 63, 129, 0.08);
 }
@@ -593,6 +593,10 @@ img {
 
 .lang-select:focus {
   border-color: rgba(255, 63, 129, 0.5);
+}
+
+.filter-row .fav-nav-btn {
+  margin-left: auto;
 }
 
 .clear-filters-btn {
