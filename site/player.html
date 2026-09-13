@@ -47,10 +47,7 @@
             <div class="ch-live"><span class="live-dot"></span> LIVE</div>
           </div>
         </div>
-        <div class="top-right">
-          <button type="button" class="icon-btn" id="btn-pip" title="Picture in Picture">⧉</button>
-          <button type="button" class="icon-btn" id="btn-fs" title="Fullscreen">⛶</button>
-        </div>
+<div class="top-right"></div>
       </div>
 
       <!-- Bottom controls -->
@@ -74,14 +71,16 @@
           </div>
 
           <div class="controls-right">
+            <button type="button" class="ctrl-btn" id="btn-pip" title="Picture in Picture">⧉</button>
+
+            <button type="button" class="ctrl-btn" id="btn-aspect" title="Aspect ratio">Fit</button>
+
             <div class="server-wrap">
               <button type="button" class="ctrl-btn server-btn" id="btn-server" title="Server">
                 <span id="server-label">Srv 1</span> ▾
               </button>
               <div class="menu hidden" id="server-menu"></div>
             </div>
-
-            <button type="button" class="ctrl-btn" id="btn-aspect" title="Aspect ratio">Fit</button>
 
             <div class="settings-wrap">
               <button type="button" class="ctrl-btn" id="btn-settings" title="Settings">⚙</button>
@@ -103,6 +102,8 @@
                 </div>
               </div>
             </div>
+
+            <button type="button" class="ctrl-btn" id="btn-fs" title="Fullscreen">⛶</button>
           </div>
         </div>
       </div>
