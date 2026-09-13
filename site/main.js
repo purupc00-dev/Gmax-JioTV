@@ -9,18 +9,9 @@
    CONFIG
    ============================================================ */
 const CONFIG = {
-  // Cloudflare Worker gateway — only this domain appears in Network tab
-  GATEWAY_BASE: "https://playlist.gmaxhub.workers.dev/playlist?id=",
-
-  // Primary playlist ID (dictates metadata + grid order)
-  PRIMARY_ID: "s11",
-
-  // Secondary playlist IDs (alternate servers for player + extra channels below S11)
-  SECONDARY_IDS: [
-    "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s12", "s13",
-    "sports1", "sports2", "sports3",
-    "freedish", "biggboss", "liveevent", "pocket", "tnt", "digital",
-  ],
+  // Cloudflare Worker gateway — only this domain + one endpoint appears in Network tab
+  GATEWAY_BASE: "https://playlist.gmaxhub.workers.dev",
+  CHANNELS_ENDPOINT: "/channels",
 
   // Static JSON (serve from same origin /site or /data — not from private GitHub)
   HIGHLIGHTS_URL: "highlights.json",
@@ -50,6 +41,8 @@ let heroTimer = null;
 let highlights = [];
 let favorites = new Set(JSON.parse(localStorage.getItem(CONFIG.FAVORITES_KEY) || "[]"));
 let mostViewed = JSON.parse(localStorage.getItem(CONFIG.MOST_VIEWED_KEY) || "{}"); // { id: count }
+let restLoaded = false;  // whether the non-S11 playlists have been fetched yet
+let restLoading = false;
 
 /* ============================================================
    DOM REFS
@@ -205,132 +198,18 @@ async function fetchText(url) {
   return res.text();
 }
 
-async function loadAllPlaylists() {
-  // Primary: only S11 via gateway (clean Network tab)
-  const primaryText = await fetchText(CONFIG.GATEWAY_BASE + CONFIG.PRIMARY_ID);
-  const primaryChannels = parseM3U(primaryText, "S11");
-
-  // key → channel entry. Primary (S11) stays first in display order.
-  const map = new Map();
-  const primaryOrder = [];
-
-  for (const ch of primaryChannels) {
-    const key = normalizeName(ch.name) || ch.tvgId || slugify(ch.name);
-    const id = ch.tvgId || slugify(ch.name) || key;
-
-    if (map.has(key)) continue;
-
-    const entry = {
-      id,
-      name: ch.name,
-      logo: ch.logo,
-      group: ch.group || "Other",
-      language: inferLanguage(ch.name, ch.group),
-      isPrimary: true,
-      servers: [
-        {
-          label: "Server 1 (S11)",
-          source: "s11",
-          playlistId: "s11",
-          url: ch.url,
-          streamType: ch.streamType,
-          licenseKey: ch.licenseKey,
-          cookie: ch.cookie,
-          userAgent: ch.userAgent,
-          referrer: ch.referrer,
-          origin: ch.origin,
-        },
-      ],
-    };
-    map.set(key, entry);
-    primaryOrder.push(key);
-  }
-
-  // Secondary IDs via gateway — attach as alternate servers OR append new channels below S11
-  const secondaryPromises = CONFIG.SECONDARY_IDS.map(async (playlistId) => {
-    try {
-      const text = await fetchText(CONFIG.GATEWAY_BASE + playlistId);
-      return { playlistId, channels: parseM3U(text, playlistId) };
-    } catch (e) {
-      console.warn("Failed to load", playlistId, e.message);
-      return { playlistId, channels: [] };
-    }
-  });
-
-  const secondaries = await Promise.all(secondaryPromises);
-  const extraOrder = [];
-
-  for (const { playlistId, channels } of secondaries) {
-    for (const ch of channels) {
-      const key = normalizeName(ch.name) || ch.tvgId;
-      if (!key) continue;
-
-      if (map.has(key)) {
-        const existing = map.get(key);
-        const already = existing.servers.some((s) => s.url === ch.url);
-        if (!already && ch.url) {
-          existing.servers.push({
-            label: `Server ${existing.servers.length + 1} (${playlistId})`,
-            source: playlistId,
-            playlistId,
-            url: ch.url,
-            streamType: ch.streamType,
-            licenseKey: ch.licenseKey,
-            cookie: ch.cookie,
-            userAgent: ch.userAgent,
-            referrer: ch.referrer,
-            origin: ch.origin,
-          });
-        }
-      } else {
-        const id = ch.tvgId || slugify(ch.name) || key;
-        map.set(key, {
-          id,
-          name: ch.name,
-          logo: ch.logo,
-          group: ch.group || "Other",
-          language: inferLanguage(ch.name, ch.group),
-          isPrimary: false,
-          servers: [
-            {
-              label: `Server 1 (${playlistId})`,
-              source: playlistId,
-              playlistId,
-              url: ch.url,
-              streamType: ch.streamType,
-              licenseKey: ch.licenseKey,
-              cookie: ch.cookie,
-              userAgent: ch.userAgent,
-              referrer: ch.referrer,
-              origin: ch.origin,
-            },
-          ],
-        });
-        extraOrder.push(key);
-      }
-    }
-  }
-
-  // Grid: S11 first, then other-source-only channels
-  const result = [
-    ...primaryOrder.map((k) => map.get(k)),
-    ...extraOrder.map((k) => map.get(k)),
-  ].filter(Boolean);
-
-  // Persist for player (server switcher only there)
-  const serversMap = {};
-  for (const ch of result) {
-    serversMap[ch.id] = {
-      id: ch.id,
-      name: ch.name,
-      logo: ch.logo,
-      group: ch.group,
-      servers: ch.servers,
-    };
-  }
-  localStorage.setItem(CONFIG.SERVERS_MAP_KEY, JSON.stringify(serversMap));
-
-  return result;
+async function loadPrimaryChannels() {
+  // ONE request, S11 only — fills the grid immediately. The rest of your
+  // playlists load lazily (see loadRestChannels) once the user has
+  // scrolled through everything here, so the Network tab doesn't fill up
+  // with 20 requests before the user even needs them.
+  const res = await fetch(
+    CONFIG.GATEWAY_BASE + CONFIG.CHANNELS_ENDPOINT + "?scope=primary",
+    { cache: "no-store" }
+  );
+  if (!res.ok) throw new Error(`HTTP ${res.status} for channels`);
+  const { channels } = await res.json();
+  return Array.isArray(channels) ? channels : [];
 }
 
 function inferLanguage(name, group) {
@@ -394,9 +273,9 @@ function matchCategory(ch, cat) {
 /* ============================================================
    FILTERS + RENDER
    ============================================================ */
-function applyFilters() {
+function computeFilteredChannels() {
   const q = searchQuery.toLowerCase().trim();
-  filteredChannels = allChannels.filter((ch) => {
+  return allChannels.filter((ch) => {
     if (activeCategory !== "ALL" && !matchCategory(ch, activeCategory)) return false;
     if (activeLanguage !== "all" && ch.language !== activeLanguage) return false;
     if (q) {
@@ -405,7 +284,10 @@ function applyFilters() {
     }
     return true;
   });
+}
 
+function applyFilters() {
+  filteredChannels = computeFilteredChannels();
   visibleCount = CONFIG.CHANNELS_PER_PAGE;
   renderChannels();
   updateResultsMeta();
@@ -552,7 +434,93 @@ function renderChannels() {
       { rootMargin: "200px" }
     );
     obs.observe(sentinel);
+  } else if (!restLoaded && !restLoading) {
+    // User has scrolled through everything currently loaded (S11 on first
+    // visit). Now — and only now — fetch the rest of the playlists, in
+    // one request, so the Network tab only fills in as the user actually
+    // needs more, instead of 19 extra calls up front.
+    const sentinel = document.createElement("div");
+    sentinel.id = "scroll-sentinel";
+    sentinel.style.height = "1px";
+    els.channelsGrid.appendChild(sentinel);
+
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          obs.disconnect();
+          loadRestChannels();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    obs.observe(sentinel);
   }
+}
+
+/* ============================================================
+   LAZY-LOAD REMAINING PLAYLISTS (fires once, after S11 is scrolled)
+   ============================================================ */
+function persistServersMap() {
+  const serversMap = {};
+  for (const ch of allChannels) {
+    serversMap[ch.id] = {
+      id: ch.id,
+      name: ch.name,
+      logo: ch.logo,
+      group: ch.group,
+      servers: ch.servers,
+    };
+  }
+  localStorage.setItem(CONFIG.SERVERS_MAP_KEY, JSON.stringify(serversMap));
+}
+
+async function loadRestChannels() {
+  if (restLoaded || restLoading) return;
+  restLoading = true;
+
+  try {
+    const res = await fetch(
+      CONFIG.GATEWAY_BASE + CONFIG.CHANNELS_ENDPOINT + "?scope=rest",
+      { cache: "no-store" }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const { extraServers, extraChannels } = await res.json();
+
+    // Attach alternate servers to channels S11 already has
+    if (extraServers) {
+      for (const ch of allChannels) {
+        const key = normalizeName(ch.name);
+        const additions = extraServers[key];
+        if (!additions || !additions.length) continue;
+        additions.forEach((s) => {
+          const dup = ch.servers.some((existing) => existing.url === s.url);
+          if (!dup) ch.servers.push({ ...s, label: `Server ${ch.servers.length + 1}` });
+        });
+      }
+    }
+
+    // Append channels that only exist in secondary playlists — no
+    // duplicates, since the Worker already excluded anything matching a
+    // primary channel by normalized name
+    if (Array.isArray(extraChannels) && extraChannels.length) {
+      allChannels = allChannels.concat(extraChannels);
+    }
+
+    restLoaded = true;
+    persistServersMap();
+    renderCategoryChips();
+    renderLanguageSelect();
+    // Keep current scroll position/visibleCount — just widen the pool the
+    // sentinel can keep paging through
+    filteredChannels = computeFilteredChannels();
+    renderChannels();
+    updateResultsMeta();
+  } catch (err) {
+    console.warn("Failed to load additional playlists", err.message);
+    restLoading = false; // allow retry on next scroll intersection
+    return;
+  }
+  restLoading = false;
 }
 
 /* ============================================================
@@ -858,8 +826,9 @@ async function init() {
     await loadHighlights();
     renderHero();
 
-    allChannels = await loadAllPlaylists();
-    console.log(`[Gmax] Loaded ${allChannels.length} unique channels`);
+    allChannels = await loadPrimaryChannels();
+    persistServersMap();
+    console.log(`[Gmax] Loaded ${allChannels.length} channels (S11 primary)`);
 
     renderCategoryChips();
     renderLanguageSelect();
