@@ -3,9 +3,13 @@ import json
 import re
 from datetime import datetime, timezone
 
-# Directory where your M3U files are stored
-PLAYLIST_DIR = 'Playlists'
-OUTPUT_FILE = 'Master.json'
+# Automatically find the root directory of your repo (one level up from 'Scripts')
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+
+# Set the correct paths based on your folder structure
+PLAYLIST_DIR = os.path.join(REPO_ROOT, 'Playlists')
+OUTPUT_FILE = os.path.join(PLAYLIST_DIR, 'Master.json')
 
 def parse_m3u(file_content):
     channels = []
@@ -113,7 +117,7 @@ def main():
         "channels": all_channels
     }
 
-    # Write to Master.json
+    # Write to Master.json inside the Playlists folder
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(output_data, f, indent=2, ensure_ascii=False)
     
