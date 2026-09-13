@@ -7,17 +7,15 @@
 "use strict";
 
 const CONFIG = {
-  // Same gateway as main — private repo stays hidden
-  GATEWAY_BASE: "https://playlist.gmaxhub.workers.dev/playlist?id=",
-  PRIMARY_ID: "s11",
+  // Same gateway as main — private repo + real EPG sources stay hidden.
+  // Every source is proxied through this one domain, distinguished only
+  // by ?src=, so real EPG hosts never show up in Network tab.
+  GATEWAY_BASE: "https://playlist.gmaxhub.workers.dev",
+  CHANNELS_ENDPOINT: "/channels",
+  EPG_ENDPOINT: "/epg",
+  EPG_SOURCES: ["aio", "jiotv", "tataplay"], // merge order: aio = baseline, jiotv/tataplay overlay richer 2-day+catchup data
   SERVERS_MAP_KEY: "gmax_servers_map",
   FAVORITES_KEY: "gmax-jiotv-favorites",
-
-  // Public XMLTV (not from your private repo)
-  EPG_URLS: [
-    "https://raw.githubusercontent.com/arnab8820/JioTV-epg/main/epg1d.xml.gz",
-    "https://raw.githubusercontent.com/arnab8820/JioTV-epg/main/epg.xml.gz",
-  ],
 
   PX_PER_HOUR: window.innerWidth < 700 ? 140 : 180,
   HOURS_BEFORE: 2,
@@ -151,11 +149,18 @@ async function loadChannels() {
     }
   } catch (_) {}
 
-  // Fallback: fetch S11 via gateway
-  const res = await fetch(CONFIG.GATEWAY_BASE + CONFIG.PRIMARY_ID, { cache: "no-store" });
+  // Fallback: single aggregated call, same endpoint main.js uses
+  const res = await fetch(CONFIG.GATEWAY_BASE + CONFIG.CHANNELS_ENDPOINT, { cache: "no-store" });
   if (!res.ok) throw new Error("Could not load channels");
-  const text = await res.text();
-  return parseM3U(text);
+  const { channels } = await res.json();
+  return (channels || []).map((ch) => ({
+    id: ch.id,
+    tvgId: String(ch.id),
+    name: ch.name,
+    logo: ch.logo || "",
+    group: ch.group || "Other",
+    language: ch.language || inferLanguage(ch.name, ch.group),
+  }));
 }
 
 /* ---------- EPG fetch + parse ---------- */
@@ -202,30 +207,37 @@ function parseXmltv(xmlText) {
 }
 
 async function loadEpg() {
-  let lastErr = null;
-  for (const url of CONFIG.EPG_URLS) {
-    try {
-      const text = await fetchGzipText(url);
-      const map = parseXmltv(text);
-      if (map.size > 0) {
-        console.log(`[EPG] Loaded ${map.size} channels from`, url);
-        return map;
-      }
-    } catch (e) {
-      console.warn("[EPG] failed", url, e.message);
-      lastErr = e;
+  // Fetch every source in parallel — all through our own Worker (/epg?src=...)
+  // so no real EPG host ever appears in Network tab. A failure on one
+  // source doesn't block the others.
+  const results = await Promise.allSettled(
+    CONFIG.EPG_SOURCES.map(async (src) => {
+      const text = await fetchGzipText(`${CONFIG.GATEWAY_BASE}${CONFIG.EPG_ENDPOINT}?src=${src}`);
+      return { src, map: parseXmltv(text) };
+    })
+  );
+
+  // Merge in order: aio (broad baseline) first, then jiotv/tataplay
+  // overlay on top for channels they specifically cover (richer 2-day +
+  // catchup guides), since CONFIG.EPG_SOURCES lists aio first.
+  const merged = new Map();
+  let anySucceeded = false;
+  for (const r of results) {
+    if (r.status !== "fulfilled") {
+      console.warn("[EPG] source failed:", r.reason && r.reason.message);
+      continue;
+    }
+    anySucceeded = true;
+    for (const [channelId, programmes] of r.value.map) {
+      merged.set(channelId, programmes); // later source in the list wins for that channel id
     }
   }
-  // Try a known plain XML mirror if gzip path fails
-  try {
-    const plain = "https://epgshare01.online/epgshare01/epg_ripper_IN4.xml.gz";
-    const text = await fetchGzipText(plain);
-    const map = parseXmltv(text);
-    if (map.size) return map;
-  } catch (e) {
-    lastErr = e;
+
+  if (!anySucceeded || merged.size === 0) {
+    throw new Error("No EPG source available");
   }
-  throw lastErr || new Error("No EPG source available");
+  console.log(`[EPG] Loaded ${merged.size} channels across ${results.filter((r) => r.status === "fulfilled").length} source(s)`);
+  return merged;
 }
 
 /* ---------- view window ---------- */
