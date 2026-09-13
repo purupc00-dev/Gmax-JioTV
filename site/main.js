@@ -32,7 +32,7 @@ const CONFIG = {
    ============================================================ */
 let allChannels = [];          // deduplicated channel objects
 let filteredChannels = [];
-let activeCategory = "ALL";
+let activeCategory = "all";
 let activeLanguage = "all";
 let searchQuery = "";
 let visibleCount = CONFIG.CHANNELS_PER_PAGE;
@@ -61,7 +61,7 @@ const els = {
   mostViewedTrack: $("#most-viewed-track"),
   mvPrev: $("#mv-prev"),
   mvNext: $("#mv-next"),
-  categoryChips: $("#category-chips"),
+  categorySelect: $("#category-select"),
   languageSelect: $("#language-select"),
   clearFilters: $("#clear-filters"),
   resultsCount: $("#results-count"),
@@ -231,43 +231,24 @@ function inferLanguage(name, group) {
 /* ============================================================
    CATEGORIES & LANGUAGES
    ============================================================ */
-const MAIN_CATEGORIES = [
-  "ALL",
-  "Entertainment",
-  "Movies",
-  "Sports",
-  "News",
-  "Kids",
-  "Music",
-  "Lifestyle",
-  "Infotainment",
-  "English",
-  "Regional",
-];
-
 function getUniqueLanguages(channels) {
   const set = new Set();
   channels.forEach((c) => set.add(c.language || "Other"));
   return ["all", ...Array.from(set).sort()];
 }
 
-function getCategoryCounts(channels) {
-  const counts = { ALL: channels.length };
-  MAIN_CATEGORIES.forEach((cat) => {
-    if (cat === "ALL") return;
-    counts[cat] = channels.filter((c) => matchCategory(c, cat)).length;
+// Real categories straight from your playlists' group-title values —
+// deduplicated case-insensitively (so "English"/"ENGLISH"/"english" across
+// different m3u files collapse into one entry) instead of a fixed guess-list.
+function getUniqueCategories(channels) {
+  const seen = new Map(); // lowercase key -> { label, count }
+  channels.forEach((c) => {
+    const raw = (c.group || "Other").trim() || "Other";
+    const key = raw.toLowerCase();
+    if (!seen.has(key)) seen.set(key, { key, label: raw, count: 0 });
+    seen.get(key).count++;
   });
-  return counts;
-}
-
-function matchCategory(ch, cat) {
-  if (cat === "ALL") return true;
-  const g = (ch.group || "").toLowerCase();
-  const n = (ch.name || "").toLowerCase();
-  if (cat === "Regional") {
-    return /tamil|telugu|malayalam|kannada|bengali|marathi|punjabi|gujarati|odia|assamese|bhojpuri/i.test(g + " " + n);
-  }
-  return g.includes(cat.toLowerCase()) || n.includes(cat.toLowerCase());
+  return [...seen.values()].sort((a, b) => a.label.localeCompare(b.label));
 }
 
 /* ============================================================
@@ -276,7 +257,7 @@ function matchCategory(ch, cat) {
 function computeFilteredChannels() {
   const q = searchQuery.toLowerCase().trim();
   return allChannels.filter((ch) => {
-    if (activeCategory !== "ALL" && !matchCategory(ch, activeCategory)) return false;
+    if (activeCategory !== "all" && (ch.group || "Other").trim().toLowerCase() !== activeCategory) return false;
     if (activeLanguage !== "all" && ch.language !== activeLanguage) return false;
     if (q) {
       const hay = (ch.name + " " + ch.group + " " + (ch.language || "")).toLowerCase();
@@ -308,32 +289,27 @@ function updateResultsMeta() {
 
 function updateClearFiltersVisibility() {
   const hasFilter =
-    activeCategory !== "ALL" || activeLanguage !== "all" || searchQuery.trim() !== "";
+    activeCategory !== "all" || activeLanguage !== "all" || searchQuery.trim() !== "";
   els.clearFilters.classList.toggle("hidden", !hasFilter);
 }
 
-function renderCategoryChips() {
-  const counts = getCategoryCounts(allChannels);
-  els.categoryChips.innerHTML = "";
+function renderCategorySelect() {
+  const cats = getUniqueCategories(allChannels);
+  const total = allChannels.length;
+  els.categorySelect.innerHTML = "";
 
-  MAIN_CATEGORIES.forEach((cat) => {
-    if (cat !== "ALL" && (counts[cat] || 0) === 0) return;
+  const allOpt = document.createElement("option");
+  allOpt.value = "all";
+  allOpt.textContent = `All Categories (${total})`;
+  if (activeCategory === "all") allOpt.selected = true;
+  els.categorySelect.appendChild(allOpt);
 
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "chip" + (activeCategory === cat ? " active" : "");
-    btn.dataset.category = cat;
-    btn.innerHTML =
-      cat === "ALL"
-        ? `All <span class="chip-count">${counts.ALL}</span>`
-        : `${escapeHtml(cat)} <span class="chip-count">${counts[cat] || 0}</span>`;
-
-    btn.addEventListener("click", () => {
-      activeCategory = cat;
-      $$(".chip").forEach((c) => c.classList.toggle("active", c.dataset.category === cat));
-      applyFilters();
-    });
-    els.categoryChips.appendChild(btn);
+  cats.forEach(({ key, label, count }) => {
+    const opt = document.createElement("option");
+    opt.value = key;
+    opt.textContent = `${label} (${count})`;
+    if (key === activeCategory) opt.selected = true;
+    els.categorySelect.appendChild(opt);
   });
 }
 
@@ -508,7 +484,7 @@ async function loadRestChannels() {
 
     restLoaded = true;
     persistServersMap();
-    renderCategoryChips();
+    renderCategorySelect();
     renderLanguageSelect();
     // Keep current scroll position/visibleCount — just widen the pool the
     // sentinel can keep paging through
@@ -557,12 +533,12 @@ function renderMostViewed() {
   sorted.forEach((ch) => {
     const item = document.createElement("div");
     item.className = "mv-item";
+    item.title = ch.name;
     item.innerHTML = `
       <div class="mv-logo-wrap">
-        ${ch.logo ? `<img src="${escapeHtml(ch.logo)}" alt="" loading="lazy" onerror="this.style.display='none'">` : ""}
-        <div class="mv-fallback">${escapeHtml(getLogoFallback(ch.name))}</div>
+        ${ch.logo ? `<img src="${escapeHtml(ch.logo)}" alt="${escapeHtml(ch.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">` : ""}
+        <div class="mv-fallback" style="${ch.logo ? "display:none" : "display:grid"}">${escapeHtml(getLogoFallback(ch.name))}</div>
       </div>
-      <div class="mv-name">${escapeHtml(ch.name)}</div>
     `;
     item.addEventListener("click", () => {
       trackView(ch.id);
@@ -758,6 +734,12 @@ function bindEvents() {
     els.searchInput.focus();
   });
 
+  // Category
+  els.categorySelect.addEventListener("change", () => {
+    activeCategory = els.categorySelect.value;
+    applyFilters();
+  });
+
   // Language
   els.languageSelect.addEventListener("change", () => {
     activeLanguage = els.languageSelect.value;
@@ -766,13 +748,13 @@ function bindEvents() {
 
   // Clear filters
   els.clearFilters.addEventListener("click", () => {
-    activeCategory = "ALL";
+    activeCategory = "all";
     activeLanguage = "all";
     searchQuery = "";
     els.searchInput.value = "";
     els.searchClear.classList.add("hidden");
     els.languageSelect.value = "all";
-    $$(".chip").forEach((c) => c.classList.toggle("active", c.dataset.category === "ALL"));
+    els.categorySelect.value = "all";
     applyFilters();
   });
   els.emptyClear.addEventListener("click", () => els.clearFilters.click());
@@ -830,7 +812,7 @@ async function init() {
     persistServersMap();
     console.log(`[Gmax] Loaded ${allChannels.length} channels (S11 primary)`);
 
-    renderCategoryChips();
+    renderCategorySelect();
     renderLanguageSelect();
     renderMostViewed();
     applyFilters();
