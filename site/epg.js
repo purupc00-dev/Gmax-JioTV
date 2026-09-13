@@ -13,7 +13,14 @@ const CONFIG = {
   GATEWAY_BASE: "https://playlist.gmaxhub.workers.dev",
   CHANNELS_ENDPOINT: "/channels",
   EPG_ENDPOINT: "/epg",
-  EPG_SOURCES: ["aio", "jiotv", "tataplay"], // merge order: aio = baseline, jiotv/tataplay overlay richer 2-day+catchup data
+  EPG_SOURCES: [
+    // Baseline/broad coverage first — unverified quality, only used to
+    // fill gaps for channels nothing else covers
+    "aio", "tsepg1", "tsepg2", "klivjio", "klivairtel", "klivfiltered", "iptvepgorg", "rbgy",
+    // Trusted, richer 2-day+catchup guides go LAST so they always win over
+    // the baseline sources above for any channel id both happen to cover
+    "jiotv", "tataplay",
+  ],
   SERVERS_MAP_KEY: "gmax_servers_map",
   FAVORITES_KEY: "gmax-jiotv-favorites",
 
@@ -196,14 +203,20 @@ async function fetchGzipText(url) {
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`EPG HTTP ${res.status}`);
   const buf = await res.arrayBuffer();
-  // Decompress gzip in browser
-  if (typeof DecompressionStream !== "undefined") {
+
+  // Some sources are gzip (.xml.gz), others are plain XML with no such
+  // extension — don't trust the URL or Content-Type, check the actual
+  // bytes. A gzip stream always starts with the magic bytes 1F 8B.
+  const bytes = new Uint8Array(buf);
+  const isGzip = bytes.length > 2 && bytes[0] === 0x1f && bytes[1] === 0x8b;
+
+  if (isGzip && typeof DecompressionStream !== "undefined") {
     const ds = new DecompressionStream("gzip");
     const stream = new Response(buf).body.pipeThrough(ds);
     return await new Response(stream).text();
   }
-  // Fallback: try as plain text (some mirrors serve uncompressed)
-  return new TextDecoder().decode(buf);
+  // Plain text (or no DecompressionStream support) — decode as-is
+  return new TextDecoder("utf-8").decode(buf);
 }
 
 function parseXmltv(xmlText) {
@@ -238,33 +251,37 @@ async function loadEpg() {
   // Fetch every source in parallel — all through our own Worker (/epg?src=...)
   // so no real EPG host ever appears in Network tab. A failure on one
   // source doesn't block the others.
-  const results = await Promise.allSettled(
+  const results = await Promise.all(
     CONFIG.EPG_SOURCES.map(async (src) => {
-      const text = await fetchGzipText(`${CONFIG.GATEWAY_BASE}${CONFIG.EPG_ENDPOINT}?src=${src}`);
-      return { src, map: parseXmltv(text) };
+      try {
+        const text = await fetchGzipText(`${CONFIG.GATEWAY_BASE}${CONFIG.EPG_ENDPOINT}?src=${src}`);
+        return { src, ok: true, map: parseXmltv(text) };
+      } catch (err) {
+        return { src, ok: false, error: err.message };
+      }
     })
   );
 
-  // Merge in order: aio (broad baseline) first, then jiotv/tataplay
-  // overlay on top for channels they specifically cover (richer 2-day +
-  // catchup guides), since CONFIG.EPG_SOURCES lists aio first.
+  // Merge in CONFIG.EPG_SOURCES order: broad/unverified sources fill in
+  // first as a baseline, then the trusted JioTV/TataPlay catchup guides
+  // (listed last) overwrite them for any channel id both cover.
   const merged = new Map();
-  let anySucceeded = false;
+  let succeeded = 0;
   for (const r of results) {
-    if (r.status !== "fulfilled") {
-      console.warn("[EPG] source failed:", r.reason && r.reason.message);
+    if (!r.ok) {
+      console.warn(`[EPG] source '${r.src}' failed:`, r.error);
       continue;
     }
-    anySucceeded = true;
-    for (const [channelId, programmes] of r.value.map) {
+    succeeded++;
+    for (const [channelId, programmes] of r.map) {
       merged.set(channelId, programmes); // later source in the list wins for that channel id
     }
   }
 
-  if (!anySucceeded || merged.size === 0) {
+  if (succeeded === 0 || merged.size === 0) {
     throw new Error("No EPG source available");
   }
-  console.log(`[EPG] Loaded ${merged.size} channels across ${results.filter((r) => r.status === "fulfilled").length} source(s)`);
+  console.log(`[EPG] Loaded ${merged.size} channels across ${succeeded}/${CONFIG.EPG_SOURCES.length} source(s)`);
   return merged;
 }
 
