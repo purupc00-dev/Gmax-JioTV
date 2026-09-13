@@ -494,24 +494,15 @@ async function loadRestChannels() {
       { cache: "no-store" }
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const { extraServers, extraChannels } = await res.json();
+    const { extraChannels } = await res.json();
 
-    // Attach alternate servers to channels S11 already has
-    if (extraServers) {
-      for (const ch of allChannels) {
-        const key = normalizeName(ch.name);
-        const additions = extraServers[key];
-        if (!additions || !additions.length) continue;
-        additions.forEach((s) => {
-          const dup = ch.servers.some((existing) => existing.url === s.url);
-          if (!dup) ch.servers.push({ ...s, label: `Server ${ch.servers.length + 1}` });
-        });
-      }
-    }
-
-    // Append channels that only exist in secondary playlists — no
-    // duplicates, since the Worker already excluded anything matching a
-    // primary channel by normalized name
+    // Every other playlist's channels, appended as their own independent
+    // entries — no name-matching against S11, no gluing a secondary
+    // playlist's stream onto an existing channel as an "alternate server".
+    // That matching was producing dead/wrong links since a same-named
+    // channel in a different playlist isn't guaranteed to be the same
+    // actual working source. Each entry here has its own single, correct
+    // stream from whichever playlist it actually came from.
     if (Array.isArray(extraChannels) && extraChannels.length) {
       allChannels = allChannels.concat(extraChannels);
     }
