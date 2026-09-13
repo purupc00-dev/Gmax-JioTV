@@ -32,6 +32,7 @@ const CONFIG = {
 /* ---------- state ---------- */
 let channels = []; // { id, name, logo, group, language, tvgId }
 let programmesByChannel = new Map(); // tvgId → [{ start, stop, title, desc }]
+let epgStatusSuffix = ""; // set once after loadEpg(), shown on every render instead of being wiped out
 let dayOffset = 0; // 0 = today
 let filterCategory = "all";
 let filterLanguage = "all";
@@ -254,7 +255,7 @@ async function loadEpg() {
   const results = await Promise.all(
     CONFIG.EPG_SOURCES.map(async (src) => {
       try {
-        const text = await fetchGzipText(`${CONFIG.GATEWAY_BASE}${CONFIG.EPG_ENDPOINT}?src=${src}`);
+        const text = await fetchGzipText(`${CONFIG.GATEWAY_BASE}${CONFIG.EPG_ENDPOINT}?src=${src}&v=2`);
         return { src, ok: true, map: parseXmltv(text) };
       } catch (err) {
         return { src, ok: false, error: err.message };
@@ -279,10 +280,13 @@ async function loadEpg() {
   }
 
   if (succeeded === 0 || merged.size === 0) {
-    throw new Error("No EPG source available");
+    throw new Error(
+      `No EPG source available. Details: ${results.map((r) => `${r.src}=${r.ok ? "ok(" + r.map.size + ")" : "FAIL:" + r.error}`).join(", ")}`
+    );
   }
-  console.log(`[EPG] Loaded ${merged.size} channels across ${succeeded}/${CONFIG.EPG_SOURCES.length} source(s)`);
-  return merged;
+  const summary = results.map((r) => `${r.src}:${r.ok ? "✓" + r.map.size : "✗"}`).join(" ");
+  console.log(`[EPG] Loaded ${merged.size} channels across ${succeeded}/${CONFIG.EPG_SOURCES.length} source(s) — ${summary}`);
+  return { map: merged, summary, succeeded, total: CONFIG.EPG_SOURCES.length };
 }
 
 /* ---------- view window ---------- */
@@ -362,7 +366,7 @@ function renderGrid() {
   progCol.innerHTML = "";
 
   $("#epg-date-label").textContent = formatDateLabel(dayOffset);
-  $("#epg-status").textContent = `${visible.length} channels · EPG ready`;
+  $("#epg-status").textContent = `${visible.length} channels · ${epgStatusSuffix || "EPG ready"}`;
 
   if (!visible.length) {
     $("#epg-empty").classList.remove("hidden");
@@ -543,7 +547,8 @@ async function init() {
     fillFilterDropdowns();
     $("#epg-status").textContent = "Loading EPG data…";
 
-    programmesByChannel = await loadEpg();
+    const epgResult = await loadEpg();
+    programmesByChannel = epgResult.map;
 
     // Match rate log
     let matched = 0;
@@ -551,6 +556,7 @@ async function init() {
       if (getProgrammesFor(c).length) matched++;
     });
     console.log(`[EPG] ${matched}/${channels.length} channels have programme data`);
+    epgStatusSuffix = `${matched}/${channels.length} have EPG · ${epgResult.succeeded}/${epgResult.total} sources ok`;
 
     loading.classList.add("hidden");
     refresh();
@@ -564,11 +570,14 @@ async function init() {
         <button type="button" class="btn-primary" onclick="location.reload()">Retry</button>
       </div>
     `;
-    // Still show channel list with empty programmes
+    // Still show channel list with empty programmes — but keep the reason
+    // visible in the footer instead of silently hiding it once this
+    // fallback succeeds (an empty grid with no explanation looks broken)
     try {
       if (!channels.length) channels = await loadChannels();
       fillFilterDropdowns();
       programmesByChannel = new Map();
+      epgStatusSuffix = `EPG unavailable (${err.message.slice(0, 100)})`;
       loading.classList.add("hidden");
       refresh();
     } catch (_) {}
