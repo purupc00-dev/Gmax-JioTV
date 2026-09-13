@@ -24,7 +24,7 @@ jobs:
 
       - name: Run Master Script
         # Pointing to the new location of your script
-        run: python Scripts/Master.py
+        run: python scripts/Master.py
 
       - name: Commit and Push Changes
         run: |
