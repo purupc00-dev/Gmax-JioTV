@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
+  <meta name="theme-color" content="#0a0d18">
+  <title>EPG Guide • Gmax-JioTV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./epg.css">
+</head>
+<body class="epg-page">
+  <!-- TOP NAV (same as main) -->
+  <header class="top-nav">
+    <div class="nav-inner">
+      <a href="./index.html" class="brand" aria-label="Gmax-JioTV Home">
+        <span class="brand-icon">📺</span>
+        <span class="brand-text">
+          <span class="brand-title">Gmax-JioTV</span>
+          <span class="brand-sub">EPG Guide</span>
+        </span>
+      </a>
+
+      <div class="nav-search-wrap">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input type="search" id="epg-search" placeholder="Search channels or programmes…" autocomplete="off" spellcheck="false">
+        <button type="button" id="epg-search-clear" class="search-clear hidden" aria-label="Clear">✕</button>
+      </div>
+
+      <div class="nav-actions">
+        <a href="./index.html" class="nav-btn" title="Channels">
+          <span class="nav-btn-icon">⌂</span>
+          <span class="nav-btn-label">Home</span>
+        </a>
+        <a href="./favorites.html" class="nav-btn" title="Favorites">
+          <span class="nav-btn-icon">♥</span>
+          <span class="nav-btn-label">Favs</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="epg-main">
+    <!-- CONTROLS -->
+    <section class="epg-toolbar">
+      <div class="epg-toolbar-left">
+        <button type="button" id="btn-now" class="epg-tool-btn active">● Now</button>
+        <button type="button" id="btn-prev-day" class="epg-tool-btn" title="Previous day">‹ Day</button>
+        <button type="button" id="btn-next-day" class="epg-tool-btn" title="Next day">Day ›</button>
+        <span id="epg-date-label" class="epg-date-label">Today</span>
+      </div>
+      <div class="epg-toolbar-right">
+        <select id="epg-category" class="lang-select" aria-label="Category">
+          <option value="all">All Categories</option>
+        </select>
+        <select id="epg-language" class="lang-select" aria-label="Language">
+          <option value="all">All Languages</option>
+        </select>
+        <label class="fav-only-toggle">
+          <input type="checkbox" id="epg-fav-only">
+          <span>Favorites only</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- TIMELINE HEADER (hours) -->
+    <div class="epg-grid-wrap" id="epg-grid-wrap">
+      <div class="epg-sticky-corner">
+        <span class="epg-corner-label">Channel</span>
+      </div>
+      <div class="epg-time-header" id="epg-time-header">
+        <!-- hour ticks injected -->
+      </div>
+
+      <!-- CHANNEL ROWS -->
+      <div class="epg-channel-col" id="epg-channel-col">
+        <!-- logos + names -->
+      </div>
+      <div class="epg-programmes" id="epg-programmes">
+        <!-- programme blocks per channel row -->
+      </div>
+    </div>
+
+    <div id="epg-loading" class="epg-loading">
+      <div class="spinner"></div>
+      <p>Loading TV guide…</p>
+      <p class="epg-loading-hint">Fetching channels + EPG data</p>
+    </div>
+
+    <div id="epg-empty" class="empty-state hidden">
+      <div class="empty-icon">📅</div>
+      <h3>No programmes found</h3>
+      <p>Try another day, clear filters, or check that EPG data is available for these channels.</p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span>Gmax-JioTV EPG</span>
+      <span class="footer-sep">•</span>
+      <span id="epg-status">Ready</span>
+    </div>
+  </footer>
+
+  <script src="./epg.js" type="module"></script>
+</body>
+</html>
