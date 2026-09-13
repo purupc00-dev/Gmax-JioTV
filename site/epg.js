@@ -18,7 +18,7 @@ const CONFIG = {
   FAVORITES_KEY: "gmax-jiotv-favorites",
 
   PX_PER_HOUR: window.innerWidth < 700 ? 140 : 180,
-  HOURS_BEFORE: 2,
+  HOURS_BEFORE: 6,  // more room to scroll back and see past programmes
   HOURS_AFTER: 10,
 };
 
@@ -94,6 +94,19 @@ function formatDateLabel(offset) {
   return d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
 }
 
+// Tries every tvg-id this channel is known by (across all its playlist
+// sources) against the merged EPG map, since different source playlists
+// (S6/S7/S10/Pocket TV/etc.) can carry different id schemes for the
+// same logical channel.
+function getProgrammesFor(ch) {
+  const candidates = ch.altTvgIds && ch.altTvgIds.length ? ch.altTvgIds : [String(ch.tvgId)];
+  for (const id of candidates) {
+    const list = programmesByChannel.get(id);
+    if (list && list.length) return list;
+  }
+  return [];
+}
+
 /* ---------- M3U (fallback if no servers_map) ---------- */
 function parseM3U(text) {
   const lines = text.split(/\r?\n/);
@@ -140,6 +153,7 @@ async function loadChannels() {
       const list = Object.values(map).map((ch) => ({
         id: ch.id,
         tvgId: String(ch.id), // M3U tvg-id is usually the numeric id
+        altTvgIds: collectAltTvgIds(ch),
         name: ch.name,
         logo: ch.logo || "",
         group: ch.group || "Other",
@@ -156,11 +170,25 @@ async function loadChannels() {
   return (channels || []).map((ch) => ({
     id: ch.id,
     tvgId: String(ch.id),
+    altTvgIds: collectAltTvgIds(ch),
     name: ch.name,
     logo: ch.logo || "",
     group: ch.group || "Other",
     language: ch.language || inferLanguage(ch.name, ch.group),
   }));
+}
+
+// A channel can carry different tvg-ids across its servers/playlists
+// (e.g. S6/S7/S10/Pocket TV vs S11) — collect every distinct one so
+// programme lookup can try them all against whichever EPG source
+// actually covers that particular id scheme.
+function collectAltTvgIds(ch) {
+  const ids = new Set();
+  if (ch.id != null) ids.add(String(ch.id));
+  (ch.servers || []).forEach((s) => {
+    if (s && s.tvgId) ids.add(String(s.tvgId));
+  });
+  return [...ids];
 }
 
 /* ---------- EPG fetch + parse ---------- */
@@ -282,7 +310,7 @@ function getVisibleChannels() {
       const q = searchQuery.toLowerCase();
       const hay = (ch.name + " " + ch.group).toLowerCase();
       // also match programme titles in window
-      const progs = programmesByChannel.get(String(ch.tvgId)) || [];
+      const progs = getProgrammesFor(ch);
       const hitProg = progs.some(
         (p) => p.start < viewEnd && p.stop > viewStart && p.title.toLowerCase().includes(q)
       );
@@ -353,7 +381,7 @@ function renderGrid() {
     progRow.className = "epg-prog-row";
     progRow.style.width = totalWidth + "px";
 
-    const list = programmesByChannel.get(String(ch.tvgId)) || [];
+    const list = getProgrammesFor(ch);
     list.forEach((p) => {
       if (p.stop <= viewStart || p.start >= viewEnd) return;
       const left = Math.max(0, pxForTime(p.start));
@@ -503,7 +531,7 @@ async function init() {
     // Match rate log
     let matched = 0;
     channels.forEach((c) => {
-      if (programmesByChannel.has(String(c.tvgId))) matched++;
+      if (getProgrammesFor(c).length) matched++;
     });
     console.log(`[EPG] ${matched}/${channels.length} channels have programme data`);
 
