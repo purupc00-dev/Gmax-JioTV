@@ -103,6 +103,7 @@ img {
   padding: 0 20px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
 }
 
@@ -144,11 +145,16 @@ img {
   color: var(--text-muted);
 }
 
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
 .nav-search-wrap {
-  flex: 1;
-  max-width: 480px;
+  width: min(320px, 40vw);
   position: relative;
-  margin: 0 auto;
 }
 
 .search-icon {
@@ -473,20 +479,13 @@ img {
 }
 
 .mv-fallback {
+  display: none; /* shown via JS only when the real logo fails to load */
   position: absolute;
+  inset: 0;
+  place-items: center;
   font-size: 18px;
   font-weight: 900;
   color: #6b7589;
-}
-
-.mv-name {
-  margin-top: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .slider-nav {
@@ -945,7 +944,14 @@ img {
   }
 
   .nav-search-wrap {
+    width: auto;
+    flex: 1;
     max-width: none;
+  }
+
+  .nav-right {
+    flex: 1;
+    min-width: 0;
   }
 
   .hero-content {
