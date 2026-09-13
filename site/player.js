@@ -236,22 +236,107 @@ async function fetchRemoteKeys(licenseUrl) {
   return { clearKeys: {}, licenseUrl };
 }
 
+function normalizeName(name) {
+  return String(name || "")
+    .toLowerCase()
+    .replace(/\s*\|\s*gmaxhub\s*$/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Build the richest multi-server list for this channel:
+ * 1) localStorage (fast)
+ * 2) full /channels (all playlists merged on Worker)
+ * 3) if still thin, merge primary + rest scopes
+ */
 async function resolveChannel(id) {
+  let fromCache = null;
   try {
     const raw = localStorage.getItem(CONFIG.SERVERS_MAP_KEY);
     if (raw) {
       const map = JSON.parse(raw);
-      if (map[id]) return map[id];
-      const hit = Object.values(map).find((c) => String(c.id) === String(id));
-      if (hit) return hit;
+      fromCache = map[id] || Object.values(map).find((c) => String(c.id) === String(id)) || null;
     }
   } catch (_) {}
-  const res = await fetch(CONFIG.GATEWAY_BASE + CONFIG.CHANNELS_ENDPOINT, { cache: "no-store" });
-  if (!res.ok) throw new Error("Could not load channel list");
-  const data = await res.json();
-  const found = (data.channels || []).find((c) => String(c.id) === String(id));
-  if (!found) throw new Error("Channel not found");
-  return found;
+
+  const pick = (list) => {
+    if (!list || !list.length) return null;
+    return (
+      list.find((c) => String(c.id) === String(id)) ||
+      (fromCache
+        ? list.find((c) => normalizeName(c.name) === normalizeName(fromCache.name))
+        : null) ||
+      null
+    );
+  };
+
+  const mergeServers = (base, extraList) => {
+    if (!base) return extraList;
+    if (!extraList) return base;
+    const out = { ...base, servers: [...(base.servers || [])] };
+    const urls = new Set(out.servers.map((s) => s.url).filter(Boolean));
+    for (const s of extraList) {
+      if (s.url && !urls.has(s.url)) {
+        urls.add(s.url);
+        out.servers.push({
+          ...s,
+          label: s.label || `Server ${out.servers.length + 1}`,
+        });
+      }
+    }
+    return out;
+  };
+
+  // A) Full directory (best)
+  try {
+    const res = await fetch(CONFIG.GATEWAY_BASE + CONFIG.CHANNELS_ENDPOINT, { cache: "no-store" });
+    if (res.ok) {
+      const data = await res.json();
+      let found = pick(data.channels || []);
+      if (found && (found.servers || []).length > 1) {
+        return found;
+      }
+      if (found) fromCache = mergeServers(fromCache, found.servers);
+      if (found && !fromCache) fromCache = found;
+    }
+  } catch (e) {
+    console.warn("Full /channels failed", e);
+  }
+
+  // B) primary + rest scopes (explicit multi-source merge)
+  try {
+    const [pRes, rRes] = await Promise.all([
+      fetch(CONFIG.GATEWAY_BASE + CONFIG.CHANNELS_ENDPOINT + "?scope=primary", { cache: "no-store" }),
+      fetch(CONFIG.GATEWAY_BASE + CONFIG.CHANNELS_ENDPOINT + "?scope=rest", { cache: "no-store" }),
+    ]);
+    let ch = fromCache;
+    if (pRes.ok) {
+      const pdata = await pRes.json();
+      const found = pick(pdata.channels || []);
+      if (found) ch = mergeServers(ch, found.servers) || found;
+    }
+    if (rRes.ok) {
+      const rdata = await rRes.json();
+      // extraServers keyed by normalized name
+      if (ch && rdata.extraServers) {
+        const key = normalizeName(ch.name);
+        const adds = rdata.extraServers[key] || [];
+        ch = mergeServers(ch, adds);
+      }
+      // extraChannels — channel only on secondary playlists
+      if (rdata.extraChannels) {
+        const found = pick(rdata.extraChannels);
+        if (found) ch = mergeServers(ch, found.servers) || found;
+      }
+    }
+    if (ch) return ch;
+  } catch (e) {
+    console.warn("primary+rest merge failed", e);
+  }
+
+  if (fromCache) return fromCache;
+  throw new Error("Channel not found");
 }
 
 async function createPlayer() {
@@ -458,7 +543,7 @@ async function loadServer(index) {
     manifest: {
       dash: {
         ignoreDrmInfo: hasOfflineKeys,
-        defaultPresentationDelay: 6,
+        defaultPresentationDelay: 3,
         ignoreMinBufferTime: true,
         autoCorrectDrift: true,
       },
@@ -466,16 +551,23 @@ async function loadServer(index) {
       retryParameters: { maxAttempts: 4, baseDelay: 400, backoffFactor: 1.6, timeout: 15000 },
     },
     streaming: {
-      bufferingGoal: 20,
+      // Keep ~6s of media buffered ahead while playing (smooth, less spin)
+      bufferingGoal: 6,
       rebufferingGoal: 2,
       bufferBehind: 30,
       stallEnabled: true,
-      stallThreshold: 2,
+      stallThreshold: 1,
       stallSkip: 0.1,
       retryParameters: { maxAttempts: 5, baseDelay: 300, backoffFactor: 1.5, timeout: 12000 },
       failureCallback: () => { try { player.retryStreaming(); } catch (_) {} },
     },
-    abr: { enabled: true, defaultBandwidthEstimate: 2000000 },
+    abr: {
+      enabled: true,
+      defaultBandwidthEstimate: 2500000,
+      switchInterval: 4,
+      bandwidthUpgradeTarget: 0.85,
+      bandwidthDowngradeTarget: 0.95,
+    },
   });
 
   let finalManifest = sanitizeUrl(stripTokensFromUrl(unwrapProxyUrl(server.url)));
