@@ -231,6 +231,34 @@ function inferLanguage(name, group) {
 /* ============================================================
    CATEGORIES & LANGUAGES
    ============================================================ */
+// Different playlists format the same real category very differently, e.g.
+// group-title="JioTV+ ▶ | English" is really just "English". Strip decorative
+// branding/emoji and keep the last meaningful segment after common
+// separators, so these collapse into the same category instead of each
+// playlist's noisy label becoming its own separate, useless entry.
+function normalizeCategoryLabel(raw) {
+  if (!raw) return "Other";
+  let s = String(raw).replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}]/gu, "").trim();
+  const parts = s.split(/[|›»▶:]+/).map((p) => p.trim()).filter(Boolean);
+  const label = (parts.length ? parts[parts.length - 1] : s).replace(/\s+/g, " ").trim();
+  return label || "Other";
+}
+
+// A channel can carry a different category label per playlist source (its
+// primary S11 entry, plus whatever every other playlist called it). Collect
+// every one of them — normalized — instead of only the single label that
+// happened to "win" the channel-identity merge, so categories that only
+// exist in secondary playlists (S1-S13 variants, Sports, FreeDish, etc.)
+// still show up in the filter instead of being silently discarded.
+function getChannelCategories(ch) {
+  const set = new Set();
+  set.add(normalizeCategoryLabel(ch.group));
+  (ch.servers || []).forEach((s) => {
+    if (s && s.group) set.add(normalizeCategoryLabel(s.group));
+  });
+  return [...set];
+}
+
 function getUniqueLanguages(channels) {
   const set = new Set();
   channels.forEach((c) => set.add(c.language || "Other"));
@@ -238,15 +266,18 @@ function getUniqueLanguages(channels) {
 }
 
 // Real categories straight from your playlists' group-title values —
-// deduplicated case-insensitively (so "English"/"ENGLISH"/"english" across
-// different m3u files collapse into one entry) instead of a fixed guess-list.
+// normalized + deduplicated case-insensitively (so "English"/"ENGLISH"/
+// "JioTV+ ▶ | English" across different m3u files collapse into one entry)
+// instead of a fixed guess-list, and pulled from EVERY server a channel
+// has, not just whichever source's name won the merge.
 function getUniqueCategories(channels) {
   const seen = new Map(); // lowercase key -> { label, count }
   channels.forEach((c) => {
-    const raw = (c.group || "Other").trim() || "Other";
-    const key = raw.toLowerCase();
-    if (!seen.has(key)) seen.set(key, { key, label: raw, count: 0 });
-    seen.get(key).count++;
+    getChannelCategories(c).forEach((label) => {
+      const key = label.toLowerCase();
+      if (!seen.has(key)) seen.set(key, { key, label, count: 0 });
+      seen.get(key).count++;
+    });
   });
   return [...seen.values()].sort((a, b) => a.label.localeCompare(b.label));
 }
@@ -257,7 +288,10 @@ function getUniqueCategories(channels) {
 function computeFilteredChannels() {
   const q = searchQuery.toLowerCase().trim();
   return allChannels.filter((ch) => {
-    if (activeCategory !== "all" && (ch.group || "Other").trim().toLowerCase() !== activeCategory) return false;
+    if (activeCategory !== "all") {
+      const cats = getChannelCategories(ch).map((l) => l.toLowerCase());
+      if (!cats.includes(activeCategory)) return false;
+    }
     if (activeLanguage !== "all" && ch.language !== activeLanguage) return false;
     if (q) {
       const hay = (ch.name + " " + ch.group + " " + (ch.language || "")).toLowerCase();
