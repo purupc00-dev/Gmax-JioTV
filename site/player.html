@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
+  <meta name="theme-color" content="#000000">
+  <title>Player • Gmax-JioTV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./player.css">
+  <script src="https://cdn.jsdelivr.net/npm/shaka-player@4.11.2/dist/shaka-player.compiled.min.js"></script>
+</head>
+<body class="player-body">
+  <div class="player-shell" id="player-shell">
+    <!-- VIDEO -->
+    <div class="video-stage" id="video-stage">
+      <video id="video" playsinline webkit-playsinline></video>
+
+      <!-- Loading -->
+      <div class="overlay" id="overlay-loading">
+        <div class="spinner"></div>
+        <p id="loading-text">Connecting…</p>
+      </div>
+
+      <!-- Error / reconnect -->
+      <div class="overlay hidden" id="overlay-error">
+        <p id="error-text">Stream unavailable</p>
+        <button type="button" class="btn-retry" id="btn-retry">Retry</button>
+      </div>
+
+      <!-- Paused center info -->
+      <div class="paused-info hidden" id="paused-info">
+        <img id="paused-logo" class="paused-logo" alt="">
+        <div class="paused-name" id="paused-name"></div>
+        <div class="paused-desc" id="paused-desc"></div>
+        <div class="paused-sub">Paused · tap to play</div>
+      </div>
+
+      <!-- Top bar -->
+      <div class="top-bar" id="top-bar">
+        <button type="button" class="icon-btn" id="btn-back" title="Back">←</button>
+        <div class="top-meta">
+          <img id="ch-logo" class="ch-logo" alt="">
+          <div>
+            <div class="ch-name" id="ch-name">Channel</div>
+            <div class="ch-live"><span class="live-dot"></span> LIVE</div>
+          </div>
+        </div>
+        <div class="top-right">
+          <button type="button" class="icon-btn" id="btn-pip" title="Picture in Picture">⧉</button>
+          <button type="button" class="icon-btn" id="btn-fs" title="Fullscreen">⛶</button>
+        </div>
+      </div>
+
+      <!-- Bottom controls -->
+      <div class="bottom-bar" id="bottom-bar">
+        <div class="progress-wrap" id="progress-wrap" title="Live edge">
+          <div class="progress-track">
+            <div class="progress-fill" id="progress-fill"></div>
+            <div class="progress-thumb" id="progress-thumb"></div>
+          </div>
+        </div>
+
+        <div class="controls-row">
+          <div class="controls-left">
+            <button type="button" class="ctrl-btn" id="btn-play" title="Play/Pause">▶</button>
+            <button type="button" class="ctrl-btn" id="btn-back10" title="Back 10s">↺10</button>
+            <button type="button" class="ctrl-btn" id="btn-fwd10" title="Forward 10s">10↻</button>
+            <div class="vol-wrap">
+              <button type="button" class="ctrl-btn" id="btn-mute" title="Mute">🔊</button>
+              <input type="range" id="vol-slider" class="vol-slider" min="0" max="1" step="0.01" value="1">
+            </div>
+          </div>
+
+          <div class="controls-right">
+            <div class="server-wrap">
+              <button type="button" class="ctrl-btn server-btn" id="btn-server" title="Server">
+                <span id="server-label">Srv 1</span> ▾
+              </button>
+              <div class="menu hidden" id="server-menu"></div>
+            </div>
+
+            <button type="button" class="ctrl-btn" id="btn-aspect" title="Aspect ratio">Fit</button>
+
+            <div class="settings-wrap">
+              <button type="button" class="ctrl-btn" id="btn-settings" title="Settings">⚙</button>
+              <div class="menu settings-menu hidden" id="settings-menu">
+                <div class="menu-section">
+                  <div class="menu-title">Quality</div>
+                  <div id="quality-list"></div>
+                </div>
+                <div class="menu-section">
+                  <div class="menu-title">Audio</div>
+                  <div id="audio-list"></div>
+                </div>
+                <div class="menu-section">
+                  <label class="boost-row">
+                    <span>Volume boost</span>
+                    <input type="range" id="boost-slider" min="1" max="3" step="0.1" value="1">
+                    <span id="boost-val">1.0×</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./player.js" type="module"></script>
+</body>
+</html>

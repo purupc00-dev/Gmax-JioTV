@@ -1,0 +1,328 @@
+/* Gmax-JioTV Player — fullscreen dark */
+
+:root {
+  --accent: #ff3f81;
+  --text: #fff;
+  --muted: #9aa3b5;
+  --bar-bg: linear-gradient(transparent, rgba(0,0,0,0.85));
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+  color: var(--text);
+  font-family: Inter, system-ui, sans-serif;
+  overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.player-shell {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #000;
+}
+
+.video-stage {
+  position: absolute;
+  inset: 0;
+  background: #000;
+}
+
+video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #000;
+  object-fit: contain; /* Fit default */
+}
+
+video.aspect-fill { object-fit: cover; }
+video.aspect-stretch { object-fit: fill; }
+
+/* Overlays */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(0,0,0,0.55);
+  z-index: 20;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.overlay.hidden, .hidden { display: none !important; }
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.15);
+  border-top-color: var(--accent);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.btn-retry {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.paused-info {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.45);
+  z-index: 15;
+  pointer-events: none;
+}
+.paused-logo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #111;
+}
+.paused-name { font-size: 18px; font-weight: 800; }
+.paused-sub { font-size: 12px; color: var(--muted); font-weight: 650; }
+
+/* Top / bottom chrome — auto hide */
+.top-bar, .bottom-bar {
+  position: absolute;
+  left: 0; right: 0;
+  z-index: 25;
+  padding: 12px 14px;
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+}
+.top-bar > *, .bottom-bar > *, .top-bar button, .bottom-bar button,
+.bottom-bar input, .menu {
+  pointer-events: auto;
+}
+
+.top-bar {
+  top: 0;
+  background: linear-gradient(rgba(0,0,0,0.75), transparent);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.bottom-bar {
+  bottom: 0;
+  background: var(--bar-bg);
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+.player-shell.hide-ui .top-bar {
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+}
+.player-shell.hide-ui .bottom-bar {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+
+.top-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+.ch-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: #1a1a1a;
+}
+.ch-name {
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 50vw;
+}
+.ch-live {
+  font-size: 10px;
+  font-weight: 800;
+  color: #ff6b7a;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff3b30;
+  box-shadow: 0 0 6px #ff3b30;
+}
+.top-right { display: flex; gap: 6px; }
+
+.icon-btn, .ctrl-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  border-radius: 10px;
+  padding: 8px 11px;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  line-height: 1;
+}
+.icon-btn:hover, .ctrl-btn:hover {
+  background: rgba(255,255,255,0.16);
+}
+
+/* Progress (live scrub limited) */
+.progress-wrap {
+  padding: 4px 0 10px;
+  cursor: pointer;
+}
+.progress-track {
+  height: 4px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.2);
+  position: relative;
+}
+.progress-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 98%;
+  border-radius: 4px;
+  background: var(--accent);
+}
+.progress-thumb {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translate(50%, -50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 6px rgba(0,0,0,0.5);
+}
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.controls-left, .controls-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vol-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.vol-slider {
+  width: 80px;
+  accent-color: var(--accent);
+}
+
+.server-wrap, .settings-wrap {
+  position: relative;
+}
+.server-btn { min-width: 70px; }
+
+.menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  min-width: 180px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: rgba(16, 20, 32, 0.98);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 8px;
+  z-index: 40;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+}
+.menu-section { margin-bottom: 10px; }
+.menu-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+  padding: 0 6px;
+}
+.menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.menu-item:hover { background: rgba(255,255,255,0.08); }
+.menu-item.active {
+  background: rgba(255, 63, 129, 0.18);
+  color: #ffb0c8;
+}
+
+.boost-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  font-size: 12px;
+  font-weight: 650;
+}
+.boost-row input { flex: 1; accent-color: var(--accent); }
+
+@media (max-width: 600px) {
+  .vol-slider { width: 56px; }
+  .ch-name { font-size: 13px; max-width: 40vw; }
+  .ctrl-btn { padding: 7px 9px; font-size: 12px; }
+}
+
+.paused-desc {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  max-width: 70vw;
+  text-align: center;
+}
+.menu-item.server-dead {
+  opacity: 0.4;
+  text-decoration: line-through;
+  cursor: not-allowed;
+  color: #888 !important;
+}
+.menu-item.server-dead:hover {
+  background: transparent;
+}
