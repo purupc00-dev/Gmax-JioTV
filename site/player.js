@@ -260,100 +260,47 @@ function normalizeName(name) {
     .trim();
 }
 
-/**
- * Master.json (via Worker /master) has one row per playlist source.
- * Group by normalized name → full multi-server list with real labels
- * (JioTV_S11, digital, Sport_S1, …).
- */
-function channelFromMasterRows(rows, preferredId) {
-  if (!rows.length) return null;
-  // Prefer primary / matching id as the "base" metadata
-  const primary =
-    rows.find((r) => r.isPrimary) ||
-    rows.find((r) => String(r.id) === String(preferredId)) ||
-    rows[0];
-  const servers = [];
-  const seen = new Set();
-  for (const r of rows) {
-    const url = (r.url || "").trim();
-    if (!url) continue;
-    const key = url.split("|")[0].split("?")[0];
-    if (seen.has(key)) continue;
-    seen.add(key);
-    servers.push({
-      label: r.source || `Server ${servers.length + 1}`,
-      url,
-      streamType: r.streamType || (url.includes(".m3u8") ? "hls" : "mpd"),
-      licenseKey: r.licenseKey || null,
-      cookie: r.cookie || null,
-      userAgent: r.userAgent || null,
-      referrer: r.referrer || null,
-      origin: r.origin || null,
-      tvgId: r.tvgId || "",
-      group: r.group || primary.group || "Other",
-    });
-  }
-  return {
-    id: primary.id || preferredId,
-    name: primary.name,
-    logo: primary.logo || "",
-    group: primary.group || "Other",
-    language: primary.language || "Other",
-    servers,
-  };
-}
-
-async function fetchMasterChannels() {
-  const res = await fetch(CONFIG.GATEWAY_BASE + "/master", { cache: "no-store" });
-  if (!res.ok) throw new Error(`Master HTTP ${res.status}`);
-  const data = await res.json();
-  return Array.isArray(data.channels) ? data.channels : [];
-}
-
 async function resolveChannel(id) {
   let fromCache = null;
   try {
-    const raw = localStorage.getItem(CONFIG.SERVERS_MAP_KEY);
-    if (raw) {
-      const map = JSON.parse(raw);
-      fromCache =
-        map[id] ||
-        Object.values(map).find((c) => String(c.id) === String(id)) ||
-        null;
-    }
+    const map = JSON.parse(localStorage.getItem(CONFIG.SERVERS_MAP_KEY) || "{}");
+    fromCache =
+      map[id] ||
+      Object.values(map).find((c) => String(c.id) === String(id)) ||
+      null;
   } catch (_) {}
 
-  // 1) Preferred: Master.json via Worker (all sources, real labels)
+  // Preferred: Worker merges all Master sources for this channel
   try {
-    const rows = await fetchMasterChannels();
-    if (rows.length) {
-      let matchRows = rows.filter((r) => String(r.id) === String(id));
-      if (!matchRows.length && fromCache) {
-        const n = normalizeName(fromCache.name);
-        matchRows = rows.filter((r) => normalizeName(r.name) === n);
-      }
-      if (!matchRows.length) {
-        // id might be secondary like "JioTV_S12-1132" — match trailing id or name
-        const tail = String(id).split("-").pop();
-        matchRows = rows.filter((r) => String(r.id) === tail);
-      }
-      if (matchRows.length) {
-        // Expand to ALL rows with same normalized name (full multi-server)
-        const n = normalizeName(matchRows[0].name);
-        const allSame = rows.filter((r) => normalizeName(r.name) === n);
-        const ch = channelFromMasterRows(allSame, id);
+    const qs = new URLSearchParams({ id: String(id) });
+    if (fromCache?.name) qs.set("name", fromCache.name);
+    const res = await fetch(
+      CONFIG.GATEWAY_BASE + "/channels/servers?" + qs.toString(),
+      { cache: "no-store" }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      const ch = {
+        id: data.channel?.id || id,
+        name: data.channel?.name || fromCache?.name || "Channel",
+        logo: data.channel?.logo || fromCache?.logo || "",
+        group: data.channel?.group || fromCache?.group || "Other",
+        language: data.channel?.language || "Other",
+        servers: data.servers || [],
+      };
+      if (ch.servers.length) {
         console.log(
-          `[Gmax Player] Master → ${ch.name}: ${ch.servers.length} source(s)`,
+          `[Gmax Player] ${ch.name}: ${ch.servers.length} source(s)`,
           ch.servers.map((s) => s.label)
         );
         return ch;
       }
     }
   } catch (e) {
-    console.warn("Master fetch failed, falling back", e);
+    console.warn("servers endpoint failed", e);
   }
 
-  // 2) Fallback: old /channels merge (if Master not deployed yet)
+  // Fallback: full /channels list
   try {
     const res = await fetch(CONFIG.GATEWAY_BASE + CONFIG.CHANNELS_ENDPOINT, {
       cache: "no-store",
@@ -361,51 +308,21 @@ async function resolveChannel(id) {
     if (res.ok) {
       const data = await res.json();
       const list = data.channels || [];
-      let base =
+      let found =
         list.find((c) => String(c.id) === String(id)) ||
         (fromCache
           ? list.find((c) => normalizeName(c.name) === normalizeName(fromCache.name))
           : null);
-      if (base) {
-        const n = normalizeName(base.name);
-        const same = list.filter((c) => normalizeName(c.name) === n);
-        const servers = [];
-        const seen = new Set();
-        for (const c of same) {
-          for (const s of c.servers || []) {
-            const key = (s.url || "").split("|")[0].split("?")[0];
-            if (!key || seen.has(key)) continue;
-            seen.add(key);
-            servers.push({
-              ...s,
-              label: s.label || c.source || `Server ${servers.length + 1}`,
-            });
-          }
-          if (c.url && !seen.has(c.url.split("|")[0].split("?")[0])) {
-            const key = c.url.split("|")[0].split("?")[0];
-            seen.add(key);
-            servers.push({
-              label: c.source || `Server ${servers.length + 1}`,
-              url: c.url,
-              streamType: c.streamType,
-              licenseKey: c.licenseKey,
-              cookie: c.cookie,
-              userAgent: c.userAgent,
-              referrer: c.referrer,
-              origin: c.origin,
-            });
-          }
-        }
-        if (servers.length) base = { ...base, servers };
-        console.log(`[Gmax Player] /channels → ${base.name}: ${base.servers?.length || 0}`);
-        return base;
+      if (found) {
+        console.log(`[Gmax Player] /channels → ${found.name}: ${found.servers?.length || 0}`);
+        return found;
       }
     }
   } catch (e) {
     console.warn("channels fallback failed", e);
   }
 
-  if (fromCache) return fromCache;
+  if (fromCache?.servers?.length) return fromCache;
   throw new Error("Channel not found");
 }
 
