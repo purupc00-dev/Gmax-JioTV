@@ -1,29 +1,42 @@
 [
   {
-    "title": "Star Sports 1 HD",
-    "description": "Watch live cricket tournaments and comprehensive match analysis in high definition.",
+    "title": "India vs Afghanistan — 2nd T20I",
+    "description": "Live cricket only on Gmax-JioTV. Watch Sony TEN 3 HD Hindi for full match coverage and analysis.",
     "image": "https://images.unsplash.com/photo-1540747913346-19e32dc3e20d?w=1400&q=80",
     "tag": "🔴 LIVE MATCH",
     "category": "SPORTS",
-    "channelName": "Star Sports 1 HD",
-    "channelId": null
+    "channelName": "Sony TEN 3 HD Hindi",
+    "channelId": "892",
+    "link": null
   },
   {
-    "title": "GmaxHub Premium Live",
-    "description": "Hundreds of channels. One place. Seamless ClearKey playback powered by GmaxHub.",
-    "image": "https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=1400&q=80",
-    "tag": "NEW",
-    "category": "FEATURED",
-    "channelName": null,
-    "channelId": null
+    "title": "Kaun Banega Crorepati",
+    "description": "KBC streams tonight at 9:00 PM IST on SET (Sony Entertainment Television). Don't miss the hot seat.",
+    "image": "https://images.unsplash.com/photo-1485846234645-a62644f84781?w=1400&q=80",
+    "tag": "⏰ TONIGHT 9 PM",
+    "category": "ENTERTAINMENT",
+    "channelName": "SET HD",
+    "channelId": null,
+    "link": null
   },
   {
-    "title": "Movies Night",
-    "description": "Blockbusters and latest releases across Star Gold, Zee Cinema, Sony Max and more.",
+    "title": "Doraemon",
+    "description": "Watch Doraemon only on Disney Channel. Gadgets, adventures, and Nobita — live on Gmax-JioTV.",
+    "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1400&q=80",
+    "tag": "KIDS",
+    "category": "KIDS",
+    "channelName": "Disney Channel",
+    "channelId": null,
+    "link": null
+  },
+  {
+    "title": "Hanuman Ansh",
+    "description": "New trending movie. Stream Hanuman Ansh now on GmaxHub Movies.",
     "image": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1400&q=80",
-    "tag": "CINEMA",
+    "tag": "🔥 TRENDING",
     "category": "MOVIES",
-    "channelName": "Star Gold HD",
-    "channelId": null
+    "channelName": null,
+    "channelId": null,
+    "link": "https://gmaxhub.vercel.app/movie/1709391"
   }
 ]
