@@ -198,84 +198,18 @@ async function fetchText(url) {
   return res.text();
 }
 
-/**
- * Master rows are exact (id, source, url, licenseKey, cookie, …).
- * Grid shows ONE card per channel NAME.
- * servers[] on each card = every Master row with that name (exact fields).
- */
-function buildGridFromMaster(raw) {
-  const buckets = new Map();
-  for (const row of raw) {
-    if (!row || !row.url || !row.name) continue;
-    const key = normalizeName(row.name);
-    if (!key) continue;
-    if (!buckets.has(key)) buckets.set(key, []);
-    buckets.get(key).push(row);
-  }
-  const out = [];
-  for (const rows of buckets.values()) {
-    rows.sort((a, b) => {
-      if (a.isPrimary && !b.isPrimary) return -1;
-      if (!a.isPrimary && b.isPrimary) return 1;
-      if (a.source === "JioTV_S11") return -1;
-      if (b.source === "JioTV_S11") return 1;
-      return 0;
-    });
-    const primary = rows[0];
-    const seen = new Set();
-    const servers = [];
-    const groups = [];
-    for (const r of rows) {
-      if (r.group && !groups.includes(r.group)) groups.push(r.group);
-      const uk = String(r.url).split("|")[0].split("?")[0];
-      if (seen.has(uk)) continue;
-      seen.add(uk);
-      // exact Master fields on each server
-      servers.push({
-        label: r.source || "Server",
-        url: r.url,
-        streamType: r.streamType,
-        licenseKey: r.licenseKey,
-        cookie: r.cookie,
-        userAgent: r.userAgent,
-        referrer: r.referrer,
-        origin: r.origin,
-        tvgId: r.tvgId ?? null,
-        group: r.group ?? null,
-        source: r.source ?? null,
-        id: r.id ?? null,
-      });
-    }
-    out.push({
-      id: String(primary.id),
-      name: primary.name,
-      logo: primary.logo || "",
-      group: primary.group || "Other",
-      groups,
-      language: primary.language || "Other",
-      isPrimary: !!primary.isPrimary,
-      servers,
-    });
-  }
-  out.sort((a, b) => {
-    if (a.isPrimary && !b.isPrimary) return -1;
-    if (!a.isPrimary && b.isPrimary) return 1;
-    return String(a.name).localeCompare(String(b.name));
-  });
-  return out;
-}
-
 async function loadPrimaryChannels() {
-  // Worker returns Master.json channels EXACTLY — no Worker-side rewrite
+  // ONE request, S11 only — fills the grid immediately. The rest of your
+  // playlists load lazily (see loadRestChannels) once the user has
+  // scrolled through everything here, so the Network tab doesn't fill up
+  // with 20 requests before the user even needs them.
   const res = await fetch(
-    CONFIG.GATEWAY_BASE + CONFIG.CHANNELS_ENDPOINT,
+    CONFIG.GATEWAY_BASE + CONFIG.CHANNELS_ENDPOINT + "?scope=primary",
     { cache: "no-store" }
   );
   if (!res.ok) throw new Error(`HTTP ${res.status} for channels`);
   const { channels } = await res.json();
-  const raw = Array.isArray(channels) ? channels : [];
-  // Dedupe by NAME only for the grid; servers keep every source as-is
-  return buildGridFromMaster(raw);
+  return Array.isArray(channels) ? channels : [];
 }
 
 function inferLanguage(name, group) {
@@ -297,28 +231,77 @@ function inferLanguage(name, group) {
 /* ============================================================
    CATEGORIES & LANGUAGES
    ============================================================ */
-// Different playlists format the same real category very differently, e.g.
-// group-title="JioTV+ ▶ | English" is really just "English". Strip decorative
-// branding/emoji and keep the last meaningful segment after common
-// separators, so these collapse into the same category instead of each
-// playlist's noisy label becoming its own separate, useless entry.
+// Different playlists label the SAME real category wildly differently —
+// e.g. "JIO ⭕|Gujarati", "jiotv= gujrati" (note the missing letter), and
+// bare "gujrati" are all just Gujarati. Splitting on separators alone
+// (the previous approach) can't fix that: "=" wasn't even in the
+// separator list, and a misspelling isn't a formatting difference at all
+// — comparing exact strings will never unify "gujrati" with "Gujarati".
+//
+// So instead: check whether a KNOWN keyword appears ANYWHERE in the
+// cleaned string. This survives arbitrary prefixes/suffixes/separators
+// in one step, and substring matching (not exact-word matching) absorbs
+// small misspellings for free, since "gujrati" still contains "guj".
+// Only truly unrecognized categories fall back to the old
+// strip-separators-and-take-the-last-segment behavior.
+const CATEGORY_KEYWORDS = [
+  ["Gujarati", /guj/i],
+  ["Punjabi", /punj/i],
+  ["Marathi", /marath/i],
+  ["Bengali", /beng|bangla/i],
+  ["Tamil", /tamil/i],
+  ["Telugu", /telugu/i],
+  ["Malayalam", /malayal/i],
+  ["Kannada", /kannad/i],
+  ["Odia", /odia|oriya/i],
+  ["Assamese", /assam/i],
+  ["Bhojpuri", /bhojpuri/i],
+  ["Urdu", /urdu/i],
+  ["Hindi", /hindi/i],
+  ["English", /english/i],
+  ["Sports", /sport/i],
+  ["Movies", /movie|cinema|film/i],
+  ["News", /news/i],
+  ["Kids", /\bkids?\b|cartoon|junior/i],
+  ["Music", /music/i],
+  ["Devotional", /devotion|spiritual|bhakti|dharma|sanskar/i],
+  ["Business News", /business/i],
+  ["Infotainment", /infotainment|discovery|history|knowledge/i],
+  ["Lifestyle", /lifestyle|travel/i],
+  ["Entertainment", /entertainment/i],
+];
+
 function normalizeCategoryLabel(raw) {
   if (!raw) return "Other";
-  let s = String(raw).replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}]/gu, "").trim();
-  const parts = s.split(/[|›»▶:]+/).map((p) => p.trim()).filter(Boolean);
-  const label = (parts.length ? parts[parts.length - 1] : s).replace(/\s+/g, " ").trim();
+  const cleaned = String(raw)
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}]/gu, "")
+    .trim();
+
+  for (const [canonical, pattern] of CATEGORY_KEYWORDS) {
+    if (pattern.test(cleaned)) return canonical;
+  }
+
+  // Unrecognized category — fall back to stripping decorative separators
+  // (now including "=" and a couple more) and keeping the last segment
+  const parts = cleaned.split(/[|›»▶=:•·]+/).map((p) => p.trim()).filter(Boolean);
+  const label = (parts.length ? parts[parts.length - 1] : cleaned).replace(/\s+/g, " ").trim();
   return label || "Other";
 }
 
 // A channel can carry a different category label per playlist source (its
-// primary S11 entry, plus whatever every other playlist called it). Collect
-// every one of them — normalized — instead of only the single label that
-// happened to "win" the channel-identity merge, so categories that only
-// exist in secondary playlists (S1-S13 variants, Sports, FreeDish, etc.)
+// primary S11 entry, plus whatever every other playlist called it), and
+// the Worker's dedup step also collapses same-URL duplicates into a
+// `groups[]` array on the channel itself. Collect every one of them —
+// normalized — instead of only the single label that happened to "win"
+// the channel-identity merge, so categories that only exist in secondary
+// playlists (or only in a collapsed duplicate's alternate group-title)
 // still show up in the filter instead of being silently discarded.
 function getChannelCategories(ch) {
   const set = new Set();
   set.add(normalizeCategoryLabel(ch.group));
+  if (Array.isArray(ch.groups)) {
+    ch.groups.forEach((g) => set.add(normalizeCategoryLabel(g)));
+  }
   (ch.servers || []).forEach((s) => {
     if (s && s.group) set.add(normalizeCategoryLabel(s.group));
   });
@@ -457,7 +440,7 @@ function createChannelCard(ch) {
   card.addEventListener("click", (e) => {
     if (e.target.closest(".fav-btn")) return;
     trackView(ch.id);
-    window.location.href = `./player.html?name=${encodeURIComponent(ch.name)}&id=${encodeURIComponent(ch.id)}`;
+    window.location.href = `./player.html?id=${encodeURIComponent(ch.id)}`;
   });
 
   // Favorite toggle
@@ -560,24 +543,15 @@ async function loadRestChannels() {
       { cache: "no-store" }
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const { extraServers, extraChannels } = await res.json();
+    const { extraChannels } = await res.json();
 
-    // Attach alternate servers to channels S11 already has
-    if (extraServers) {
-      for (const ch of allChannels) {
-        const key = normalizeName(ch.name);
-        const additions = extraServers[key];
-        if (!additions || !additions.length) continue;
-        additions.forEach((s) => {
-          const dup = ch.servers.some((existing) => existing.url === s.url);
-          if (!dup) ch.servers.push({ ...s, label: `Server ${ch.servers.length + 1}` });
-        });
-      }
-    }
-
-    // Append channels that only exist in secondary playlists — no
-    // duplicates, since the Worker already excluded anything matching a
-    // primary channel by normalized name
+    // Every other playlist's channels, appended as their own independent
+    // entries — no name-matching against S11, no gluing a secondary
+    // playlist's stream onto an existing channel as an "alternate server".
+    // That matching was producing dead/wrong links since a same-named
+    // channel in a different playlist isn't guaranteed to be the same
+    // actual working source. Each entry here has its own single, correct
+    // stream from whichever playlist it actually came from.
     if (Array.isArray(extraChannels) && extraChannels.length) {
       allChannels = allChannels.concat(extraChannels);
     }
@@ -642,7 +616,7 @@ function renderMostViewed() {
     `;
     item.addEventListener("click", () => {
       trackView(ch.id);
-      window.location.href = `./player.html?name=${encodeURIComponent(ch.name)}&id=${encodeURIComponent(ch.id)}`;
+      window.location.href = `./player.html?id=${encodeURIComponent(ch.id)}`;
     });
     els.mostViewedTrack.appendChild(item);
   });
@@ -720,9 +694,7 @@ function renderHero() {
         <p class="hero-desc">${escapeHtml(item.description || "")}</p>
         <div class="hero-actions">
           ${
-            item.link
-              ? `<a class="btn-primary hero-play" href="${escapeHtml(item.link)}" target="_blank" rel="noopener">▶ Watch Now</a>`
-              : item.channelId || item.channelName
+            item.channelId || item.channelName
               ? `<button type="button" class="btn-primary hero-play" data-id="${escapeHtml(item.channelId || "")}" data-name="${escapeHtml(item.channelName || "")}">▶ Watch Now</button>`
               : ""
           }
@@ -739,8 +711,8 @@ function renderHero() {
     els.heroDots.appendChild(dot);
   });
 
-  // Play buttons (channel → player, external link uses <a>)
-  els.heroTrack.querySelectorAll("button.hero-play").forEach((btn) => {
+  // Play buttons
+  els.heroTrack.querySelectorAll(".hero-play").forEach((btn) => {
     btn.addEventListener("click", () => {
       const id = btn.dataset.id;
       const name = btn.dataset.name;
@@ -752,10 +724,7 @@ function renderHero() {
       }
       if (target) {
         trackView(target.id);
-        window.location.href = `./player.html?name=${encodeURIComponent(target.name || "")}&id=${encodeURIComponent(target.id)}`;
-      } else if (id) {
-        // Direct id from highlights (e.g. 892) even before channels load
-        window.location.href = `./player.html?name=${encodeURIComponent(name || "")}&id=${encodeURIComponent(id)}`;
+        window.location.href = `./player.html?id=${encodeURIComponent(target.id)}`;
       }
     });
   });
@@ -914,7 +883,6 @@ async function init() {
     renderHero();
 
     allChannels = await loadPrimaryChannels();
-    restLoaded = true; // full Master merge — no secondary fetch
     persistServersMap();
     console.log(`[Gmax] Loaded ${allChannels.length} channels (S11 primary)`);
 
