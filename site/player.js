@@ -236,19 +236,19 @@ async function fetchRemoteKeys(licenseUrl) {
   return { clearKeys: {}, licenseUrl };
 }
 
-function normalizeName(name) {
-  return String(name || "")
-    .toLowerCase()
-    .replace(/\s*\|\s*gmaxhub\s*$/i, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+// (channel-name matching for cross-playlist server lookup now lives in
+// the Worker — see GET /channels/servers)
 
 /**
- * Build the richest multi-server list for this channel:
- * 1) localStorage (fast)
- * 2) full /channels (all playlists merged on Worker)
- * 3) if still thin, merge primary + rest scopes
+ * Build the multi-server list for this channel via the Worker's
+ * dedicated lookup endpoint: it finds every source across ALL playlists
+ * whose channel name matches this one and returns each as its own
+ * server. The old approach tried to do this merge client-side by
+ * expecting an `extraServers` field the Worker stopped producing after
+ * the data-layer merge was removed (that removal was intentional — it
+ * was producing dead links). This does the same "find every source"
+ * work, but scoped to one explicit channel open, server-side, with the
+ * existing dead-server detection below as the safety net.
  */
 async function resolveChannel(id) {
   let fromCache = null;
@@ -260,79 +260,38 @@ async function resolveChannel(id) {
     }
   } catch (_) {}
 
-  const pick = (list) => {
-    if (!list || !list.length) return null;
-    return (
-      list.find((c) => String(c.id) === String(id)) ||
-      (fromCache
-        ? list.find((c) => normalizeName(c.name) === normalizeName(fromCache.name))
-        : null) ||
-      null
-    );
-  };
-
-  const mergeServers = (base, extraList) => {
-    if (!base) return extraList;
-    if (!extraList) return base;
-    const out = { ...base, servers: [...(base.servers || [])] };
-    const urls = new Set(out.servers.map((s) => s.url).filter(Boolean));
-    for (const s of extraList) {
-      if (s.url && !urls.has(s.url)) {
-        urls.add(s.url);
-        out.servers.push({
-          ...s,
-          label: s.label || `Server ${out.servers.length + 1}`,
-        });
-      }
-    }
-    return out;
-  };
-
-  // A) Full directory (best)
   try {
-    const res = await fetch(CONFIG.GATEWAY_BASE + CONFIG.CHANNELS_ENDPOINT, { cache: "no-store" });
+    const res = await fetch(
+      `${CONFIG.GATEWAY_BASE}/channels/servers?id=${encodeURIComponent(id)}`,
+      { cache: "no-store" }
+    );
     if (res.ok) {
       const data = await res.json();
-      let found = pick(data.channels || []);
-      if (found && (found.servers || []).length > 1) {
-        return found;
+      if (data.channel && Array.isArray(data.servers) && data.servers.length) {
+        return { ...data.channel, servers: data.servers };
       }
-      if (found) fromCache = mergeServers(fromCache, found.servers);
-      if (found && !fromCache) fromCache = found;
     }
   } catch (e) {
-    console.warn("Full /channels failed", e);
+    console.warn("Servers lookup failed", e);
   }
 
-  // B) primary + rest scopes (explicit multi-source merge)
-  try {
-    const [pRes, rRes] = await Promise.all([
-      fetch(CONFIG.GATEWAY_BASE + CONFIG.CHANNELS_ENDPOINT + "?scope=primary", { cache: "no-store" }),
-      fetch(CONFIG.GATEWAY_BASE + CONFIG.CHANNELS_ENDPOINT + "?scope=rest", { cache: "no-store" }),
-    ]);
-    let ch = fromCache;
-    if (pRes.ok) {
-      const pdata = await pRes.json();
-      const found = pick(pdata.channels || []);
-      if (found) ch = mergeServers(ch, found.servers) || found;
-    }
-    if (rRes.ok) {
-      const rdata = await rRes.json();
-      // extraServers keyed by normalized name
-      if (ch && rdata.extraServers) {
-        const key = normalizeName(ch.name);
-        const adds = rdata.extraServers[key] || [];
-        ch = mergeServers(ch, adds);
+  // Fallback: try by name too, in case the id in the URL is stale
+  // (e.g. bookmarked before a Master.json rebuild changed ids)
+  if (fromCache?.name) {
+    try {
+      const res = await fetch(
+        `${CONFIG.GATEWAY_BASE}/channels/servers?name=${encodeURIComponent(fromCache.name)}`,
+        { cache: "no-store" }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data.channel && Array.isArray(data.servers) && data.servers.length) {
+          return { ...data.channel, servers: data.servers };
+        }
       }
-      // extraChannels — channel only on secondary playlists
-      if (rdata.extraChannels) {
-        const found = pick(rdata.extraChannels);
-        if (found) ch = mergeServers(ch, found.servers) || found;
-      }
+    } catch (e) {
+      console.warn("Servers lookup by name failed", e);
     }
-    if (ch) return ch;
-  } catch (e) {
-    console.warn("primary+rest merge failed", e);
   }
 
   if (fromCache) return fromCache;
@@ -551,14 +510,21 @@ async function loadServer(index) {
       retryParameters: { maxAttempts: 4, baseDelay: 400, backoffFactor: 1.6, timeout: 15000 },
     },
     streaming: {
-      // Keep ~6s of media buffered ahead while playing (smooth, less spin)
-      bufferingGoal: 6,
-      rebufferingGoal: 2,
+      // More headroom than before (was 6s/2s) — with 13+ playlists worth
+      // of third-party CDNs now reachable as fallback servers, latency
+      // varies a lot more per-source than when this only ever played
+      // S11's own stream. A thin buffer meant the "Buffering…" spinner
+      // fired constantly on anything slower than the primary source.
+      bufferingGoal: 15,
+      rebufferingGoal: 4,
       bufferBehind: 30,
       stallEnabled: true,
       stallThreshold: 1,
       stallSkip: 0.1,
-      retryParameters: { maxAttempts: 5, baseDelay: 300, backoffFactor: 1.5, timeout: 12000 },
+      // Scraped/free-tier sources often have small encoding gaps between
+      // segments that would otherwise stall playback indefinitely.
+      jumpLargeGaps: true,
+      retryParameters: { maxAttempts: 6, baseDelay: 300, backoffFactor: 1.5, timeout: 15000 },
       failureCallback: () => { try { player.retryStreaming(); } catch (_) {} },
     },
     abr: {
