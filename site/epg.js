@@ -19,7 +19,7 @@ const CONFIG = {
     "aio", "tsepg1", "tsepg2", "klivjio", "klivairtel", "klivfiltered", "rbgy",
     // Trusted, richer 2-day+catchup guides go LAST so they always win over
     // the baseline sources above for any channel id both happen to cover
-    "jiotv", "tataplay",
+    "tataplay", "jiotv",
   ],
   SERVERS_MAP_KEY: "gmax_servers_map",
   FAVORITES_KEY: "gmax-jiotv-favorites",
