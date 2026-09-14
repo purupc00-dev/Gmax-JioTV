@@ -644,8 +644,10 @@ function renderHero() {
         <h2 class="hero-title">${escapeHtml(item.title || "")}</h2>
         <p class="hero-desc">${escapeHtml(item.description || "")}</p>
         <div class="hero-actions">
-          ${
-            item.channelId || item.channelName
+                   ${
+            item.link
+              ? `<a class="btn-primary hero-play" href="${escapeHtml(item.link)}" target="_blank" rel="noopener">▶ Watch Now</a>`
+              : item.channelId || item.channelName
               ? `<button type="button" class="btn-primary hero-play" data-id="${escapeHtml(item.channelId || "")}" data-name="${escapeHtml(item.channelName || "")}">▶ Watch Now</button>`
               : ""
           }
@@ -661,9 +663,8 @@ function renderHero() {
     dot.addEventListener("click", () => goToHero(i));
     els.heroDots.appendChild(dot);
   });
-
-  // Play buttons
-  els.heroTrack.querySelectorAll(".hero-play").forEach((btn) => {
+  // Play buttons (channel → player; external link uses <a>)
+  els.heroTrack.querySelectorAll("button.hero-play").forEach((btn) => {
     btn.addEventListener("click", () => {
       const id = btn.dataset.id;
       const name = btn.dataset.name;
@@ -676,6 +677,8 @@ function renderHero() {
       if (target) {
         trackView(target.id);
         window.location.href = `./player.html?id=${encodeURIComponent(target.id)}`;
+      } else if (id) {
+        window.location.href = `./player.html?id=${encodeURIComponent(id)}`;
       }
     });
   });
