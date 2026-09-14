@@ -198,15 +198,84 @@ async function fetchText(url) {
   return res.text();
 }
 
+/**
+ * Master rows are exact (id, source, url, licenseKey, cookie, …).
+ * Grid shows ONE card per channel NAME.
+ * servers[] on each card = every Master row with that name (exact fields).
+ */
+function buildGridFromMaster(raw) {
+  const buckets = new Map();
+  for (const row of raw) {
+    if (!row || !row.url || !row.name) continue;
+    const key = normalizeName(row.name);
+    if (!key) continue;
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(row);
+  }
+  const out = [];
+  for (const rows of buckets.values()) {
+    rows.sort((a, b) => {
+      if (a.isPrimary && !b.isPrimary) return -1;
+      if (!a.isPrimary && b.isPrimary) return 1;
+      if (a.source === "JioTV_S11") return -1;
+      if (b.source === "JioTV_S11") return 1;
+      return 0;
+    });
+    const primary = rows[0];
+    const seen = new Set();
+    const servers = [];
+    const groups = [];
+    for (const r of rows) {
+      if (r.group && !groups.includes(r.group)) groups.push(r.group);
+      const uk = String(r.url).split("|")[0].split("?")[0];
+      if (seen.has(uk)) continue;
+      seen.add(uk);
+      // exact Master fields on each server
+      servers.push({
+        label: r.source || "Server",
+        url: r.url,
+        streamType: r.streamType,
+        licenseKey: r.licenseKey,
+        cookie: r.cookie,
+        userAgent: r.userAgent,
+        referrer: r.referrer,
+        origin: r.origin,
+        tvgId: r.tvgId ?? null,
+        group: r.group ?? null,
+        source: r.source ?? null,
+        id: r.id ?? null,
+      });
+    }
+    out.push({
+      id: String(primary.id),
+      name: primary.name,
+      logo: primary.logo || "",
+      group: primary.group || "Other",
+      groups,
+      language: primary.language || "Other",
+      isPrimary: !!primary.isPrimary,
+      servers,
+    });
+  }
+  out.sort((a, b) => {
+    if (a.isPrimary && !b.isPrimary) return -1;
+    if (!a.isPrimary && b.isPrimary) return 1;
+    return String(a.name).localeCompare(String(b.name));
+  });
+  return out;
+}
+
 async function loadPrimaryChannels() {
-  // Single request: Worker merges Master.json by channel name (all sources).
+  // Worker returns Master.json channels EXACTLY — no Worker-side rewrite
   const res = await fetch(
     CONFIG.GATEWAY_BASE + CONFIG.CHANNELS_ENDPOINT,
     { cache: "no-store" }
   );
   if (!res.ok) throw new Error(`HTTP ${res.status} for channels`);
   const { channels } = await res.json();
-  return Array.isArray(channels) ? channels : [];
+  const raw = Array.isArray(channels) ? channels : [];
+  // Dedupe by NAME only for the grid; servers keep every source as-is
+  return buildGridFromMaster(raw);
 }
 
 function inferLanguage(name, group) {
@@ -388,7 +457,7 @@ function createChannelCard(ch) {
   card.addEventListener("click", (e) => {
     if (e.target.closest(".fav-btn")) return;
     trackView(ch.id);
-    window.location.href = `./player.html?id=${encodeURIComponent(ch.id)}`;
+    window.location.href = `./player.html?name=${encodeURIComponent(ch.name)}&id=${encodeURIComponent(ch.id)}`;
   });
 
   // Favorite toggle
@@ -573,7 +642,7 @@ function renderMostViewed() {
     `;
     item.addEventListener("click", () => {
       trackView(ch.id);
-      window.location.href = `./player.html?id=${encodeURIComponent(ch.id)}`;
+      window.location.href = `./player.html?name=${encodeURIComponent(ch.name)}&id=${encodeURIComponent(ch.id)}`;
     });
     els.mostViewedTrack.appendChild(item);
   });
@@ -683,10 +752,10 @@ function renderHero() {
       }
       if (target) {
         trackView(target.id);
-        window.location.href = `./player.html?id=${encodeURIComponent(target.id)}`;
+        window.location.href = `./player.html?name=${encodeURIComponent(target.name || "")}&id=${encodeURIComponent(target.id)}`;
       } else if (id) {
         // Direct id from highlights (e.g. 892) even before channels load
-        window.location.href = `./player.html?id=${encodeURIComponent(id)}`;
+        window.location.href = `./player.html?name=${encodeURIComponent(name || "")}&id=${encodeURIComponent(id)}`;
       }
     });
   });
