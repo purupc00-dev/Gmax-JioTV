@@ -260,47 +260,116 @@ function normalizeName(name) {
     .trim();
 }
 
-async function resolveChannel(id) {
+/**
+ * Resolve by CHANNEL NAME (not id).
+ * Ids differ per playlist (1132 vs JioTV_S12-1132) — name is the stable key.
+ * Worker: GET /channels/servers?name=Star%20Plus%20HD
+ */
+async function resolveChannel(idOrName) {
   let fromCache = null;
   try {
     const map = JSON.parse(localStorage.getItem(CONFIG.SERVERS_MAP_KEY) || "{}");
     fromCache =
-      map[id] ||
-      Object.values(map).find((c) => String(c.id) === String(id)) ||
+      map[idOrName] ||
+      Object.values(map).find(
+        (c) =>
+          String(c.id) === String(idOrName) ||
+          normalizeName(c.name) === normalizeName(idOrName)
+      ) ||
       null;
   } catch (_) {}
 
-  // Preferred: Worker merges all Master sources for this channel
+  const channelName =
+    (fromCache && fromCache.name) ||
+    (typeof idOrName === "string" && !/^\d+$/.test(idOrName) && !/^[A-Za-z0-9_]+-\d+$/.test(idOrName)
+      ? idOrName
+      : null) ||
+    null;
+
+  // 1) Primary: fetch ALL servers by NAME
+  if (channelName) {
+    try {
+      const qs = new URLSearchParams({ name: channelName });
+      const res = await fetch(
+        CONFIG.GATEWAY_BASE + "/channels/servers?" + qs.toString(),
+        { cache: "no-store" }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const ch = {
+          id: data.channel?.id || idOrName,
+          name: data.channel?.name || channelName,
+          logo: data.channel?.logo || fromCache?.logo || "",
+          group: data.channel?.group || fromCache?.group || "Other",
+          language: data.channel?.language || fromCache?.language || "Other",
+          servers: data.servers || [],
+        };
+        if (ch.servers.length) {
+          console.log(
+            `[Gmax Player] by name "${ch.name}": ${ch.servers.length} source(s)`,
+            ch.servers.map((s) => s.label)
+          );
+          return ch;
+        }
+      }
+    } catch (e) {
+      console.warn("servers?name= failed", e);
+    }
+  }
+
+  // 2) Fallback: try id then still expand by returned name
   try {
-    const qs = new URLSearchParams({ id: String(id) });
-    if (fromCache?.name) qs.set("name", fromCache.name);
+    const qs = new URLSearchParams();
+    if (channelName) qs.set("name", channelName);
+    else qs.set("id", String(idOrName));
     const res = await fetch(
       CONFIG.GATEWAY_BASE + "/channels/servers?" + qs.toString(),
       { cache: "no-store" }
     );
     if (res.ok) {
       const data = await res.json();
-      const ch = {
-        id: data.channel?.id || id,
-        name: data.channel?.name || fromCache?.name || "Channel",
-        logo: data.channel?.logo || fromCache?.logo || "",
-        group: data.channel?.group || fromCache?.group || "Other",
-        language: data.channel?.language || "Other",
-        servers: data.servers || [],
-      };
-      if (ch.servers.length) {
-        console.log(
-          `[Gmax Player] ${ch.name}: ${ch.servers.length} source(s)`,
-          ch.servers.map((s) => s.label)
+      const name = data.channel?.name;
+      if (name && name !== channelName) {
+        // Re-fetch by canonical name so we don't miss servers
+        const res2 = await fetch(
+          CONFIG.GATEWAY_BASE +
+            "/channels/servers?" +
+            new URLSearchParams({ name }).toString(),
+          { cache: "no-store" }
         );
-        return ch;
+        if (res2.ok) {
+          const data2 = await res2.json();
+          if (data2.servers?.length) {
+            console.log(
+              `[Gmax Player] by name "${data2.channel?.name}": ${data2.servers.length} source(s)`
+            );
+            return {
+              id: data2.channel?.id || idOrName,
+              name: data2.channel?.name || name,
+              logo: data2.channel?.logo || "",
+              group: data2.channel?.group || "Other",
+              language: data2.channel?.language || "Other",
+              servers: data2.servers,
+            };
+          }
+        }
+      }
+      if (data.servers?.length) {
+        return {
+          id: data.channel?.id || idOrName,
+          name: data.channel?.name || channelName || "Channel",
+          logo: data.channel?.logo || fromCache?.logo || "",
+          group: data.channel?.group || "Other",
+          language: data.channel?.language || "Other",
+          servers: data.servers,
+        };
       }
     }
   } catch (e) {
-    console.warn("servers endpoint failed", e);
+    console.warn("servers fallback failed", e);
   }
 
-  // Fallback: full /channels list
+  // 3) Last resort: full /channels scan by name
   try {
     const res = await fetch(CONFIG.GATEWAY_BASE + CONFIG.CHANNELS_ENDPOINT, {
       cache: "no-store",
@@ -308,18 +377,44 @@ async function resolveChannel(id) {
     if (res.ok) {
       const data = await res.json();
       const list = data.channels || [];
-      let found =
-        list.find((c) => String(c.id) === String(id)) ||
-        (fromCache
-          ? list.find((c) => normalizeName(c.name) === normalizeName(fromCache.name))
-          : null);
-      if (found) {
-        console.log(`[Gmax Player] /channels → ${found.name}: ${found.servers?.length || 0}`);
-        return found;
+      const target = normalizeName(channelName || fromCache?.name || idOrName);
+      const matches = list.filter((c) => normalizeName(c.name) === target && c.url);
+      if (matches.length) {
+        const primary = matches.find((m) => m.isPrimary) || matches[0];
+        const seen = new Set();
+        const servers = [];
+        for (const m of matches) {
+          const k = String(m.url).split("|")[0].split("?")[0];
+          if (seen.has(k)) continue;
+          seen.add(k);
+          servers.push({
+            label: m.source || "Server",
+            url: m.url,
+            streamType: m.streamType,
+            licenseKey: m.licenseKey,
+            cookie: m.cookie,
+            userAgent: m.userAgent,
+            referrer: m.referrer,
+            origin: m.origin,
+            tvgId: m.tvgId ?? null,
+            group: m.group ?? null,
+            source: m.source ?? null,
+            id: m.id ?? null,
+          });
+        }
+        console.log(`[Gmax Player] scan name "${primary.name}": ${servers.length}`);
+        return {
+          id: primary.id,
+          name: primary.name,
+          logo: primary.logo || "",
+          group: primary.group || "Other",
+          language: primary.language || "Other",
+          servers,
+        };
       }
     }
   } catch (e) {
-    console.warn("channels fallback failed", e);
+    console.warn("channels scan failed", e);
   }
 
   if (fromCache?.servers?.length) return fromCache;
@@ -818,14 +913,16 @@ function bindUI() {
 
 async function init() {
   bindUI();
+  // Prefer name — ids differ across playlists and miss servers
+  const name = qs("name");
   const id = qs("id");
-  if (!id) {
+  if (!name && !id) {
     showError("No channel selected");
     return;
   }
   try {
     showLoading("Loading channel…");
-    channel = await resolveChannel(id);
+    channel = await resolveChannel(name || id);
     trackView(channel.id);
 
     const name = channel.name || "Channel";
