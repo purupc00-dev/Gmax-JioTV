@@ -5,7 +5,7 @@ on:
     # Runs at minute 0 past every 2nd hour
     - cron: '0 */2 * * *'
   # Allows manual triggering
-  workflow_dispatch: 
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -23,19 +23,17 @@ jobs:
           python-version: '3.x'
 
       - name: Run Master Script
-        # Pointing to the new location of your script
         run: python scripts/Master.py
 
       - name: Commit and Push Changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Stage the new Master.json file from the Playlists folder
+
+          # Stage the freshly regenerated Master.json
           git add Playlists/Master.json
-          
-          # Force the commit with the green tick and the exact system time
-          git commit --allow-empty -m "Gmaxhub Master playlist updated ✅ $(date)"
-          
-          # Push to the repository main branch
+
+          # Always commit, even if nothing changed — full rebuild every run
+          git commit --allow-empty -m "Gmaxhub Master playlist updated ✅ $(date -u '+%Y-%m-%d %H:%M UTC')"
+
           git push
