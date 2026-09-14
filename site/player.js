@@ -168,35 +168,20 @@ function detectTokenType(cookie, url) {
 function parseKeyResponse(text) {
   const map = {};
   if (!text) return map;
-  let t = text.trim();
-  // Some license dumps wrap JSON in quotes
-  if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))) {
-    try { t = JSON.parse(t); } catch (_) {}
-  }
-  if (typeof t !== "string") t = String(t);
-  t = t.trim();
+  const t = text.trim();
   if (t.startsWith("{")) {
     try {
       const jwk = JSON.parse(t);
       if (jwk.keys && Array.isArray(jwk.keys)) {
         jwk.keys.forEach((k) => {
           if (k.kid && k.k) {
-            let kid = normClearKey(k.kid);
-            let key = normClearKey(k.k);
-            // JWK often uses base64url, not hex
-            if (kid.length !== 32) {
-              try { kid = normClearKey(base64ToHex(k.kid)); } catch (_) {}
-            }
-            if (key.length !== 32) {
-              try { key = normClearKey(base64ToHex(k.k)); } catch (_) {}
-            }
+            const kid = normClearKey(base64ToHex(k.kid));
+            const key = normClearKey(base64ToHex(k.k));
             if (kid.length === 32 && key.length === 32) map[kid] = key;
           }
         });
       }
-    } catch (e) {
-      console.warn("JWK parse failed", e);
-    }
+    } catch (_) {}
     return map;
   }
   if (t.includes(":") && !t.startsWith("<")) {
@@ -251,173 +236,65 @@ async function fetchRemoteKeys(licenseUrl) {
   return { clearKeys: {}, licenseUrl };
 }
 
-function normalizeName(name) {
-  return String(name || "")
-    .toLowerCase()
-    .replace(/\s*\|\s*gmaxhub\s*$/i, "")
-    .replace(/\s*\|\s*gmax\s*$/i, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+// (channel-name matching for cross-playlist server lookup now lives in
+// the Worker — see GET /channels/servers)
 
 /**
- * Resolve by CHANNEL NAME (not id).
- * Ids differ per playlist (1132 vs JioTV_S12-1132) — name is the stable key.
- * Worker: GET /channels/servers?name=Star%20Plus%20HD
+ * Build the multi-server list for this channel via the Worker's
+ * dedicated lookup endpoint: it finds every source across ALL playlists
+ * whose channel name matches this one and returns each as its own
+ * server. The old approach tried to do this merge client-side by
+ * expecting an `extraServers` field the Worker stopped producing after
+ * the data-layer merge was removed (that removal was intentional — it
+ * was producing dead links). This does the same "find every source"
+ * work, but scoped to one explicit channel open, server-side, with the
+ * existing dead-server detection below as the safety net.
  */
-async function resolveChannel(idOrName) {
+async function resolveChannel(id) {
   let fromCache = null;
   try {
-    const map = JSON.parse(localStorage.getItem(CONFIG.SERVERS_MAP_KEY) || "{}");
-    fromCache =
-      map[idOrName] ||
-      Object.values(map).find(
-        (c) =>
-          String(c.id) === String(idOrName) ||
-          normalizeName(c.name) === normalizeName(idOrName)
-      ) ||
-      null;
+    const raw = localStorage.getItem(CONFIG.SERVERS_MAP_KEY);
+    if (raw) {
+      const map = JSON.parse(raw);
+      fromCache = map[id] || Object.values(map).find((c) => String(c.id) === String(id)) || null;
+    }
   } catch (_) {}
 
-  const channelName =
-    (fromCache && fromCache.name) ||
-    (typeof idOrName === "string" && !/^\d+$/.test(idOrName) && !/^[A-Za-z0-9_]+-\d+$/.test(idOrName)
-      ? idOrName
-      : null) ||
-    null;
-
-  // 1) Primary: fetch ALL servers by NAME
-  if (channelName) {
-    try {
-      const qs = new URLSearchParams({ name: channelName });
-      const res = await fetch(
-        CONFIG.GATEWAY_BASE + "/channels/servers?" + qs.toString(),
-        { cache: "no-store" }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        const ch = {
-          id: data.channel?.id || idOrName,
-          name: data.channel?.name || channelName,
-          logo: data.channel?.logo || fromCache?.logo || "",
-          group: data.channel?.group || fromCache?.group || "Other",
-          language: data.channel?.language || fromCache?.language || "Other",
-          servers: data.servers || [],
-        };
-        if (ch.servers.length) {
-          console.log(
-            `[Gmax Player] by name "${ch.name}": ${ch.servers.length} source(s)`,
-            ch.servers.map((s) => s.label)
-          );
-          return ch;
-        }
-      }
-    } catch (e) {
-      console.warn("servers?name= failed", e);
-    }
-  }
-
-  // 2) Fallback: try id then still expand by returned name
   try {
-    const qs = new URLSearchParams();
-    if (channelName) qs.set("name", channelName);
-    else qs.set("id", String(idOrName));
     const res = await fetch(
-      CONFIG.GATEWAY_BASE + "/channels/servers?" + qs.toString(),
+      `${CONFIG.GATEWAY_BASE}/channels/servers?id=${encodeURIComponent(id)}`,
       { cache: "no-store" }
     );
     if (res.ok) {
       const data = await res.json();
-      const name = data.channel?.name;
-      if (name && name !== channelName) {
-        // Re-fetch by canonical name so we don't miss servers
-        const res2 = await fetch(
-          CONFIG.GATEWAY_BASE +
-            "/channels/servers?" +
-            new URLSearchParams({ name }).toString(),
-          { cache: "no-store" }
-        );
-        if (res2.ok) {
-          const data2 = await res2.json();
-          if (data2.servers?.length) {
-            console.log(
-              `[Gmax Player] by name "${data2.channel?.name}": ${data2.servers.length} source(s)`
-            );
-            return {
-              id: data2.channel?.id || idOrName,
-              name: data2.channel?.name || name,
-              logo: data2.channel?.logo || "",
-              group: data2.channel?.group || "Other",
-              language: data2.channel?.language || "Other",
-              servers: data2.servers,
-            };
-          }
-        }
-      }
-      if (data.servers?.length) {
-        return {
-          id: data.channel?.id || idOrName,
-          name: data.channel?.name || channelName || "Channel",
-          logo: data.channel?.logo || fromCache?.logo || "",
-          group: data.channel?.group || "Other",
-          language: data.channel?.language || "Other",
-          servers: data.servers,
-        };
+      if (data.channel && Array.isArray(data.servers) && data.servers.length) {
+        return { ...data.channel, servers: data.servers };
       }
     }
   } catch (e) {
-    console.warn("servers fallback failed", e);
+    console.warn("Servers lookup failed", e);
   }
 
-  // 3) Last resort: full /channels scan by name
-  try {
-    const res = await fetch(CONFIG.GATEWAY_BASE + CONFIG.CHANNELS_ENDPOINT, {
-      cache: "no-store",
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const list = data.channels || [];
-      const target = normalizeName(channelName || fromCache?.name || idOrName);
-      const matches = list.filter((c) => normalizeName(c.name) === target && c.url);
-      if (matches.length) {
-        const primary = matches.find((m) => m.isPrimary) || matches[0];
-        const seen = new Set();
-        const servers = [];
-        for (const m of matches) {
-          const k = String(m.url).split("|")[0].split("?")[0];
-          if (seen.has(k)) continue;
-          seen.add(k);
-          servers.push({
-            label: m.source || "Server",
-            url: m.url,
-            streamType: m.streamType,
-            licenseKey: m.licenseKey,
-            cookie: m.cookie,
-            userAgent: m.userAgent,
-            referrer: m.referrer,
-            origin: m.origin,
-            tvgId: m.tvgId ?? null,
-            group: m.group ?? null,
-            source: m.source ?? null,
-            id: m.id ?? null,
-          });
+  // Fallback: try by name too, in case the id in the URL is stale
+  // (e.g. bookmarked before a Master.json rebuild changed ids)
+  if (fromCache?.name) {
+    try {
+      const res = await fetch(
+        `${CONFIG.GATEWAY_BASE}/channels/servers?name=${encodeURIComponent(fromCache.name)}`,
+        { cache: "no-store" }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data.channel && Array.isArray(data.servers) && data.servers.length) {
+          return { ...data.channel, servers: data.servers };
         }
-        console.log(`[Gmax Player] scan name "${primary.name}": ${servers.length}`);
-        return {
-          id: primary.id,
-          name: primary.name,
-          logo: primary.logo || "",
-          group: primary.group || "Other",
-          language: primary.language || "Other",
-          servers,
-        };
       }
+    } catch (e) {
+      console.warn("Servers lookup by name failed", e);
     }
-  } catch (e) {
-    console.warn("channels scan failed", e);
   }
 
-  if (fromCache?.servers?.length) return fromCache;
+  if (fromCache) return fromCache;
   throw new Error("Channel not found");
 }
 
@@ -598,7 +475,6 @@ async function loadServer(index) {
   }
 
   const hasOfflineKeys = Object.keys(parsed.clearKeys).length > 0;
-  // 6001 / 6012: never let Shaka pick Widevine when we have ClearKey offline keys
   const drmConfig = {
     clearKeys: hasOfflineKeys ? parsed.clearKeys : {},
     servers: {},
@@ -625,7 +501,6 @@ async function loadServer(index) {
     preferredAudioCodecs: ["mp4a.40.2", "mp4a", "aac"],
     manifest: {
       dash: {
-        // Offline keys → ignore MPD Widevine so 6012 cannot fire
         ignoreDrmInfo: hasOfflineKeys,
         defaultPresentationDelay: 3,
         ignoreMinBufferTime: true,
@@ -635,14 +510,21 @@ async function loadServer(index) {
       retryParameters: { maxAttempts: 4, baseDelay: 400, backoffFactor: 1.6, timeout: 15000 },
     },
     streaming: {
-      // Keep ~6s of media buffered ahead while playing (smooth, less spin)
-      bufferingGoal: 6,
-      rebufferingGoal: 2,
+      // More headroom than before (was 6s/2s) — with 13+ playlists worth
+      // of third-party CDNs now reachable as fallback servers, latency
+      // varies a lot more per-source than when this only ever played
+      // S11's own stream. A thin buffer meant the "Buffering…" spinner
+      // fired constantly on anything slower than the primary source.
+      bufferingGoal: 15,
+      rebufferingGoal: 4,
       bufferBehind: 30,
       stallEnabled: true,
       stallThreshold: 1,
       stallSkip: 0.1,
-      retryParameters: { maxAttempts: 5, baseDelay: 300, backoffFactor: 1.5, timeout: 12000 },
+      // Scraped/free-tier sources often have small encoding gaps between
+      // segments that would otherwise stall playback indefinitely.
+      jumpLargeGaps: true,
+      retryParameters: { maxAttempts: 6, baseDelay: 300, backoffFactor: 1.5, timeout: 15000 },
       failureCallback: () => { try { player.retryStreaming(); } catch (_) {} },
     },
     abr: {
@@ -655,14 +537,9 @@ async function loadServer(index) {
   });
 
   let finalManifest = sanitizeUrl(stripTokensFromUrl(unwrapProxyUrl(server.url)));
-  // Browser cannot set Cookie on cross-origin CDN calls without extension/proxy.
-  // Jio accepts __hdnea__ in the query string → always put token there when present.
-  // Hotstar rejects query hdntl (403) and needs Cookie header → only works with
-  // proxy or CORS/header extension (same as your tester OFF + extension path).
-  const allowQuery = tokenType === "JIO" || tokenType === "SONYLIV" || tokenType === "OTHER";
+  const allowQuery = tokenType === "JIO" || tokenType === "SONYLIV";
   if (
     allowQuery &&
-    !isHotstar &&
     server.cookie &&
     !finalManifest.includes("hdntl=") &&
     !finalManifest.includes("__hdnea__")
@@ -913,16 +790,14 @@ function bindUI() {
 
 async function init() {
   bindUI();
-  // Prefer name — ids differ across playlists and miss servers
-  const name = qs("name");
   const id = qs("id");
-  if (!name && !id) {
+  if (!id) {
     showError("No channel selected");
     return;
   }
   try {
     showLoading("Loading channel…");
-    channel = await resolveChannel(name || id);
+    channel = await resolveChannel(id);
     trackView(channel.id);
 
     const name = channel.name || "Channel";
