@@ -11,6 +11,14 @@ const CONFIG = {
   SERVERS_MAP_KEY: "gmax_servers_map",
   MOST_VIEWED_KEY: "gmax_most_viewed",
   UI_HIDE_MS: 3500,
+  // Same proxy your tester already uses successfully. Browsers refuse to
+  // let page JS set Cookie/Origin/Referer on cross-origin requests
+  // (forbidden header names, per the Fetch spec) — no client-side code
+  // can work around that, ever. A server-side proxy is the only way
+  // those headers actually reach the CDN. Used as a fallback, not by
+  // default, to avoid spending proxy bandwidth on streams that work
+  // fine direct (JioTV/SonyLiv query-token streams mostly do).
+  PROXY_BASE: "https://proxy.gmaxhub.workers.dev/proxy?uri=",
 };
 
 const $ = (s) => document.querySelector(s);
@@ -28,8 +36,18 @@ let audioCtx = null;
 let gainNode = null;
 let boost = 1;
 let reconnectAttempt = 0;
+/** Incremented on every loadServer() call. A load whose generation no
+ *  longer matches the current one (because a newer loadServer call —
+ *  e.g. the proxy retry below — has since started) is stale: its
+ *  success/failure must be ignored instead of acting on state that a
+ *  newer attempt already owns. */
+let loadGen = 0;
 /** serverIndex → 'ok' | 'dead' | 'unknown' */
 const serverStatus = new Map();
+/** serverIndex → true once a direct (non-proxied) attempt has failed with
+ *  401/403, so the next load of that same server routes through the proxy
+ *  instead of jumping straight to a different server. */
+const serverNeedsProxy = new Map();
 
 function qs(name) {
   return new URLSearchParams(location.search).get(name);
@@ -135,6 +153,20 @@ function unwrapProxyUrl(url) {
   return current;
 }
 
+// Routes a URL through the proxy Worker, which sets Cookie/Origin/Referer
+// server-side — the only place those headers can actually be set for a
+// cross-origin request, since browsers strip them from page JS. Never
+// double-wrap: always unwrap first.
+function buildProxyUrl(targetUrl, server) {
+  const real = unwrapProxyUrl(targetUrl);
+  let proxied = CONFIG.PROXY_BASE + encodeURIComponent(real);
+  if (server.userAgent) proxied += `&ua=${encodeURIComponent(server.userAgent)}`;
+  if (server.origin) proxied += `&origin=${encodeURIComponent(server.origin)}`;
+  if (server.referrer) proxied += `&referer=${encodeURIComponent(server.referrer)}`;
+  if (server.cookie) proxied += `&cookie=${encodeURIComponent(server.cookie)}`;
+  return proxied;
+}
+
 /** Unwrap corsproxy / pipe so pre-proxied M3U links still work */
 function splitPipeUrl(raw) {
   if (!raw) return { url: raw, headers: {} };
@@ -155,6 +187,19 @@ function splitPipeUrl(raw) {
     });
   }
   return { url: sanitizeUrl(url), headers };
+}
+
+// Some playlists (Pocket TV, BiggBoss-style) mix single-file VOD entries
+// (.mkv/.mp4/.webm) in among real live DASH/HLS channels. Shaka's job is
+// parsing adaptive manifests — feeding it a plain video file either fails
+// outright or works by accident. The tester handles this with a separate
+// native-<video> path; player.js never did, so every VOD entry silently
+// failed here before.
+function getStreamType(url) {
+  const u = (url || "").toLowerCase().split("?")[0].split("#")[0];
+  if (/\.(mkv|mp4|webm|m4v|mov)$/i.test(u)) return "VOD";
+  if (/\.m3u8/i.test(u)) return "HLS";
+  return "DASH";
 }
 
 function detectTokenType(cookie, url) {
@@ -321,6 +366,22 @@ async function createPlayer() {
 function onPlayerError(event) {
   const err = event.detail;
   console.warn("Shaka error", err?.code, err);
+
+  // Shaka reports the EXACT key id(s) it needed but didn't have on a
+  // 6001/6002 DRM error. Comparing this against the kid the playlist's
+  // #KODIPROP license_key actually provided is the fastest way to tell
+  // "the code parsed the key wrong" from "the playlist's key is simply
+  // wrong/mismatched for this stream" — the latter isn't fixable client-side.
+  let missingKeys = [];
+  try {
+    (err?.data || []).forEach((d) => {
+      if (d && Array.isArray(d.missingKeys)) missingKeys = missingKeys.concat(d.missingKeys);
+    });
+  } catch (_) {}
+  if (missingKeys.length) {
+    console.warn("[Player] Shaka wanted key id(s):", missingKeys, "— compare against this server's licenseKey:", channel?.servers?.[serverIndex]?.licenseKey);
+  }
+
   // Mark current server dead on network / DRM / HTTP errors
   if (err && (err.category === 1 || err.category === 4 || err.category === 6 ||
       [1001, 1002, 1003, 4012, 6001, 6007, 6012].includes(err.code))) {
@@ -374,6 +435,7 @@ async function loadServer(index) {
     index = alt;
   }
 
+  const myGen = ++loadGen;
   serverIndex = index;
   let server = { ...channel.servers[serverIndex] };
 
@@ -389,6 +451,32 @@ async function loadServer(index) {
   if (pipe.headers.referrer && !server.referrer) server.referrer = pipe.headers.referrer;
   if (pipe.headers.origin && !server.origin) server.origin = pipe.headers.origin;
   if (server.cookie) server.cookie = normalizeCookie(server.cookie);
+
+  // VOD (single video file, not an adaptive manifest) — play natively,
+  // Shaka never gets involved. These can't carry Cookie/Origin/Referer
+  // via the <video> tag either (same browser restriction as everywhere
+  // else), so if the host requires them, route straight through the
+  // proxy rather than trying direct-then-retry.
+  if (getStreamType(server.url) === "VOD") {
+    if (player) {
+      try { await player.unload(); } catch (_) {}
+    }
+    video.removeAttribute("src");
+    const needsAuth = !!(server.cookie || server.origin || server.referrer);
+    const vodUrl = needsAuth ? buildProxyUrl(server.url, server) : server.url;
+    video.src = vodUrl;
+    try {
+      await video.play();
+      hideLoading();
+      markServerOk(serverIndex);
+      updatePlayBtn();
+    } catch (err) {
+      console.error("VOD load failed", err);
+      markServerDead(serverIndex);
+      await tryFallback(err);
+    }
+    return;
+  }
 
   const tokenType = detectTokenType(server.cookie, server.url);
   const isHotstar = tokenType === "HOTSTAR" || /hotstar\.com/i.test(server.url || "");
@@ -413,13 +501,24 @@ async function loadServer(index) {
   net.clearAllRequestFilters();
   net.clearAllResponseFilters();
 
-  // Detect HTTP 403 on manifest → kill this server
+  // Detect HTTP 403/401 on manifest/segment. First failure on a server
+  // that hasn't tried the proxy yet → retry the SAME server via proxy
+  // (headers only actually reach the CDN through a server-side proxy —
+  // see CONFIG.PROXY_BASE comment). Only mark dead if it ALSO fails
+  // through the proxy.
   net.registerResponseFilter((type, response) => {
     if (
       type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
       type === shaka.net.NetworkingEngine.RequestType.SEGMENT
     ) {
       if (response.status === 403 || response.status === 401) {
+        if (myGen !== loadGen) return; // this load was already superseded, don't act on its behalf
+        if (!serverNeedsProxy.get(index)) {
+          serverNeedsProxy.set(index, true);
+          console.warn(`[Player] Server ${index + 1} got ${response.status} direct — retrying via proxy`);
+          loadServer(index);
+          return;
+        }
         markServerDead(serverIndex);
       }
       if (response.uri && /corsproxy\.io/i.test(response.uri)) {
@@ -433,11 +532,16 @@ async function loadServer(index) {
 
   net.registerRequestFilter((type, request) => {
     request.headers = request.headers || {};
+    // Still set these directly too — harmless when proxying (the Worker
+    // reads its own query params, not these), and correct for any
+    // non-forbidden custom header a CDN might check without a proxy.
     if (server.userAgent) request.headers["User-Agent"] = server.userAgent;
     if (server.origin) request.headers["Origin"] = server.origin;
     if (server.referrer) request.headers["Referer"] = server.referrer;
     if (server.cookie) request.headers["Cookie"] = server.cookie;
     if (request.method === "HEAD") request.method = "GET";
+
+    const useProxy = !!serverNeedsProxy.get(index);
 
     request.uris = (request.uris || []).map((uri) => {
       try {
@@ -459,7 +563,7 @@ async function loadServer(index) {
           ) {
             finalUrl = appendToken(finalUrl, server.cookie);
           }
-          return finalUrl;
+          return useProxy ? buildProxyUrl(finalUrl, server) : finalUrl;
         }
         return actual;
       } catch (_) {
@@ -546,6 +650,9 @@ async function loadServer(index) {
   ) {
     finalManifest = appendToken(finalManifest, server.cookie);
   }
+  if (serverNeedsProxy.get(index)) {
+    finalManifest = buildProxyUrl(finalManifest, server);
+  }
 
   try {
     console.log("[Gmax Player]", {
@@ -554,6 +661,7 @@ async function loadServer(index) {
       tokenType,
     });
     await player.load(finalManifest);
+    if (myGen !== loadGen) return; // superseded by a newer load — ignore
     hideLoading();
     reconnectAttempt = 0;
     markServerOk(serverIndex);
@@ -561,6 +669,7 @@ async function loadServer(index) {
     refreshTrackMenus();
     updatePlayBtn();
   } catch (err) {
+    if (myGen !== loadGen) return; // superseded — the newer attempt owns this server's state now
     console.error("Load failed", err);
     markServerDead(serverIndex);
     await tryFallback(err);
@@ -798,6 +907,8 @@ async function init() {
   try {
     showLoading("Loading channel…");
     channel = await resolveChannel(id);
+    serverNeedsProxy.clear();
+    serverStatus.clear();
     trackView(channel.id);
 
     const name = channel.name || "Channel";
