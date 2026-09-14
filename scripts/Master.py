@@ -31,6 +31,24 @@ LANG_PATTERNS = [
 ]
 MULTI_GROUP_RE = re.compile(r"sports|news|movies|kids|music|lifestyle|infotainment", re.IGNORECASE)
 
+# Some playlists (e.g. S10) dump individual movies/web-series episodes
+# disguised as "channels" alongside real TV channels in the same file —
+# e.g. name="Saba Nayagan (2023 ‧ Comedy ‧ 2h 35m Director C.S.
+# Karthikeyan| Writer ... | Stars Ashok Selvan ‧ ...)". A real channel
+# name is never structured like that. Matching on the group-title alone
+# ("Movies") would wrongly exclude legitimate 24/7 movie channels like
+# Star Gold or Sony Max, so this matches the NAME pattern instead — a
+# year in parens followed by Director/Writer/Stars metadata — which is
+# unique to one-off film/episode dumps and tested against zero false
+# positives on real channel names.
+MOVIE_METADATA_RE = re.compile(r"\(\d{4}\s*[‧-].*(?:Director|Writers?|Stars?)\b", re.IGNORECASE | re.DOTALL)
+# Web-series episode markers: "S01E04", "Season 2", etc. in the name.
+WEBSERIES_RE = re.compile(r"\bS\d{1,2}E\d{1,3}\b|\bSeason\s*\d+\b", re.IGNORECASE)
+
+
+def is_movie_or_webseries_entry(name):
+    return bool(MOVIE_METADATA_RE.search(name)) or bool(WEBSERIES_RE.search(name))
+
 
 def normalize_name(name):
     name = (name or "").lower()
@@ -187,14 +205,19 @@ def main():
 
         parsed = parse_m3u(content)
         count = 0
+        excluded = 0
         for ch in parsed:
             if not ch["url"]:
+                continue
+            if is_movie_or_webseries_entry(ch["name"]):
+                excluded += 1
                 continue
             all_channels.append(build_entry(source, ch, is_primary))
             count += 1
 
         per_source_counts[source] = count
-        print(f"Parsed {count} channels from {filename}{' (PRIMARY)' if is_primary else ''}")
+        excluded_note = f", excluded {excluded} movie/web-series entries" if excluded else ""
+        print(f"Parsed {count} channels from {filename}{' (PRIMARY)' if is_primary else ''}{excluded_note}")
 
     output_data = {
         "updated_at": datetime.now(timezone.utc).isoformat(),
