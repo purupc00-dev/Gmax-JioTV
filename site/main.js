@@ -638,6 +638,8 @@ function renderHero() {
     const slide = document.createElement("div");
     slide.className = "hero-slide" + (i === 0 ? " active" : "");
     slide.style.backgroundImage = `linear-gradient(90deg, rgba(10,13,24,0.92) 0%, rgba(10,13,24,0.4) 50%, rgba(10,13,24,0.7) 100%), url('${escapeHtml(item.image || "")}')`;
+     slide.style.backgroundPosition = item.imagePosition || "center 25%";
+     slide.style.backgroundSize = "cover";
     slide.innerHTML = `
       <div class="hero-content">
         ${item.tag ? `<span class="hero-tag">${escapeHtml(item.tag)}</span>` : ""}
