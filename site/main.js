@@ -199,12 +199,9 @@ async function fetchText(url) {
 }
 
 async function loadPrimaryChannels() {
-  // ONE request, S11 only — fills the grid immediately. The rest of your
-  // playlists load lazily (see loadRestChannels) once the user has
-  // scrolled through everything here, so the Network tab doesn't fill up
-  // with 20 requests before the user even needs them.
+  // Single request: Worker merges Master.json by channel name (all sources).
   const res = await fetch(
-    CONFIG.GATEWAY_BASE + CONFIG.CHANNELS_ENDPOINT + "?scope=primary",
+    CONFIG.GATEWAY_BASE + CONFIG.CHANNELS_ENDPOINT,
     { cache: "no-store" }
   );
   if (!res.ok) throw new Error(`HTTP ${res.status} for channels`);
@@ -494,15 +491,24 @@ async function loadRestChannels() {
       { cache: "no-store" }
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const { extraChannels } = await res.json();
+    const { extraServers, extraChannels } = await res.json();
 
-    // Every other playlist's channels, appended as their own independent
-    // entries — no name-matching against S11, no gluing a secondary
-    // playlist's stream onto an existing channel as an "alternate server".
-    // That matching was producing dead/wrong links since a same-named
-    // channel in a different playlist isn't guaranteed to be the same
-    // actual working source. Each entry here has its own single, correct
-    // stream from whichever playlist it actually came from.
+    // Attach alternate servers to channels S11 already has
+    if (extraServers) {
+      for (const ch of allChannels) {
+        const key = normalizeName(ch.name);
+        const additions = extraServers[key];
+        if (!additions || !additions.length) continue;
+        additions.forEach((s) => {
+          const dup = ch.servers.some((existing) => existing.url === s.url);
+          if (!dup) ch.servers.push({ ...s, label: `Server ${ch.servers.length + 1}` });
+        });
+      }
+    }
+
+    // Append channels that only exist in secondary playlists — no
+    // duplicates, since the Worker already excluded anything matching a
+    // primary channel by normalized name
     if (Array.isArray(extraChannels) && extraChannels.length) {
       allChannels = allChannels.concat(extraChannels);
     }
@@ -638,15 +644,13 @@ function renderHero() {
     const slide = document.createElement("div");
     slide.className = "hero-slide" + (i === 0 ? " active" : "");
     slide.style.backgroundImage = `linear-gradient(90deg, rgba(10,13,24,0.92) 0%, rgba(10,13,24,0.4) 50%, rgba(10,13,24,0.7) 100%), url('${escapeHtml(item.image || "")}')`;
-     slide.style.backgroundPosition = item.imagePosition || "center 25%";
-     slide.style.backgroundSize = "cover";
     slide.innerHTML = `
       <div class="hero-content">
         ${item.tag ? `<span class="hero-tag">${escapeHtml(item.tag)}</span>` : ""}
         <h2 class="hero-title">${escapeHtml(item.title || "")}</h2>
         <p class="hero-desc">${escapeHtml(item.description || "")}</p>
         <div class="hero-actions">
-                   ${
+          ${
             item.link
               ? `<a class="btn-primary hero-play" href="${escapeHtml(item.link)}" target="_blank" rel="noopener">▶ Watch Now</a>`
               : item.channelId || item.channelName
@@ -665,7 +669,8 @@ function renderHero() {
     dot.addEventListener("click", () => goToHero(i));
     els.heroDots.appendChild(dot);
   });
-  // Play buttons (channel → player; external link uses <a>)
+
+  // Play buttons (channel → player, external link uses <a>)
   els.heroTrack.querySelectorAll("button.hero-play").forEach((btn) => {
     btn.addEventListener("click", () => {
       const id = btn.dataset.id;
@@ -680,6 +685,7 @@ function renderHero() {
         trackView(target.id);
         window.location.href = `./player.html?id=${encodeURIComponent(target.id)}`;
       } else if (id) {
+        // Direct id from highlights (e.g. 892) even before channels load
         window.location.href = `./player.html?id=${encodeURIComponent(id)}`;
       }
     });
@@ -839,6 +845,7 @@ async function init() {
     renderHero();
 
     allChannels = await loadPrimaryChannels();
+    restLoaded = true; // full Master merge — no secondary fetch
     persistServersMap();
     console.log(`[Gmax] Loaded ${allChannels.length} channels (S11 primary)`);
 
