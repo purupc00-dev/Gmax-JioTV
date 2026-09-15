@@ -342,25 +342,6 @@ https://premiumplug.fun/zee/zee5.php/0-9-tvpictureshd.m3u8
 #EXTINF:-1 tvg-id="0-9-pictures" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | Zee5" tvg-logo="https://akamaividz2.zee5.com/image/upload/w_auto,h_396,c_scale,f_webp,q_auto:eco/resources/0-9-pictures/list/1920x1080liste1864f84ee8f422e9a726e5fe401050c.png",&Pictures | GmaxHub
 #EXTVLCOPT:http-user-agent=com.graymatrix.did;Android TV;5.82.6(203230929);Android(10);Xiaomi(Redmi Note 8 Pro)
 https://premiumplug.fun/zee/zee5.php/0-9-pictures.m3u8
-# ------------=== ⛨ 𝔼𝕩𝕥𝕣𝕒 | SonyLiv ===---------------
-#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000023981/178947380134187_ENGvsSL26_1t20i_live_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",1st T20I - 15 Sep 2026 [ENG] | GmaxHub
-https://sonydaimenew.akamaized.net/hls/live/2005444/criclive1509/ENG/std_lrh-800300010.m3u8?hdnea=exp=1789548880~acl=/*~id=81332560962481478012295901846589~hmac=efdfdd16539bd959ffa347ab12beb810b944aa3ae53191efb17f50c546980b24
-# ------------=== ⛨ 𝔼𝕩𝕥𝕣𝕒 | FanCode ===---------------
-#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/4249244_53070_ADK_MED_FC-Web.png" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | FanCode",ENGLISH - Abu Dhabi Knight Riders Development vs MI Emirates Development | GmaxHub
-#EXTHTTP:{"Origin":"","Referer":""}
-https://in-mc-flive.fancode.com/mumbai/4249244_english_hls_9b82b68f3797637_1ta-di_h264/1080p.m3u8?hdntl=Expires=1789578137~_GO=Generated~acl=/mumbai/4249244_english_hls_9b82b68f3797637_1ta-di_h264/*~Signature=AVl424Ph6gsNssXyjCqPiOzoN1SXSGO3JZ5fbers_yS_rZcPXLJIuRpBlnjapkZtHv0fB0nzesMRzMipZGGmdfol2eEF
-#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/4249056_53016_RED_BRE_fc-web.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | FanCode",ENGLISH - Reading vs Brentford | GmaxHub
-#EXTHTTP:{"Origin":"","Referer":""}
-https://in-mc-flive.fancode.com/mumbai/4249056_english_hls_78bc0c78ef5548_1ta-di_h264/1080p.m3u8?hdntl=Expires=1789584749~_GO=Generated~acl=/mumbai/4249056_english_hls_78bc0c78ef5548_1ta-di_h264/*~Signature=AVl424Nv95IFetMpEI_degWr52Gnkm-CqyxF3qJJxwRipXaUTGBmw9jeTcn6iqyGoMqurFzu-U575PTG9YQw-E4lfFAD
-#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/4249057_53016_IPT_ARS_fc-web.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | FanCode",ENGLISH - Ipswich Town F.C. vs Arsenal | GmaxHub
-#EXTHTTP:{"Origin":"","Referer":""}
-https://in-mc-flive.fancode.com/mumbai/4249057_english_hls_ea5b1f6ac66113_1ta-di_h264/1080p.m3u8?hdntl=Expires=1789584750~_GO=Generated~acl=/mumbai/4249057_english_hls_ea5b1f6ac66113_1ta-di_h264/*~Signature=AVl424OL6qNaTcmeG2zjbK0xxSSJKuzIKveSH69x1X8M3C-z7TvxsRuEt0FEZAILAABy61dshndpdCwYNMPZPhGmptcC
-#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/4249061_53016_LIV_TOT_fc-web.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | FanCode",ENGLISH - Liverpool vs Tottenham Hotspur | GmaxHub
-#EXTHTTP:{"Origin":"","Referer":""}
-https://in-mc-flive.fancode.com/mumbai/4249061_english_hls_a4322012ea48351_1ta-di_h264/1080p.m3u8?hdntl=Expires=1789584751~_GO=Generated~acl=/mumbai/4249061_english_hls_a4322012ea48351_1ta-di_h264/*~Signature=AVl424OIuqId7hM9EZuKa_04wVajQNKUt7QWDFZZL3eoWYgn65afVKkNAc-mfylKpLCwj2wquCmc9wxI3Z5TENmf2cAJ
-#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/4247622_53004_ELC_RM_FC-Web.png" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | FanCode",ENGLISH - Elche CF vs Real Madrid | GmaxHub
-#EXTHTTP:{"Origin":"","Referer":""}
-https://in-mc-flive.fancode.com/mumbai/4247622_english_hls_cf570a032814159_1ta-di_h264/1080p5.m3u8?hdntl=Expires=1789585357~_GO=Generated~acl=/mumbai/4247622_english_hls_cf570a032814159_1ta-di_h264/*~Signature=AVl424MCkIbwGub-xNmNNSQJxR9tmb42BDSKMd4hoWfA9FGTp_iK6WCHNFH3bE-2JoBWB6r6oINNtFJJIZEG8mce_fsF
 # ------------=== VT OTT | DTV ===---------------
 <!DOCTYPE html>
 <html lang="en">
