@@ -789,29 +789,16 @@ https://premiumplug.fun/zee/zee5.php/0-9-tvpictureshd.m3u8
 #EXTINF:-1 tvg-id="0-9-pictures" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | Zee5" tvg-logo="https://akamaividz2.zee5.com/image/upload/w_auto,h_396,c_scale,f_webp,q_auto:eco/resources/0-9-pictures/list/1920x1080liste1864f84ee8f422e9a726e5fe401050c.png",&Pictures | GmaxHub
 #EXTVLCOPT:http-user-agent=com.graymatrix.did;Android TV;5.82.6(203230929);Android(10);Xiaomi(Redmi Note 8 Pro)
 https://premiumplug.fun/zee/zee5.php/0-9-pictures.m3u8
-# ------------=== ⛨ 𝔼𝕩𝕥𝕣𝕒 | SonyLiv ===---------------
-#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000026665/1792355587210172_ISL26_MohunBaganSG_vs_punjabFC_live_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[ENG] - Mohun Bagan Super Giant vs Punjab FC | GmaxHub
-https://sonydaime.akamaized.net/hls/live/2120302/footlive3110/ENG/std_lrh-800300010.m3u8?hdnea=exp=1793505845~acl=/*~id=73526577038182070103583022388554~hmac=3cb9a19ab85afd923f9271482ea299a194576481a6c344a260a5fb4b766e23ad
-#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000026665/1792355587210172_ISL26_MohunBaganSG_vs_punjabFC_live_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[HIN] - Mohun Bagan Super Giant vs Punjab FC | GmaxHub
-https://sonydaime.akamaized.net/hls/live/2120305/footlive3110/HIN/std_lrh-800300010.m3u8?hdnea=exp=1793505845~acl=/*~id=73526577038182070103583022388554~hmac=3cb9a19ab85afd923f9271482ea299a194576481a6c344a260a5fb4b766e23ad
-#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000026665/1792355587210172_ISL26_MohunBaganSG_vs_punjabFC_live_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[BEN] - Mohun Bagan Super Giant vs Punjab FC | GmaxHub
-https://sonydaime.akamaized.net/hls/live/2120308/footlive3110/BEN/std_lrh-800300010.m3u8?hdnea=exp=1793505845~acl=/*~id=73526577038182070103583022388554~hmac=3cb9a19ab85afd923f9271482ea299a194576481a6c344a260a5fb4b766e23ad
 # ------------=== ⛨ 𝔼𝕩𝕥𝕣𝕒 | FanCode ===---------------
-#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/4250362_53124_SPR_BK_fc-Web.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | FanCode",ENGLISH - Biratnagar Kings vs Sudurpaschim Royals | GmaxHub
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/4250273_53025_AHS_AFF_FC-Web.png" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | FanCode",ENGLISH - Al Hilal SFC vs Al-Fateh SC | GmaxHub
 #EXTHTTP:{"Origin":"","Referer":""}
-https://in-mc-flive.fancode.com/mumbai/4250362_english_hls_2279bcd8f161004_1ta-di_h264/1080p.m3u8?hdntl=Expires=1793531338~_GO=Generated~acl=/mumbai/4250362_english_hls_2279bcd8f161004_1ta-di_h264/*~SessionID=fc-app_sportsguruand_447_watcho_8a9f187b-e273-47~Signature=ATFKiJvdNBFwhqst6ZSKonNZTQuVufOA_wg2FMfFnKgLCqawUNPi1vNc2NTYCxM7Z3kK5nYmvr5YhsEDFReTeIUhZ0IL
-#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/4249602_52993_MLW_DER_fc-web.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | FanCode",ENGLISH - Millwall F.C. vs Derby County Football Club | GmaxHub
-#EXTHTTP:{"Origin":"","Referer":""}
-https://in-mc-flive.fancode.com/mumbai/4249602_english_hls_591c2d97c077208_1ta-di_h264/1080p.m3u8?hdntl=Expires=1793544847~_GO=Generated~acl=/mumbai/4249602_english_hls_591c2d97c077208_1ta-di_h264/*~SessionID=fc-app_sportsguruand_7d2_watcho_d1bc94b2-0961-41~Signature=ATFKiJtyQl0gPzv-SxeFZG2lG-Q502xhnLGa3BKvtQjbn6ztnH1aQytNCEik0jqYZzJEuG_PlUuNX_7r3ThR49lh6OkG
-#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Toma-Junior-Popov-vs-Lakshya-Sen_fc-web.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | FanCode",ENGLISH - T J Popov vs L Sen | GmaxHub
+https://in-mc-flive.fancode.com/mumbai/4250273_english_hls_080636bc3c54694_1ta-di_h264/1080p.m3u8?hdntl=Expires=1793555313~_GO=Generated~acl=/mumbai/4250273_english_hls_080636bc3c54694_1ta-di_h264/*~SessionID=fc-app_sportsguruand_1db_watcho_8d1bb96c-4a9b-41~Signature=ATFKiJvr9tzUayZRKKroVhGaLJamfxKx18_RhrW92zaMywNkpa7mvpfI6D2R2YuBMWYu_8kf6VQicgmsdjZF4UupxQAK
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Hylo-Open-2026_fc-web.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | FanCode",ENGLISH - Semi-Finals | GmaxHub
 #EXTHTTP:{"Origin":"","Referer":""}
 https://in-mc-flive.fancode.com/mumbai/4250524_english_hls_60e4ade45e61091_1ta-di_h264/1080p.m3u8?hdntl=Expires=1793537478~_GO=Generated~acl=/mumbai/4250524_english_hls_60e4ade45e61091_1ta-di_h264/*~SessionID=fc-app_sportsguruand_372_watcho_de46c727-146b-49~Signature=ATFKiJuY5pUJl-7rfzVhmIdLv1yB6AaUx5bTpNJfNaaICPrekqPOdtUX3on0dARMrDQJT0pJEQ_ez-NzCQ_Tb8HioNsD
-#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Zverev-vs-Alex-de-Minaur-web-match-card.png" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | FanCode",ENGLISH - A. Zverev vs A. de Minaur | GmaxHub
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Golf_FC-Web_1792760641052.png" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | FanCode",ENGLISH - Day 3 | GmaxHub
 #EXTHTTP:{"Origin":"","Referer":""}
-https://in-mc-flive.fancode.com/mumbai/4249640_english_hls_4f90393d7175429_1ta-di_h264/1080p.m3u8?hdntl=Expires=1793541162~_GO=Generated~acl=/mumbai/4249640_english_hls_4f90393d7175429_1ta-di_h264/*~SessionID=fc-app_sportsguruand_a94_watcho_fc10f517-9ef5-43~Signature=ATFKiJvnMCVcZBbdbxfss0ZnQA3EE5UB_RlNdL9l_QQVTAKvCpG4QmXR8w8gW1wQJ8IB6N3-vejTNpEPChW_LFjk620L
-#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Tennis_FC-We.png" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | FanCode",ENGLISH - World Feed | GmaxHub
-#EXTHTTP:{"Origin":"","Referer":""}
-https://in-mc-flive.fancode.com/mumbai/4249647_english_hls_82c688241f54573_1ta-di_h264/1080p.m3u8?hdntl=Expires=1793541163~_GO=Generated~acl=/mumbai/4249647_english_hls_82c688241f54573_1ta-di_h264/*~SessionID=fc-app_sportsguruand_055_watcho_bcfb8e2a-9aa1-4a~Signature=ATFKiJv9J_1ip0eUPpMB_ovV8ah35sZdLa0m7Y2FBNA7HMKcrLdsqPS9jcl7QH1b7KC8wETJXiZWVs5xOgQVC1ucNqoG
+https://in-mc-flive.fancode.com/mumbai/4250510_english_hls_369601d34022188_1ta-di_h264/1080p.m3u8?hdntl=Expires=1793562714~_GO=Generated~acl=/mumbai/4250510_english_hls_369601d34022188_1ta-di_h264/*~SessionID=fc-app_sportsguruand_f37_watcho_5ee009d2-859a-45~Signature=ATFKiJuJVzPxufG55-ErhPL7HzBPCt7ejevo4H9eo3JSDQ6k5vlGyJGR4ggAu5kVwICoffPnPNdQ12h495mRccGw7zMJ
 # ------------=== VT OTT | CIO ===---------------
 #EXTM3U
 #
