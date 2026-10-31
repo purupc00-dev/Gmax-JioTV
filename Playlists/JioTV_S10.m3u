@@ -789,16 +789,16 @@ https://premiumplug.fun/zee/zee5.php/0-9-tvpictureshd.m3u8
 #EXTINF:-1 tvg-id="0-9-pictures" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | Zee5" tvg-logo="https://akamaividz2.zee5.com/image/upload/w_auto,h_396,c_scale,f_webp,q_auto:eco/resources/0-9-pictures/list/1920x1080liste1864f84ee8f422e9a726e5fe401050c.png",&Pictures | GmaxHub
 #EXTVLCOPT:http-user-agent=com.graymatrix.did;Android TV;5.82.6(203230929);Android(10);Xiaomi(Redmi Note 8 Pro)
 https://premiumplug.fun/zee/zee5.php/0-9-pictures.m3u8
+# ------------=== ⛨ 𝔼𝕩𝕥𝕣𝕒 | SonyLiv ===---------------
+#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000027940/1793474597073145_NZ_A_vs_IND_A_2nd_Unofficial_Test_Day2_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[ENG] - 2nd Unofficial Test - Day 2 | GmaxHub
+https://sonydaime.akamaized.net/hls/live/2018457/criclive3110/ENG/std_lrh-800300010.m3u8?hdnea=exp=1793532491~acl=/*~id=28791443582237665219880833341292~hmac=ff6e02f21ba107e2e442749ce9c6fe81a0b4e9ba5631a8544b3c5057674706e2
 # ------------=== ⛨ 𝔼𝕩𝕥𝕣𝕒 | FanCode ===---------------
-#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/4250273_53025_AHS_AFF_FC-Web.png" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | FanCode",ENGLISH - Al Hilal SFC vs Al-Fateh SC | GmaxHub
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/4249669_53087_TAS_NSW_FC-WEB.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | FanCode",ENGLISH - Tasmania vs New South Wales | GmaxHub
 #EXTHTTP:{"Origin":"","Referer":""}
-https://in-mc-flive.fancode.com/mumbai/4250273_english_hls_080636bc3c54694_1ta-di_h264/1080p.m3u8?hdntl=Expires=1793555313~_GO=Generated~acl=/mumbai/4250273_english_hls_080636bc3c54694_1ta-di_h264/*~SessionID=fc-app_sportsguruand_1db_watcho_8d1bb96c-4a9b-41~Signature=ATFKiJvr9tzUayZRKKroVhGaLJamfxKx18_RhrW92zaMywNkpa7mvpfI6D2R2YuBMWYu_8kf6VQicgmsdjZF4UupxQAK
-#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Hylo-Open-2026_fc-web.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | FanCode",ENGLISH - Semi-Finals | GmaxHub
+https://in-mc-flive.fancode.com/mumbai/4249669_english_hls_0ad52e993333483_1ta-di_h264/1080p.m3u8?hdntl=Expires=1793574409~_GO=Generated~acl=/mumbai/4249669_english_hls_0ad52e993333483_1ta-di_h264/*~SessionID=fc-app_sportsguruand_b18_watcho_bf02a9ce-e61f-49~Signature=ATFKiJu4bYm-ZKg7qcHdsbrQNC94rrHoySRhMNtEa0IAmpp3mwtgfnaVsSy7tWzHmySVaPgBAkr8hTXas5_uKC5QZIYI
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/4249670_53087_QUN_VCT_FC-WEB.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | FanCode",ENGLISH - Victoria vs Queensland | GmaxHub
 #EXTHTTP:{"Origin":"","Referer":""}
-https://in-mc-flive.fancode.com/mumbai/4250524_english_hls_60e4ade45e61091_1ta-di_h264/1080p.m3u8?hdntl=Expires=1793537478~_GO=Generated~acl=/mumbai/4250524_english_hls_60e4ade45e61091_1ta-di_h264/*~SessionID=fc-app_sportsguruand_372_watcho_de46c727-146b-49~Signature=ATFKiJuY5pUJl-7rfzVhmIdLv1yB6AaUx5bTpNJfNaaICPrekqPOdtUX3on0dARMrDQJT0pJEQ_ez-NzCQ_Tb8HioNsD
-#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Golf_FC-Web_1792760641052.png" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | FanCode",ENGLISH - Day 3 | GmaxHub
-#EXTHTTP:{"Origin":"","Referer":""}
-https://in-mc-flive.fancode.com/mumbai/4250510_english_hls_369601d34022188_1ta-di_h264/1080p.m3u8?hdntl=Expires=1793562714~_GO=Generated~acl=/mumbai/4250510_english_hls_369601d34022188_1ta-di_h264/*~SessionID=fc-app_sportsguruand_f37_watcho_5ee009d2-859a-45~Signature=ATFKiJuJVzPxufG55-ErhPL7HzBPCt7ejevo4H9eo3JSDQ6k5vlGyJGR4ggAu5kVwICoffPnPNdQ12h495mRccGw7zMJ
+https://in-mc-flive.fancode.com/mumbai/4249670_english_hls_72230a09d418743_1ta-di_h264/1080p.m3u8?hdntl=Expires=1793575018~_GO=Generated~acl=/mumbai/4249670_english_hls_72230a09d418743_1ta-di_h264/*~SessionID=fc-app_sportsguruand_d5f_watcho_c9b3a075-b664-47~Signature=ATFKiJsFPyv4rHxSGCIuyQdEQRQG4TpiZQN9TQD7seMzXv6QrmKR6IWnUKiVrBqcmOxNG-CS4HIfT8OesueKGgA-03IH
 # ------------=== VT OTT | CIO ===---------------
 #EXTM3U
 #
