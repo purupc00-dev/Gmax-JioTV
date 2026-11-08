@@ -12370,20 +12370,6 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/ETV_Telangana_MOB/WDVLive/index.mpd
 #EXTHTTP:{"Cookie":"__hdnea__=st=1794096010~exp=1794182410~acl=/*~hmac=da4ec5d0c969c830279316618e115a8325c393aad6f8db0e28172f4854f2383c","Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
 https://livestream.sunnxt.com/ed4c67ad957644b69361651d9101107e/ChintuTVB_IN_index.mpd
 
-#EXTINF:-1 tvg-id="2026--english-" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/West-Indies-tour-of-Bangladesh-web-.jpg" group-title="LIVE SPORTS | STREAMX",2026 [English] | GmaxHub
-#KODIPROP:inputstream=inputstream.adaptive
-#KODIPROP:inputstream.adaptive.manifest_type=mpd
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
-https://in-mc-flive.fancode.com/mumbai/4250527_english_hls_370c69458464083_1ta-di_h264/1080p.m3u8?hdntl=Expires=1794194554~_GO=Generated~acl=/mumbai/4250527_english_hls_370c69458464083_1ta-di_h264/*~SessionID=d41d8cd98f00b204e9800998ecf8427e_playbox_51780389-0030-4f~Signature=AV7HGj7L4pYTleDCMsl-xF0EDvaR_CFQ3z83F1Nx-0NwqQG6_kSSvDlZSUZrWdC9LiNvm_GJpEEyBTIXH7yDMWJuWxAJ
-
-#EXTINF:-1 tvg-id="2026--english-" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/AFG-vs-ZIM_Test_fc-web.jpg" group-title="LIVE SPORTS | STREAMX",2026 [English] | GmaxHub
-#KODIPROP:inputstream=inputstream.adaptive
-#KODIPROP:inputstream.adaptive.manifest_type=mpd
-#EXTVLCOPT:http-user-agent=GmaxHub
-#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
-https://in-mc-flive.fancode.com/mumbai/4249772_english_hls_ea87fdf8341075_1ta-di_h264/1080p.m3u8?hdntl=Expires=1794203032~_GO=Generated~acl=/mumbai/4249772_english_hls_ea87fdf8341075_1ta-di_h264/*~SessionID=d41d8cd98f00b204e9800998ecf8427e_playbox_89540dd1-4345-41~Signature=AV7HGj5qNuBFgL7cKLU8Hw80WHdNrfxXTzjTJ9y-Jf5phiJbUb8JQbPShQTXXhl5NhMyjqFQ-wC0h7AM-thS0RvkzJwO
-
 #EXTINF:-1 tvg-id="2026--english-" tvg-logo="https://images.fancode.com/aig/match/v1793949984312/4250746_CASACARDS_APP.png" group-title="LIVE SPORTS | STREAMX",2026 [English] | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
@@ -12391,77 +12377,215 @@ https://in-mc-flive.fancode.com/mumbai/4249772_english_hls_ea87fdf8341075_1ta-di
 #EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
 https://in-mc-flive.fancode.com/mumbai/4250746_english_hls_58958726b464286_1ta-di_h264/1080p.m3u8?hdntl=Expires=1794209096~_GO=Generated~acl=/mumbai/4250746_english_hls_58958726b464286_1ta-di_h264/*~SessionID=d41d8cd98f00b204e9800998ecf8427e_playbox_0fb3216c-22fa-46~Signature=AV7HGj6VX9-omVuNSXPGx0PqUQ7Ogc_zQ8GGagQ0YDoIfhRt85wrG3UK8sh0HYdjoOAcIv3IZ_avS9Pbbtt1X9pxE8cN
 
-#EXTINF:-1 tvg-id="4250527" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/West-Indies-tour-of-Bangladesh-web-.jpg" group-title="LIVE SPORTS | STREAMX",ENG | West Indies Vs Bangladesh | GmaxHub
+#EXTINF:-1 tvg-id="barclays-women-s-super-league-2026-27--english-" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/FC_Sports_Default_Football-old-copy.jpg" group-title="LIVE SPORTS | STREAMX",Barclays Women's Super League 2026-27 [English] | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #EXTVLCOPT:http-user-agent=GmaxHub
 #EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
-https://dai-fancode.pages.dev/mumbai/4250527_english_hls_370c69458464083_1ta-di_h264/index.m3u8|User-Agent=ReactNativeVideo/9.11.1 (Linux;Android 13) AndroidXMedia3/1.6.1&Referer=https://fancode.com/
+https://in-mc-flive.fancode.com/mumbai/4250759_english_hls_b773074ee222390_1ta-di_h264/1080p5.m3u8?hdntl=Expires=1794232226~_GO=Generated~acl=/mumbai/4250759_english_hls_b773074ee222390_1ta-di_h264/*~SessionID=d41d8cd98f00b204e9800998ecf8427e_playbox_411c0708-f961-4b~Signature=AV7HGj7afLMEpKK2RTBM6CMnLvuw5BQZbFvqDFlX-NvRjrmxJiMDP0sIbWSCpI9hxJQ_gH5uwEFn7Wp-r-NvMvkc5bcE
 
-#EXTINF:-1 tvg-id="4249772" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/AFG-vs-ZIM_Test_fc-web.jpg" group-title="LIVE SPORTS | STREAMX",ENG | Zimbabwe Vs Afghanistan | GmaxHub
+#EXTINF:-1 tvg-id="barclays-women-s-super-league-2026-27--english-" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/FC_Sports_Default_Football-old-copy.jpg" group-title="LIVE SPORTS | STREAMX",Barclays Women's Super League 2026-27 [English] | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #EXTVLCOPT:http-user-agent=GmaxHub
 #EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
-https://dai-fancode.pages.dev/mumbai/4249772_english_hls_ea87fdf8341075_1ta-di_h264/index.m3u8|User-Agent=ReactNativeVideo/9.11.1 (Linux;Android 13) AndroidXMedia3/1.6.1&Referer=https://fancode.com/
+https://in-mc-flive.fancode.com/mumbai/4250760_english_hls_564a4c162b63350_1ta-di_h264/1080p5.m3u8?hdntl=Expires=1794232227~_GO=Generated~acl=/mumbai/4250760_english_hls_564a4c162b63350_1ta-di_h264/*~SessionID=d41d8cd98f00b204e9800998ecf8427e_playbox_4f0eca3b-0400-43~Signature=AV7HGj6BLdSjiH70FYFvoyGqmNbN3iyEchqNB9zkeZl2S_hOFBS51PYTxGVA21ZJ3EPaiRulaZp_9xFdzNoT5J6jfpUG
 
-#EXTINF:-1 tvg-id="4250746" tvg-logo="https://images.fancode.com/aig/match/v1793949412986/4250746_CASACARDS_SPORTY_APP.png" group-title="LIVE SPORTS | STREAMX",ENG | Eavion Eagles Vs Pupkewitz Wildcats | GmaxHub
+#EXTINF:-1 tvg-id="barclays-women-s-super-league-2026-27--english-" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/FC_Sports_Default_Football-old-copy.jpg" group-title="LIVE SPORTS | STREAMX",Barclays Women's Super League 2026-27 [English] | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #EXTVLCOPT:http-user-agent=GmaxHub
 #EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
-https://dai-fancode.pages.dev/mumbai/4250746_english_hls_58958726b464286_1ta-di_h264/index.m3u8|User-Agent=ReactNativeVideo/9.11.1 (Linux;Android 13) AndroidXMedia3/1.6.1&Referer=https://fancode.com/
+https://in-mc-flive.fancode.com/mumbai/4250761_english_hls_489d3c012f81241_1ta-di_h264/1080p5.m3u8?hdntl=Expires=1794234056~_GO=Generated~acl=/mumbai/4250761_english_hls_489d3c012f81241_1ta-di_h264/*~SessionID=d41d8cd98f00b204e9800998ecf8427e_playbox_48dce570-99e0-4f~Signature=AV7HGj6Mmah0T7x9ebSHzBdFFEVQQABjQNMtv2Ab2yCTS4kRpCmrw7jksD_sCU7nqiDnc2IfpaCunnHQhumLvl7vLgoO
 
-#EXTINF:-1 tvg-id="B0HQ7MQV7F" tvg-logo="https://images-na.ssl-images-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/S/le-target-images-prod/amzn1.dv.gti.3fbc3e12-23d1-4e81-9b7b-079b54ab7724/3/BOXART-16X9/en-US._UR1920,1080_CLs%7C1920,1080%7C/G/bundle/BottomRightCardGradient16x9.png,/G/01/digital/video/merch/subs/benefit-id/s-z/willowtv/logos/channels-logo-white-stacked.png%7C0,0,1920,1080+0,0,1920,1080+1724,885,117,117_kvebed36e78eaa0330f200bb6045a52aca_SX624_FMjpg_.jpeg" group-title="LIVE SPORTS | STREAMX",ACC Mens U19 Asia Cup 2026 - 8th Match - India U19 vs Pakistan U19 | GmaxHub
+#EXTINF:-1 tvg-id="qatar-airways-grand-prix-of-qatar-2026--english-" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Qatar-_GP_2026_FC-WEB.jpg" group-title="LIVE SPORTS | STREAMX",QATAR AIRWAYS GRAND PRIX OF QATAR 2026 [English] | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
+https://in-mc-flive.fancode.com/mumbai/139935_english_hls_f07d5cc36555106_1ta-di_h264/1080p5.m3u8?hdntl=Expires=1794219992~_GO=Generated~acl=/mumbai/139935_english_hls_f07d5cc36555106_1ta-di_h264/*~SessionID=d41d8cd98f00b204e9800998ecf8427e_playbox_59f29ce5-34d9-43~Signature=AV7HGj7-qOBblZCMpkvKbMzlFsnE60WXPtHgS_UUw62QqvBdwThNrazYysFztHCexzyYMevgsU-onBZrumeZmnffcIYN
+
+#EXTINF:-1 tvg-id="atp-masters---rolex-paris-masters-2026--english-" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/B-Shelton-vs-C-Alcaraz_fc-web.jpg" group-title="LIVE SPORTS | STREAMX",ATP Masters - Rolex Paris Masters 2026 [English] | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
+https://in-mc-flive.fancode.com/mumbai/4250574_english_hls_2e7edfacc886720_1ta-di_h264/1080p.m3u8?hdntl=Expires=1794232229~_GO=Generated~acl=/mumbai/4250574_english_hls_2e7edfacc886720_1ta-di_h264/*~SessionID=d41d8cd98f00b204e9800998ecf8427e_playbox_6e3bb347-e89c-45~Signature=AV7HGj6zYIqyZ7bANHLywb1a_sFSrjbSl0oexhqGAifChVhNDNFGvVFpbs41BBGV8KQvJRDD0bFqkhPL9VkAN-1FwPEK
+
+#EXTINF:-1 tvg-id="4247684" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/4247684_53004_RS_RVL_FC-Web.png" group-title="LIVE SPORTS | STREAMX",[DRM] ENG | Real Sociedad Vs Rayo Vallecano | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
+https://in-mc-flive.fancode.com/mumbai/4247684_english_dash_32042_1drmta-di_h264/index.mpd
+
+#EXTINF:-1 tvg-id="4250759" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/FC_Sports_Default_Football-old-copy.jpg" group-title="LIVE SPORTS | STREAMX",ENG | Crystal Palace Women Vs Charlton Athletic F.c Women | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
+https://dai-fancode.pages.dev/mumbai/4250759_english_hls_b773074ee222390_1ta-di_h264/index.m3u8|User-Agent=ReactNativeVideo/9.11.1 (Linux;Android 13) AndroidXMedia3/1.6.1&Referer=https://fancode.com/
+
+#EXTINF:-1 tvg-id="4250760" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/FC_Sports_Default_Football-old-copy.jpg" group-title="LIVE SPORTS | STREAMX",ENG | Tottenham Hotspur Women Vs Brighton And Hove Albion Women | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
+https://dai-fancode.pages.dev/mumbai/4250760_english_hls_564a4c162b63350_1ta-di_h264/index.m3u8|User-Agent=ReactNativeVideo/9.11.1 (Linux;Android 13) AndroidXMedia3/1.6.1&Referer=https://fancode.com/
+
+#EXTINF:-1 tvg-id="4250761" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/FC_Sports_Default_Football-old-copy.jpg" group-title="LIVE SPORTS | STREAMX",ENG | London City Lionesses Vs Birmingham City F.c. Women | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
+https://dai-fancode.pages.dev/mumbai/4250761_english_hls_489d3c012f81241_1ta-di_h264/index.m3u8|User-Agent=ReactNativeVideo/9.11.1 (Linux;Android 13) AndroidXMedia3/1.6.1&Referer=https://fancode.com/
+
+#EXTINF:-1 tvg-id="139935" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Qatar-_GP_2026_FC-WEB.jpg" group-title="LIVE SPORTS | STREAMX",ENG | Race Day | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
+https://dai-fancode.pages.dev/mumbai/139935_english_hls_f07d5cc36555106_1ta-di_h264/index.m3u8|User-Agent=ReactNativeVideo/9.11.1 (Linux;Android 13) AndroidXMedia3/1.6.1&Referer=https://fancode.com/
+
+#EXTINF:-1 tvg-id="4250574" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/B-Shelton-vs-C-Alcaraz_fc-web.jpg" group-title="LIVE SPORTS | STREAMX",ENG | Final: B Shelton Vs C Alcaraz | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
+https://dai-fancode.pages.dev/mumbai/4250574_english_hls_2e7edfacc886720_1ta-di_h264/index.m3u8|User-Agent=ReactNativeVideo/9.11.1 (Linux;Android 13) AndroidXMedia3/1.6.1&Referer=https://fancode.com/
+
+#EXTINF:-1 tvg-id="4250581" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/ATP-250---Bybit-Stockholm-Open_2026_FC-WEB.jpg" group-title="LIVE SPORTS | STREAMX",ENG | World Feed | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
+https://dai-fancode.pages.dev/mumbai/4250581_english_hls_d97ff987cc27093_1ta-di_h264/index.m3u8|User-Agent=ReactNativeVideo/9.11.1 (Linux;Android 13) AndroidXMedia3/1.6.1&Referer=https://fancode.com/
+
+#EXTINF:-1 tvg-id="139516" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/F1_Sao-Paulo_web_1793258815657.jpg" group-title="LIVE SPORTS | STREAMX",[DRM] ENG | Race | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
+https://in-mc-flive.fancode.com/mumbai/139516_english_dash_4629_1drmta-di_h264/index.mpd
+
+#EXTINF:-1 tvg-id="139516" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/F1_Sao-Paulo_web_1793258815657.jpg" group-title="LIVE SPORTS | STREAMX",[DRM] HIN | Race | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
+https://in-mc-flive.fancode.com/mumbai/139516_hindi_dash_67148_1drmta-di_h264/index.mpd
+
+#EXTINF:-1 tvg-id="139516" tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/F1_Sao-Paulo_web_1793258815657.jpg" group-title="LIVE SPORTS | STREAMX",[DRM] TAM | Race | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
+https://in-mc-flive.fancode.com/mumbai/139516_tamil_dash_58039_1drmta-di_h264/index.mpd
+
+#EXTINF:-1 tvg-id="B0HM7N447W" tvg-logo="https://images-na.ssl-images-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/S/le-target-images-prod/amzn1.dv.gti.e7dfd46d-5b94-4fa8-91f0-0bf32de6a7da/3/BOXART-16X9/en-US._UR1920,1080_CLs%7C1920,1080%7C/G/bundle/BottomRightCardGradient16x9.png,/G/01/digital/video/merch/subs/benefit-id/a-f/freewithads/logos/channels-logo-white.png%7C0,0,1920,1080+0,0,1920,1080+1578,847,263,156_kv053498f62d21803ffcbf28da234cfe9f_SX624_FMjpg_.jpeg" group-title="LIVE SPORTS | STREAMX",Bassmaster Redfish Cup at Port Aransas | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=cb402b40b2aa0cceeb399dc8a3cfb6f1:8f089d69677070e893da78d9ba7c35b6
+#KODIPROP:inputstream.adaptive.license_key=ad6e7091d1d36a16d5475bdb2d900888:8c67e6b1e4bcf1ee1f12167526ef2503
 #EXTVLCOPT:http-user-agent=GmaxHub
 #EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
-https://otte.live.fly.ww.aiv-cdn.net/iad-nitro/live/clients/dash/enc/swccd6o1bx/out/v1/782ed415026645beb52cae42251d0a0d/cenc.mpd
+https://dash-ott.bia-cf.live.pv-cdn.net/iad-nitro/live/clients/dash/enc/qy6usrjqzw/out/v1/48d0ffdc0c354fc8bf9b565c245d0f07/cenc.mpd
 
-#EXTINF:-1 tvg-id="B0HQ5CZSHJ" tvg-logo="https://images-na.ssl-images-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/S/le-target-images-prod/amzn1.dv.gti.b3d1b98a-a6f0-4fc9-b339-b8a3b6df88d9/3/BOXART-16X9/en-US._UR1920,1080_CLs%7C1920,1080%7C/G/bundle/BottomRightCardGradient16x9.png,/G/01/digital/video/merch/subs/benefit-id/a-f/freewithads/logos/channels-logo-white.png%7C0,0,1920,1080+0,0,1920,1080+1578,847,263,156_kv053498f62d21803ffcbf28da234cfe9f_SX624_FMjpg_.jpeg" group-title="LIVE SPORTS | STREAMX",Perth Scorchers vs. Melbourne Stars | GmaxHub
+#EXTINF:-1 tvg-id="B0HPH2LNM6" tvg-logo="https://images-na.ssl-images-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/S/le-target-images-prod/amzn1.dv.gti.8624a42b-17b2-4ee9-b924-9cba255f8c55/3/BOXART-16X9/en-US._UR1920,1080_CLs%7C1920,1080%7C/G/bundle/BottomRightCardGradient16x9.png,/G/01/digital/video/merch/subs/benefit-id/a-f/freewithads/logos/channels-logo-white.png%7C0,0,1920,1080+0,0,1920,1080+1578,847,263,156_kv053498f62d21803ffcbf28da234cfe9f_SX624_FMjpg_.jpeg" group-title="LIVE SPORTS | STREAMX",England v Australia | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=63a084a354d126bcd099c9eabf0cbb93:bd2b00bce574c33af46d0538937b3ac3
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
+https://hls-ott.bia-cf.live.pv-cdn.net/pdx-nitro/live/clients/dash/enc/z1mmauev4g/out/v1/40b826b7f7d449559a5e4e3c2ac3fca2/cenc.mpd
+
+#EXTINF:-1 tvg-id="B0HFDNX2NF" tvg-logo="https://images-na.ssl-images-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/S/le-target-images-prod/amzn1.dv.gti.2b65c2cc-9120-4a80-b792-559163353e78/5/BOXART-16X9/en-US._UR1920,1080_CLs%7C1920,1080%7C/G/bundle/BottomRightCardGradient16x9.png,/G/01/digital/video/merch/subs/benefit-id/a-f/freewithads/logos/channels-logo-white.png%7C0,0,1920,1080+0,0,1920,1080+1578,847,263,156_kv053498f62d21803ffcbf28da234cfe9f_SX624_FMjpg_.jpeg" group-title="LIVE SPORTS | STREAMX",Triton Poker ONE Series Cyprus-$3K One-W Championship | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=0bd0136d2728be3d6506cfe054a3fd59:27ae4995704be63440c0dcb001b2abbd
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
+https://dash-ott.bia-cf.live.pv-cdn.net/iad-nitro/live/clients/dash/enc/znpxp4vhyl/out/v1/2a14edb0fa434870a70679d37f5f013c/cenc.mpd
+
+#EXTINF:-1 tvg-id="B0HKVSN31B" tvg-logo="https://images-na.ssl-images-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/S/le-target-images-prod/amzn1.dv.gti.e2b8ae20-e5f2-4ddb-8e58-1b2558d80f0a/2/BOXART-16X9/en-US._UR1920,1080_CLs%7C1920,1080%7C/G/bundle/BottomRightCardGradient16x9.png,/G/01/digital/video/merch/subs/benefit-id/a-f/freewithads/logos/channels-logo-white.png%7C0,0,1920,1080+0,0,1920,1080+1578,847,263,156_kv053498f62d21803ffcbf28da234cfe9f_SX624_FMjpg_.jpeg" group-title="LIVE SPORTS | STREAMX",PPA Tour: World Championships-2026: Championship Sunday | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=2be100252a42be3a17d29c93e28eaacc:07c5e72df3602e9652dd06d839776e72
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
+https://otte.cache.aiv-cdn.net/iad-nitro/live/clients/dash/enc/can8dnk7we/out/v1/d6c56496531749a6989b78ab18c67557/cenc.mpd
+
+#EXTINF:-1 tvg-id="B0HNV4HK85" tvg-logo="https://images-na.ssl-images-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/S/le-target-images-prod/amzn1.dv.gti.ab8ae5f7-ca14-4140-8da0-cc87b9867912/3/BOXART-16X9/en-US._UR1920,1080_CLs%7C1920,1080%7C/G/bundle/BottomRightCardGradient16x9.png,/G/01/digital/video/merch/subs/benefit-id/a-f/freewithads/logos/channels-logo-white.png%7C0,0,1920,1080+0,0,1920,1080+1578,847,263,156_kv053498f62d21803ffcbf28da234cfe9f_SX624_FMjpg_.jpeg" group-title="LIVE SPORTS | STREAMX",Circuit of the Americas | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=33fd6ed947919b41842b62865954d2bb:c3d98962e9a617f9f59d5b64fd7b2a68
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
+https://otte.live.fly.ww.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/axced1qjat/out/v1/eb6ee1f914c04e8bb25dc7fffaf9359b/cenc.mpd
+
+#EXTINF:-1 tvg-id="B0HPKZNLC4" tvg-logo="https://images-na.ssl-images-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/S/le-target-images-prod/amzn1.dv.gti.2be815a7-ad55-4ac1-8751-c7ea6e3fb163/2/BOXART-16X9/en-US._UR1920,1080_CLs%7C1920,1080%7C/G/bundle/BottomRightCardGradient16x9.png,/G/01/digital/video/merch/subs/benefit-id/a-f/freewithads/logos/channels-logo-white.png%7C0,0,1920,1080+0,0,1920,1080+1578,847,263,156_kv053498f62d21803ffcbf28da234cfe9f_SX624_FMjpg_.jpeg" group-title="LIVE SPORTS | STREAMX",First Semifinal: Teams TBA | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=290e09c837da78d5cd961978d390515c:b748836c71e6a4ca68ef5b5652db6247
 #EXTVLCOPT:http-user-agent=GmaxHub
 #EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
-https://hls-ott.bia-cf.live.pv-cdn.net/pdx-nitro/live/clients/dash/enc/tll6uwepxa/out/v1/a7f67cbb33df46539312956427343886/cenc.mpd
+https://otte.cache.aiv-cdn.net/iad-nitro/live/clients/dash/enc/0bftapixow/out/v1/a435ed7a00f947deb4369b46d8f2fb70/cenc.mpd
 
-#EXTINF:-1 tvg-id="B0HQDBNQKV" tvg-logo="https://images-na.ssl-images-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/S/le-target-images-prod/amzn1.dv.gti.c6dd08ff-fcb4-4bdd-9bd5-a384cd1c7a38/2/BOXART-16X9/en-US._UR1920,1080_CLs%7C1920,1080%7C/G/bundle/BottomRightCardGradient16x9.png,/G/01/digital/video/merch/subs/benefit-id/s-z/willowtv/logos/channels-logo-white-stacked.png%7C0,0,1920,1080+0,0,1920,1080+1724,885,117,117_kvebed36e78eaa0330f200bb6045a52aca_SX624_FMjpg_.jpeg" group-title="LIVE SPORTS | STREAMX",ACC Mens U19 Asia Cup 2026 - 7th Match - United Arab Emirates U19 vs Nepal U19 | GmaxHub
+#EXTINF:-1 tvg-id="B0HQ6J5DTV" tvg-logo="https://images-na.ssl-images-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/S/le-target-images-prod/amzn1.dv.gti.ca15d56a-1686-4f1a-a957-26672a4e281c/2/BOXART-16X9/en-US._UR1920,1080_CLs%7C1920,1080%7C/G/bundle/BottomRightCardGradient16x9.png,/G/01/digital/video/merch/subs/benefit-id/s-z/willowtv/logos/channels-logo-white-stacked.png%7C0,0,1920,1080+0,0,1920,1080+1724,885,117,117_kvebed36e78eaa0330f200bb6045a52aca_SX624_FMjpg_.jpeg" group-title="LIVE SPORTS | STREAMX",USA Seniors Cricket NPL 2026 - Semi-Final 1 - Washington Eagles vs Chicago Cavaliers | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=f638f10e9bee65a698926a527722e332:a9f519367caf419607f6705e3d767935
+#KODIPROP:inputstream.adaptive.license_key=9dfb8473e5025e0b19003899c6c025ef:97267cc823cf5305a784cbe042003ed4
 #EXTVLCOPT:http-user-agent=GmaxHub
 #EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
-https://otte.cache.aiv-cdn.net/iad-nitro/live/clients/dash/enc/8wxsmuwvra/out/v1/06f2368f16e8470b8593cb77dcad31fe/cenc.mpd
+https://otte.live.fly.ww.aiv-cdn.net/iad-nitro/live/clients/dash/enc/dsnhwsppdo/out/v1/8f811ab5be3f4500a756c27eba7fa360/cenc.mpd
 
-#EXTINF:-1 tvg-id="B0HMNN211T" tvg-logo="https://images-na.ssl-images-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/S/le-target-images-prod/amzn1.dv.gti.7cdc79e9-37f7-4576-abb3-baad628b810c/11/BOXART-16X9/en-US._UR1920,1080_CLs%7C1920,1080%7C/G/bundle/BottomRightCardGradient16x9.png,/G/01/digital/video/merch/subs/benefit-id/s-z/willowtv/logos/channels-logo-white-stacked.png%7C0,0,1920,1080+0,0,1920,1080+1724,885,117,117_kvebed36e78eaa0330f200bb6045a52aca_SX624_FMjpg_.jpeg" group-title="LIVE SPORTS | STREAMX",Afghanistan vs Zimbabwe in UAE 2026 - 1st Test - Afghanistan vs Zimbabwe | GmaxHub
+#EXTINF:-1 tvg-id="B0HKFD8YRL" tvg-logo="https://images-na.ssl-images-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/S/le-target-images-prod/amzn1.dv.gti.5c61bd6e-2543-40d9-9eb3-74a6bb5f1eb4/5/BOXART-16X9/en-US._UR1920,1080_CLs%7C1920,1080%7C/G/bundle/BottomRightCardGradient16x9.png,/G/01/digital/video/merch/subs/benefit-id/a-f/freewithads/logos/channels-logo-white.png%7C0,0,1920,1080+0,0,1920,1080+1578,847,263,156_kv053498f62d21803ffcbf28da234cfe9f_SX624_FMjpg_.jpeg" group-title="LIVE SPORTS | STREAMX",Bratislava Singles Final | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=7f6cef23a9b2d9b21e04cd96753f7d01:3f260e0025a8b3273ece982cff0562e0
+#KODIPROP:inputstream.adaptive.license_key=59f50679c9e60963bd0cb6640992aaaa:8685817c4d31f322e08940feeae2855a
 #EXTVLCOPT:http-user-agent=GmaxHub
 #EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
-https://dash-ott.bia-cf.live.pv-cdn.net/iad-nitro/live/clients/dash/enc/0anti1gqwp/out/v1/318c6b0fc3184ab3aced919fccc017f9/cenc.mpd
+https://otte.cache.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/k653vm77p0/out/v1/313a4febbed346d298f7c1c281a00f6d/cenc.mpd
 
-#EXTINF:-1 tvg-id="B0HNFM7DSX" tvg-logo="https://images-na.ssl-images-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/S/le-target-images-prod/amzn1.dv.gti.1ac7aec6-94cb-40b9-b9f7-8fcdb58d704a/3/BOXART-16X9/en-US._UR1920,1080_CLs%7C1920,1080%7C/G/bundle/BottomRightCardGradient16x9.png,/G/01/digital/video/merch/subs/benefit-id/s-z/willowtv/logos/channels-logo-white-stacked.png%7C0,0,1920,1080+0,0,1920,1080+1724,885,117,117_kvebed36e78eaa0330f200bb6045a52aca_SX624_FMjpg_.jpeg" group-title="LIVE SPORTS | STREAMX",Womens Big Bash League 2026 - 16th Match - Perth Scorchers Women vs Melbourne Stars Women | GmaxHub
+#EXTINF:-1 tvg-id="B0HPWKF9SR" tvg-logo="https://images-na.ssl-images-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/S/le-target-images-prod/amzn1.dv.gti.33210063-52aa-46ab-bbba-28a245abb89f/1/BOXART-16X9/en-US._UR1920,1080_CLs%7C1920,1080%7C/G/bundle/BottomRightCardGradient16x9.png,/G/01/digital/video/merch/subs/benefit-id/a-f/freewithads/logos/channels-logo-white.png%7C0,0,1920,1080+0,0,1920,1080+1578,847,263,156_kv053498f62d21803ffcbf28da234cfe9f_SX624_FMjpg_.jpeg" group-title="LIVE SPORTS | STREAMX",Cricket Preview-USA Seniors Cricket NPL 2026: First Semifinal | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=41b0e855ff51711a08ab8e4ccf1d0ba1:e849d0113e5fe023ff48664f3dc76b02
+#KODIPROP:inputstream.adaptive.license_key=290e09c837da78d5cd961978d390515c:b748836c71e6a4ca68ef5b5652db6247
 #EXTVLCOPT:http-user-agent=GmaxHub
 #EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
-https://hls-ott.bia-cf.live.pv-cdn.net/pdx-nitro/live/clients/dash/enc/lhdal9buc7/out/v1/8bc185a9052e4f0b911f5a26bf2e907d/cenc.mpd
+https://otte.live.fly.ww.aiv-cdn.net/iad-nitro/live/clients/dash/enc/0bftapixow/out/v1/a435ed7a00f947deb4369b46d8f2fb70/cenc.mpd
 
-#EXTINF:-1 tvg-id="B0HFX9Z692" tvg-logo="https://images-na.ssl-images-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/S/le-target-images-prod/amzn1.dv.gti.d415ed82-2301-4764-93cd-269d5685d551/2/BOXART-16X9/en-US._UR1920,1080_CLs%7C1920,1080%7C/G/bundle/BottomRightCardGradient16x9.png,/G/01/digital/video/merch/subs/benefit-id/s-z/willowtv/logos/channels-logo-white-stacked.png%7C0,0,1920,1080+0,0,1920,1080+1724,885,117,117_kvebed36e78eaa0330f200bb6045a52aca_SX624_FMjpg_.jpeg" group-title="LIVE SPORTS | STREAMX",Womens Big Bash League 2026 - 15th Match - Sydney Sixers Women vs Sydney Thunder Women | GmaxHub
+#EXTINF:-1 tvg-id="B0HMNRQW3Z" tvg-logo="https://images-na.ssl-images-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/S/le-target-images-prod/amzn1.dv.gti.069d3bc2-7798-43ab-9f74-57b150d8a20e/2/BOXART-16X9/en-US._UR1920,1080_CLs%7C1920,1080%7C/G/bundle/BottomRightCardGradient16x9.png,/G/01/digital/video/merch/subs/benefit-id/a-f/freewithads/logos/channels-logo-white.png%7C0,0,1920,1080+0,0,1920,1080+1578,847,263,156_kv053498f62d21803ffcbf28da234cfe9f_SX624_FMjpg_.jpeg" group-title="LIVE SPORTS | STREAMX",London City Lionesses vs. Birmingham City | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=bd35b1d5d52fa3407fe1e6730691c148:21222db5e5b30d5d7c84b06df43703b9
+#KODIPROP:inputstream.adaptive.license_key=d9623774ac5c8c351aafe97c5fe70267:5164e6d05164a2d65fa8fcc962aa4861
 #EXTVLCOPT:http-user-agent=GmaxHub
 #EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
-https://otte.cache.aiv-cdn.net/iad-nitro/live/clients/dash/enc/o3azghs1ah/out/v1/f62c188265b84823b697ceacbf2386ad/cenc.mpd
+https://otte.live.fly.ww.aiv-cdn.net/iad-nitro/live/clients/dash/enc/rbem8rorcw/out/v1/5318821e2c3c44c2a439681b9aa86e9b/cenc.mpd
+
+#EXTINF:-1 tvg-id="B0HQB9DWY9" tvg-logo="https://images-na.ssl-images-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/S/le-target-images-prod/amzn1.dv.gti.2427281a-c337-4b2c-bf7b-c6be9a3241ba/2/BOXART-16X9/en-US._UR1920,1080_CLs%7C1920,1080%7C/G/bundle/BottomRightCardGradient16x9.png,/G/01/digital/video/merch/subs/benefit-id/s-z/willowtv/logos/channels-logo-white-stacked.png%7C0,0,1920,1080+0,0,1920,1080+1724,885,117,117_kvebed36e78eaa0330f200bb6045a52aca_SX624_FMjpg_.jpeg" group-title="LIVE SPORTS | STREAMX",Abu Dhabi T10 League 2026 - 6th  Match - Arabian Aces vs Royal Desert Champions | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=195416cacf5f56985edb79d6e04589c3:cedc20717599a61a9142b393bfe146a7
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
+https://hls-ott.bia-cf.live.pv-cdn.net/iad-nitro/live/clients/dash/enc/grkpugayui/out/v1/7cb0cff1780143ecb7d4a4a3982e705a/cenc.mpd
+
+#EXTINF:-1 tvg-id="B0HMJRXGWM" tvg-logo="https://images-na.ssl-images-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/S/le-target-images-prod/amzn1.dv.gti.6cc61be3-5fd9-4a37-9e74-d4fe0dc4b75e/1/BOXART-16X9/en-US._UR1920,1080_CLs%7C1920,1080%7C/G/bundle/BottomRightCardGradient16x9.png,/G/01/digital/video/merch/subs/benefit-id/s-z/willowtv/logos/channels-logo-white-stacked.png%7C0,0,1920,1080+0,0,1920,1080+1724,885,117,117_kvebed36e78eaa0330f200bb6045a52aca_SX624_FMjpg_.jpeg" group-title="LIVE SPORTS | STREAMX",Abu Dhabi T10 League 2026 - 5th Match - United Tigers vs UAE Bulls | GmaxHub
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=b107afb9c4f0fc911437a899bcccaf7c:56fb9ff0fd62018a100332cd35bdd207
+#EXTVLCOPT:http-user-agent=GmaxHub
+#EXTHTTP:{"Origin":"https://www.jiotv.com/","Referer":"https://www.jiotv.com/"}
+https://otte.live.fly.ww.aiv-cdn.net/iad-nitro/live/clients/dash/enc/rktm56g5mu/out/v1/1f82e1df15384125a660c3ac49a6ad79/cenc.mpd
