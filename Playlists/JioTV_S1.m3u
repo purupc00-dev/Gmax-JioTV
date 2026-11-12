@@ -1,4 +1,4 @@
-#EXTM3U x-tvg-url="" updated="2026-11-12T14:37:08Z"
+#EXTM3U x-tvg-url="" updated="2026-11-12T21:43:00Z"
 
 #EXTINF:-1 tvg-id="143" tvg-name="CNBC TV18 Prime | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/CNBCTV18Prime.png" group-title="English",CNBC TV18 Prime | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -25,7 +25,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/ColorsHD_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=0172b8cd13ed59349a05aadc58ae11e0:e4ab7836617767a2a6e7aaae17fad2b6
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/History_HD_BTS/WDVLive/index.mpd?__hdnea__=st=1794491588~exp=1794495188~acl=/bpk-tv/History_HD_BTS/WDVLive/*~hmac=c11519657ab62a1e4ca91712a4825f99bc2152b521f79d48634572a37bfd2eac
+https://jiotvpllive.cdn.jio.com/bpk-tv/History_HD_BTS/WDVLive/index.mpd?__hdnea__=st=1794504795~exp=1794508395~acl=/bpk-tv/History_HD_BTS/WDVLive/*~hmac=6239ce46c657b14d8baaa1848c224267e3ba5d66903802ed11ec06cd63f72678
 
 #EXTINF:-1 tvg-id="151" tvg-name="Movies Now HD | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Movies_Now_HD.png" group-title="English",Movies Now HD | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -43,7 +43,7 @@ https://times-ott-live.akamaized.net/moviesnow_wv_drm/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=509216860f8e594aaf7e921296f53851:536df1e35e2bb055be0117b51db8139c
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTalkies_BTS/WDVLive/index.mpd?__hdnea__=st=1794491880~exp=1794495480~acl=/bpk-tv/ZeeTalkies_BTS/WDVLive/*~hmac=8bb6972b9c028dd2e6f2536372fc8476c7717c06330d9f579d92078cef94dd2e
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTalkies_BTS/WDVLive/index.mpd?__hdnea__=st=1794503290~exp=1794506890~acl=/bpk-tv/ZeeTalkies_BTS/WDVLive/*~hmac=cc4bbe7f35a3961c7a2689ee5dc684992a3a0ab3b0567e84488d908d2d268969
 
 #EXTINF:-1 tvg-id="156" tvg-name="Star Gold HD | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Star_Gold_HD.png" group-title="Movies",Star Gold HD | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -70,7 +70,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/Travel_XP_HD_BTS/WDVLive/index.mpd?__hdne
 #KODIPROP:inputstream.adaptive.license_key=d0049ab307fd5a13b96e306b953d06dd:8057ff282237f0831dcdc4f8a9b2946f
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeCinemaHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794490606~exp=1794494206~acl=/bpk-tv/ZeeCinemaHD_BTS/WDVLive/*~hmac=5a16a1d82e79a9eff13f02e87bc0ba57c33f57730ad2d822d89c9eb6a1230609
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeCinemaHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794504967~exp=1794508567~acl=/bpk-tv/ZeeCinemaHD_BTS/WDVLive/*~hmac=d0da3d9ae5b7927b8c95513d2bf3f274af8efc34f611b82e592a747f00ad3193
 
 #EXTINF:-1 tvg-id="166" tvg-name="Cartoon Network Telugu | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/CNTelugu.png" group-title="Telugu",Cartoon Network Telugu | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -88,7 +88,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/CNTelugu_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=a23b609b33e254a48e4fc6fa7af0fd8d:4064c52328bfe9e6008776b48a431e4b
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTVHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794491289~exp=1794494889~acl=/bpk-tv/ZeeTVHD_BTS/WDVLive/*~hmac=2143f87331d2051f69f53eb44eb0802dc512e0c0f08281dbf0f2e5ca71e5e6ec
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTVHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794505390~exp=1794508990~acl=/bpk-tv/ZeeTVHD_BTS/WDVLive/*~hmac=17031f0f053929c613a13b9c816343edcce14553c572ac6cfb112840e227aad4
 
 #EXTINF:-1 tvg-id="173" tvg-name="Aaj Tak | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Aaj_Tak.png" group-title="News",Aaj Tak | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -143,7 +143,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/b4u_music/HLSPartner/index.m3u8
 #KODIPROP:inputstream.adaptive.license_key=09187bccb7ec59428352a31b4b321ce0:25b08b1c7a004e43ef92c239f93e6613
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/AndPicturesHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794492068~exp=1794495668~acl=/bpk-tv/AndPicturesHD_BTS/WDVLive/*~hmac=43f87040d43844da99ab3bddcc4d668a8c1cb52bca5ac9468830d251d49513c2
+https://jiotvpllive.cdn.jio.com/bpk-tv/AndPicturesHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794506591~exp=1794510191~acl=/bpk-tv/AndPicturesHD_BTS/WDVLive/*~hmac=00b743e874488b3669c975af8832bb916cc52fbcd0d87101a2be696d6b738444
 
 #EXTINF:-1 tvg-id="190" tvg-name="CNBC Awaaz | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/CNBCAwaaz.png" group-title="Business News",CNBC Awaaz | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -503,7 +503,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/Wion_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=4f17e6167dfe5a87a6163cfadede52bc:09e030ff1daf74b4967dc08a392e337f
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeCinemalu_BTS/WDVLive/index.mpd?__hdnea__=st=1794491587~exp=1794495187~acl=/bpk-tv/ZeeCinemalu_BTS/WDVLive/*~hmac=27cfd88a58d1367d4b87740f7bc0b6d532023eb74023267f6f7f6a66a86a8cf1
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeCinemalu_BTS/WDVLive/index.mpd?__hdnea__=st=1794505992~exp=1794509592~acl=/bpk-tv/ZeeCinemalu_BTS/WDVLive/*~hmac=0372c9fa39753081da93520811d666f61e954da4eeaea5670cccbfaf1b9037df
 
 #EXTINF:-1 tvg-id="414" tvg-name="Zee Yuva | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/ZeeYuva.png" group-title="Marathi",Zee Yuva | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -512,7 +512,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeCinemalu_BTS/WDVLive/index.mpd?__hdnea
 #KODIPROP:inputstream.adaptive.license_key=fa2af2feb3395a7b8b931bd772683831:411e7ecb174921ff97cc0162c2372c69
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeYuva_BTS/WDVLive/index.mpd?__hdnea__=st=1794492738~exp=1794496338~acl=/bpk-tv/ZeeYuva_BTS/WDVLive/*~hmac=14a752af37206ca3c87df0f48f1a3b6a60da577b4a6a2d259904367100a2308a
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeYuva_BTS/WDVLive/index.mpd?__hdnea__=st=1794503828~exp=1794507428~acl=/bpk-tv/ZeeYuva_BTS/WDVLive/*~hmac=16b6f01b2890b803aef987f21e039d0456d72ceac0d354b8e5188dbfbd0352b8
 
 #EXTINF:-1 tvg-id="415" tvg-name="Zee Anmol Cinema | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/ZeeAnmolCinema.png" group-title="Movies",Zee Anmol Cinema | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -521,7 +521,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeYuva_BTS/WDVLive/index.mpd?__hdnea__=s
 #KODIPROP:inputstream.adaptive.license_key=8ab0674eba3f5adf96a9b65a6e82d208:476f813d8651987fc1b4074693676fd8
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeAnmolCinema_BTS/WDVLive/index.mpd?__hdnea__=st=1794490690~exp=1794494290~acl=/bpk-tv/ZeeAnmolCinema_BTS/WDVLive/*~hmac=71d1f79881521df0b20526da1fbccd8702681892e611ed88275402ac4c2d1cc6
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeAnmolCinema_BTS/WDVLive/index.mpd?__hdnea__=st=1794505991~exp=1794509591~acl=/bpk-tv/ZeeAnmolCinema_BTS/WDVLive/*~hmac=f5de4168b4288e0b91d81fc04b2988b82c7541b3681de31a88f3be1f20a130c1
 
 #EXTINF:-1 tvg-id="417" tvg-name="J Movies | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/J_Movies.png" group-title="Tamil",J Movies | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -603,7 +603,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/Asianet_HD_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=95c378d17d3d5bbabf9ec086820ece00:dbbce65eaf9673918703d3bcb3131b42
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeMarathi_BTS/WDVLive/index.mpd?__hdnea__=st=1794492738~exp=1794496338~acl=/bpk-tv/ZeeMarathi_BTS/WDVLive/*~hmac=ff1988dcb3a22b6cb4bfdb3da92cd1fa60fcb537a67d7bd7e62d23dfad448c48
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeMarathi_BTS/WDVLive/index.mpd?__hdnea__=st=1794503591~exp=1794507191~acl=/bpk-tv/ZeeMarathi_BTS/WDVLive/*~hmac=25fbf78f15be8e49c620c271ecc27aacae4a8b40cb0e291ad1db16b001600206
 
 #EXTINF:-1 tvg-id="457" tvg-name="Jalsha Movies HD | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Jalsa_Movies_HD.png" group-title="Bengali",Jalsha Movies HD | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -684,7 +684,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/Sony_SAB_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=88295124db295a6b9f5027dc6049e294:641c40230a95cb76d1949125f9552fda
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/AndTVHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794490091~exp=1794493691~acl=/bpk-tv/AndTVHD_BTS/WDVLive/*~hmac=14b6e8b943ba646b26695605671702612322c884c7d3911c3c71ea66e140912a
+https://jiotvpllive.cdn.jio.com/bpk-tv/AndTVHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794505690~exp=1794509290~acl=/bpk-tv/AndTVHD_BTS/WDVLive/*~hmac=ac1b4e3f91a9f3ad9f58d90d8dcf28b7da5f736fecfcee15365df624d3862304
 
 #EXTINF:-1 tvg-id="473" tvg-name="Anmol TV | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/ZeeAnmol.png" group-title="Entertainment",Anmol TV | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -693,7 +693,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/AndTVHD_BTS/WDVLive/index.mpd?__hdnea__=s
 #KODIPROP:inputstream.adaptive.license_key=dc1c10d157cd56d5a7feaf6540578860:227a41f602baeac002e6cdc46c000e19
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeAnmol_BTS/WDVLive/index.mpd?__hdnea__=st=1794491888~exp=1794495488~acl=/bpk-tv/ZeeAnmol_BTS/WDVLive/*~hmac=e737440277764bd4df914449745a3c78e77735ee03d6ffd1ea0cf8c9311c1157
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeAnmol_BTS/WDVLive/index.mpd?__hdnea__=st=1794504190~exp=1794507790~acl=/bpk-tv/ZeeAnmol_BTS/WDVLive/*~hmac=480967c00d9e0a610b9f0849ebc6c592dd1ff234de78946bcbb059fe1ebfc282
 
 #EXTINF:-1 tvg-id="474" tvg-name="Sony Pal | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/SonyPAL.png" group-title="Entertainment",Sony Pal | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -756,7 +756,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/SonyMAX2_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=90d8713ba5e85d779d005b1f14a5bc8d:33650314fe1e945017640ba9878c5de9
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeCinema_BTS/WDVLive/index.mpd?__hdnea__=st=1794492737~exp=1794496337~acl=/bpk-tv/ZeeCinema_BTS/WDVLive/*~hmac=2d78d7f6e88d364b8cab480b08b03a0c5e72f3852d703547ff89d4b5104cada3
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeCinema_BTS/WDVLive/index.mpd?__hdnea__=st=1794503591~exp=1794507191~acl=/bpk-tv/ZeeCinema_BTS/WDVLive/*~hmac=6fbd143297ec19afe6ce812cc5028c56d0225e6b91ccad81c8f70d2818cd1197
 
 #EXTINF:-1 tvg-id="487" tvg-name="Zee Bollywood | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/ZeeBollywood.png" group-title="Movies",Zee Bollywood | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -765,7 +765,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeCinema_BTS/WDVLive/index.mpd?__hdnea__
 #KODIPROP:inputstream.adaptive.license_key=5895b358bf9f57a0addbec524e473919:8fddf9c4394cb4984bafa3aaffb7dcca
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeBollywood_BTS/WDVLive/index.mpd?__hdnea__=st=1794490905~exp=1794494505~acl=/bpk-tv/ZeeBollywood_BTS/WDVLive/*~hmac=62519302ebdb9787d0df722421968b011bec00199d6fcbfd10fbcf975c51a95d
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeBollywood_BTS/WDVLive/index.mpd?__hdnea__=st=1794505278~exp=1794508878~acl=/bpk-tv/ZeeBollywood_BTS/WDVLive/*~hmac=ff22c27850286be386b160e9786c0da668685abefc43d8d6f8f3a2fa5157b574
 
 #EXTINF:-1 tvg-id="488" tvg-name="Zee Action | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/ZeeAction.png" group-title="Movies",Zee Action | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -774,7 +774,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeBollywood_BTS/WDVLive/index.mpd?__hdne
 #KODIPROP:inputstream.adaptive.license_key=a881e2bda4785fecbd13e50e6e3ba530:3e27c8b04a620f1094bcbfdf0472c744
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeAction_BTS/WDVLive/index.mpd?__hdnea__=st=1794492738~exp=1794496338~acl=/bpk-tv/ZeeAction_BTS/WDVLive/*~hmac=1f3eca93ca24bdad5d664bacfbe6f05e97d44531aa23ac07f9c3d74a21af2e0f
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeAction_BTS/WDVLive/index.mpd?__hdnea__=st=1794503758~exp=1794507358~acl=/bpk-tv/ZeeAction_BTS/WDVLive/*~hmac=ec66ac8785b98cd0baa57ba9abd69b0e9b9e3cc05102fb3ea8fcecc6afeecebb
 
 #EXTINF:-1 tvg-id="489" tvg-name="CNBC TV18 | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/CNBCTV18.png" group-title="English",CNBC TV18 | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -900,7 +900,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/IBC24_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=ea7985dacbb95f1c9d62e5a1675142e5:39d5910ca04841b5f32bf24623cdae58
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/Zee_News_BTS/WDVLive/index.mpd?__hdnea__=st=1794492795~exp=1794496395~acl=/bpk-tv/Zee_News_BTS/WDVLive/*~hmac=e2b5d2fa0fd3bce2c964f864d9ae947a83f9959d143e687c361638805bd726e5
+https://jiotvpllive.cdn.jio.com/bpk-tv/Zee_News_BTS/WDVLive/index.mpd?__hdnea__=st=1794503591~exp=1794507191~acl=/bpk-tv/Zee_News_BTS/WDVLive/*~hmac=4ce3866c87235ee0f6263717206a5d2605a9b5378c56f3bc44321045df821cb5
 
 #EXTINF:-1 tvg-id="510" tvg-name="VIP News | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/VIP_News.png" group-title="News",VIP News | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -1242,7 +1242,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/Food_Food_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=39aa887ebbc35db6bd10217aba5e016b:a1862a47f6db0af137d0c69b3cb422bb
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/Travel_XP_BTS/WDVLive/index.mpd?__hdnea__=st=1794490689~exp=1794494289~acl=/bpk-tv/Travel_XP_BTS/WDVLive/*~hmac=ae7e7c4b01329739a61760be08a0db2b16df55ec699282d57b03cf6b0456152b
+https://jiotvpllive.cdn.jio.com/bpk-tv/Travel_XP_BTS/WDVLive/index.mpd?__hdnea__=st=1794504409~exp=1794508009~acl=/bpk-tv/Travel_XP_BTS/WDVLive/*~hmac=90b34c68ecec11e8ddd996069fe31d2525299c91bfbfff59433b2aef3d6ba76a
 
 #EXTINF:-1 tvg-id="563" tvg-name="Kaumudy TV | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Kaumudy_TV.png" group-title="Malayalam",Kaumudy TV | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -1395,7 +1395,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/DD_Kisan_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=648632d8a99d59ef86fd651405ffb587:027c47023b8eb258db20ac6ae7ba46a8
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeZing_BTS/WDVLive/index.mpd?__hdnea__=st=1794490990~exp=1794494590~acl=/bpk-tv/ZeeZing_BTS/WDVLive/*~hmac=d18e9e58d840afad564b6770bd7a1498aecb4a18d98a33e27acc90b179d44e34
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeZing_BTS/WDVLive/index.mpd?__hdnea__=st=1794505390~exp=1794508990~acl=/bpk-tv/ZeeZing_BTS/WDVLive/*~hmac=7014d494047ec14e919ed7cc559c81af56fa4931d35148bd198dfb7d2955b2ea
 
 #EXTINF:-1 tvg-id="587" tvg-name="9XM | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/9xm.png" group-title="Music",9XM | GmaxHub
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
@@ -1661,7 +1661,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/Prag_News_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=fad89ecbae1c5b819e77020cbd209913:4dec9d39fea54d2f38610274bcf3536a
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeBangla_BTS/WDVLive/index.mpd?__hdnea__=st=1794490691~exp=1794494291~acl=/bpk-tv/ZeeBangla_BTS/WDVLive/*~hmac=16fee7f765de1bb57bd52983b5ffed49604fe0fbbc6ef9909bf2ae0a989ded5c
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeBangla_BTS/WDVLive/index.mpd?__hdnea__=st=1794503295~exp=1794506895~acl=/bpk-tv/ZeeBangla_BTS/WDVLive/*~hmac=345e3f775c8be7315fb4d7fb95750688bdbace30f147d1c70dc54216bfc9e100
 
 #EXTINF:-1 tvg-id="626" tvg-name="Suvarna News | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Suvarna_News.png" group-title="Kannada",Suvarna News | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -1688,7 +1688,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/News18AssamNE_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=3b5583d76a465054a7d444b307a9ff21:3f8d9e2207221a0cbcaf120754e4b2e4
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTamil_BTS/WDVLive/index.mpd?__hdnea__=st=1794491590~exp=1794495190~acl=/bpk-tv/ZeeTamil_BTS/WDVLive/*~hmac=6c046f23d3586ce6bb7fcda03d637fa4b9001538b499968c2ac826da70195d32
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTamil_BTS/WDVLive/index.mpd?__hdnea__=st=1794503297~exp=1794506897~acl=/bpk-tv/ZeeTamil_BTS/WDVLive/*~hmac=afa7e1c3f8199f1e8fd632657eea8ebb0d9ef3912e25dc70023d14eac9700b86
 
 #EXTINF:-1 tvg-id="631" tvg-name="MBC | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/MBC.png" group-title="Odia",MBC | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -1751,7 +1751,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/North_East_Live_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=a6240ba332285a53a2bb222a6aae85a0:98edf5ea9ede46133e3c710cba89a872
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTelugu_BTS/WDVLive/index.mpd?__hdnea__=st=1794490090~exp=1794493690~acl=/bpk-tv/ZeeTelugu_BTS/WDVLive/*~hmac=cff7f23cbe8c0613b1f231adbdd4d98eb9c9140a80c46d3e490248840cb5211c
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTelugu_BTS/WDVLive/index.mpd?__hdnea__=st=1794505691~exp=1794509291~acl=/bpk-tv/ZeeTelugu_BTS/WDVLive/*~hmac=64414a401b142de7c43e2663cffa10af40abf9b90dac73bb3d5d92a92b509e78
 
 #EXTINF:-1 tvg-id="639" tvg-name="Ramdhenu | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Ramdhenu.png" group-title="Assamese",Ramdhenu | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -2093,7 +2093,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/News_Time_TV_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=dd1bb73211195ef5a02d9f1acd796a89:12b843dbd649f3e41036ee5be88785b3
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeKannada_BTS/WDVLive/index.mpd?__hdnea__=st=1794490692~exp=1794494292~acl=/bpk-tv/ZeeKannada_BTS/WDVLive/*~hmac=86c07670793ab75e8b7bde25495d127f2c05f33b4a33d855bfd10a55a7060616
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeKannada_BTS/WDVLive/index.mpd?__hdnea__=st=1794498956~exp=1794520556~acl=/bpk-tv/ZeeKannada_BTS/WDVLive/*~hmac=1cf12a2472aa5b292668ade2b27cce826d1552d947e64f7e4ee7a3ae4b80e19c
 
 #EXTINF:-1 tvg-id="690" tvg-name="DD Bangla | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/DD_Bangla.png" group-title="Bengali",DD Bangla | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -2944,7 +2944,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/CNTamil_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=f45e69507f0f5aa1a6e82374efb0af25:f84348219837769feb5a26a7b1cd31dc
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/SonyBBCEarthHin_BTS/WDVLive/index.mpd?__hdnea__=st=1794491589~exp=1794495189~acl=/bpk-tv/SonyBBCEarthHin_BTS/WDVLive/*~hmac=2d83f8aa1500e101b4c070f334d8f8525b6acfa43041616cd68ef096c6cfb5f5
+https://jiotvpllive.cdn.jio.com/bpk-tv/SonyBBCEarthHin_BTS/WDVLive/index.mpd?__hdnea__=st=1794505988~exp=1794509588~acl=/bpk-tv/SonyBBCEarthHin_BTS/WDVLive/*~hmac=47923fb504ce7175e617eb77b6f396fa0e3becc7634c37a3bb4a05dd0db7ce77
 
 #EXTINF:-1 tvg-id="824" tvg-name="Puthu Yugam | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Puthu_Yugam.png" group-title="Tamil",Puthu Yugam | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -4147,7 +4147,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/Star_Movies_Select_HD_MOB/WDVLive/index.m
 #KODIPROP:inputstream.adaptive.license_key=null:null
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/Maa_Movies_BTS/WDVLive/index.mpd?__hdnea__=st=1794476115~exp=1794497715~acl=/bpk-tv/Maa_Movies_BTS/WDVLive/*~hmac=fba1c21da39ffa1dc7b0aff1a0b22fccb2fae4f2dd2a8752df504690fd1455d9
+https://jiotvpllive.cdn.jio.com/bpk-tv/Maa_Movies_BTS/WDVLive/index.mpd?__hdnea__=st=1794500119~exp=1794521719~acl=/bpk-tv/Maa_Movies_BTS/WDVLive/*~hmac=37fd692d0f37e576646e28e081df5b7ae81221608c0c867e2a726d224d6652a3
 
 #EXTINF:-1 tvg-id="1112" tvg-name="Maa HD | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Maa_HD.png" group-title="Telugu",Maa HD | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -4828,7 +4828,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/DD_Gyandarshan_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=45fc661aa1af51c98950c43329391d18:c2677c874886e78d24b3fb656c5734e0
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/Nat_Geo_Wild_HD_BTS/WDVLive/index.mpd?__hdnea__=st=1794491565~exp=1794495165~acl=/bpk-tv/Nat_Geo_Wild_HD_BTS/WDVLive/*~hmac=cb4ba68c56432c8644949bfb7e1e21e9c1f10adb2b64921d52524869ae3298c3
+https://jiotvpllive.cdn.jio.com/bpk-tv/Nat_Geo_Wild_HD_BTS/WDVLive/index.mpd?__hdnea__=st=1794504191~exp=1794507791~acl=/bpk-tv/Nat_Geo_Wild_HD_BTS/WDVLive/*~hmac=96a836048e65d3b8ac794c8ffd7ffb2ed991fa85c6ac533c31e25aa1097be4bd
 
 #EXTINF:-1 tvg-id="1335" tvg-name="National Geographic HD | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/National_Geographic_HD.png" group-title="English",National Geographic HD | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -4837,7 +4837,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/Nat_Geo_Wild_HD_BTS/WDVLive/index.mpd?__h
 #KODIPROP:inputstream.adaptive.license_key=4b006dd7965e5777a7fa33dd636c2e5d:179f796bdf11b750bebd469a3aeae1d0
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/National_Geographic_HD_BTS/WDVLive/index.mpd?__hdnea__=st=1794490193~exp=1794493793~acl=/bpk-tv/National_Geographic_HD_BTS/WDVLive/*~hmac=a93fcf8a1d0bf5d9009359725ae04f757a485d5e3c2089f5490dc53e1a38a50d
+https://jiotvpllive.cdn.jio.com/bpk-tv/National_Geographic_HD_BTS/WDVLive/index.mpd?__hdnea__=st=1794506591~exp=1794510191~acl=/bpk-tv/National_Geographic_HD_BTS/WDVLive/*~hmac=dedd75406eea1afb2ee3a4f668549ffbb665f3c28249ad4ccd3ecb0ea4cd3fd8
 
 #EXTINF:-1 tvg-id="1338" tvg-name="RT India | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/RT_TV.png" group-title="English",RT India | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -4909,7 +4909,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/Sonic_Marathi_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=135fa2c3db6756a2a89dc08c033680ec:5d2ed0c831759179354b2151a2cb0566
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTV_BTS/WDVLive/index.mpd?__hdnea__=st=1794492738~exp=1794496338~acl=/bpk-tv/ZeeTV_BTS/WDVLive/*~hmac=68bddb4001371ca33037a1b13ce60666849cba587c440095832ba0e6af433ea3
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTV_BTS/WDVLive/index.mpd?__hdnea__=st=1794503828~exp=1794507428~acl=/bpk-tv/ZeeTV_BTS/WDVLive/*~hmac=3938607a05005a84ad5bd0270022341831fd2dbe619f5f11b70c01558a368f36
 
 #EXTINF:-1 tvg-id="1354" tvg-name="Zee Telugu HD | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/ZeeTeluguHD.png" group-title="Telugu",Zee Telugu HD | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -4918,7 +4918,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTV_BTS/WDVLive/index.mpd?__hdnea__=st=
 #KODIPROP:inputstream.adaptive.license_key=817e28c7f03456f1ae7383f244853b2b:7c03f916ec20cfd68f0a6a5735c6aaca
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTeluguHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794492739~exp=1794496339~acl=/bpk-tv/ZeeTeluguHD_BTS/WDVLive/*~hmac=c348ad4f998c3f397b51c2a025a9b4d1969686659bb76fea30fa4b391f2d3254
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTeluguHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794503592~exp=1794507192~acl=/bpk-tv/ZeeTeluguHD_BTS/WDVLive/*~hmac=7d62b86c05cefc26b8fd5cfbbb33266bb639d2353e4bd0146dc94d78d9ba7cfa
 
 #EXTINF:-1 tvg-id="1356" tvg-name="Zee Tamil HD | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/ZeeTamilHD.png" group-title="Tamil",Zee Tamil HD | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -4927,7 +4927,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTeluguHD_BTS/WDVLive/index.mpd?__hdnea
 #KODIPROP:inputstream.adaptive.license_key=1ab3810fc9505eaf9121202a5acf3656:eab9ac2b629171ed27c105ea62ea4fda
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTamilHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794491750~exp=1794495350~acl=/bpk-tv/ZeeTamilHD_BTS/WDVLive/*~hmac=380800c588536f1f1fd56dbd10c4e775685af09a79fdd3ff428d4d15a06ab505
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTamilHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794506360~exp=1794509960~acl=/bpk-tv/ZeeTamilHD_BTS/WDVLive/*~hmac=4cacd80210c65f45fc7cc59357e775fb356b8fb46d8f388f3b0d787703e8c236
 
 #EXTINF:-1 tvg-id="1358" tvg-name="Zee Talkies HD | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/ZeeTalkiesHD.png" group-title="Marathi",Zee Talkies HD | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -4936,7 +4936,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTamilHD_BTS/WDVLive/index.mpd?__hdnea_
 #KODIPROP:inputstream.adaptive.license_key=784cfecc212a5a8e94c18041bd895d87:b8e2a35b093029f203d11285ce07598a
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTalkiesHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794490090~exp=1794493690~acl=/bpk-tv/ZeeTalkiesHD_BTS/WDVLive/*~hmac=4b68bae624a3b491cee4f9466b8ad87f2f665acfc17c5a39344bdff46d969388
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTalkiesHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794505692~exp=1794509292~acl=/bpk-tv/ZeeTalkiesHD_BTS/WDVLive/*~hmac=96d2157f2bf0b0c16de400c9c8dda48ebad831cac12e2aa739a20c474cb6854f
 
 #EXTINF:-1 tvg-id="1359" tvg-name="Big Magic | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/BigMagic.png" group-title="Entertainment",Big Magic | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -4945,7 +4945,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeTalkiesHD_BTS/WDVLive/index.mpd?__hdne
 #KODIPROP:inputstream.adaptive.license_key=ec8cb7b1b9505fea9ff1015b45991f93:03fe78d2402fe22a47eb55f2cce8a85b
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/BigMagic_BTS/WDVLive/index.mpd?__hdnea__=st=1794491290~exp=1794494890~acl=/bpk-tv/BigMagic_BTS/WDVLive/*~hmac=28b48295e9b55eb5ea170af5a44537e6ff9a565318aae5192ab1d9c74c9da5b7
+https://jiotvpllive.cdn.jio.com/bpk-tv/BigMagic_BTS/WDVLive/index.mpd?__hdnea__=st=1794504192~exp=1794507792~acl=/bpk-tv/BigMagic_BTS/WDVLive/*~hmac=3f7a0c60a1b85b91c29af565ff37df36c855431b4926275f92780aad3a05a58a
 
 #EXTINF:-1 tvg-id="1360" tvg-name="Zee Marathi HD | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/ZeeMarathiHD.png" group-title="Marathi",Zee Marathi HD | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -4954,7 +4954,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/BigMagic_BTS/WDVLive/index.mpd?__hdnea__=
 #KODIPROP:inputstream.adaptive.license_key=0bf930e665a756bab62df644407e0877:42e5003f036f924d5095e0d6f315c9f6
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeMarathiHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794493396~exp=1794496996~acl=/bpk-tv/ZeeMarathiHD_BTS/WDVLive/*~hmac=63a2ec68d8f626fa28c75d1c52aba6801bb19ea8d2df5f350b7014eb96278f92
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeMarathiHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794504193~exp=1794507793~acl=/bpk-tv/ZeeMarathiHD_BTS/WDVLive/*~hmac=e5da695d608e6e1a41d6b96eb82525d816cfb76d56d20128e2a6ad903edb514b
 
 #EXTINF:-1 tvg-id="1362" tvg-name="Zee Kannada HD | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/ZeeKannadaHD.png" group-title="Kannada",Zee Kannada HD | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -4963,7 +4963,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeMarathiHD_BTS/WDVLive/index.mpd?__hdne
 #KODIPROP:inputstream.adaptive.license_key=02f4cfad19cf547da40f77c29bd303b2:a3ba2f7a824f232d7162f7452fe97a60
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeKannadaHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794492431~exp=1794496031~acl=/bpk-tv/ZeeKannadaHD_BTS/WDVLive/*~hmac=d05ab1da4cd05df66a582af100415a2e5db0fa65418f7d130efceee02d5b8635
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeKannadaHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794503298~exp=1794506898~acl=/bpk-tv/ZeeKannadaHD_BTS/WDVLive/*~hmac=b83cb8ba306d6c26bfd4b0e99dd791f4881dd87445cf09df34dbdff67671bb06
 
 #EXTINF:-1 tvg-id="1363" tvg-name="Zee Cinemalu HD | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/ZeeCinemaluHD.png" group-title="Telugu",Zee Cinemalu HD | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -4972,7 +4972,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeKannadaHD_BTS/WDVLive/index.mpd?__hdne
 #KODIPROP:inputstream.adaptive.license_key=b71f9a5cb8325078bb6b59528b553cc2:fa2c33f8a7d9933a347562bf092a90fe
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeCinemaluHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794492644~exp=1794496244~acl=/bpk-tv/ZeeCinemaluHD_BTS/WDVLive/*~hmac=781068edda884cf9eecb62e5324dfb22c563967d4d96564f530719d2d9458caf
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeCinemaluHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794503292~exp=1794506892~acl=/bpk-tv/ZeeCinemaluHD_BTS/WDVLive/*~hmac=b5309e68a776ced6fb0b078ed252195962d645ae80300dffb07336274703929f
 
 #EXTINF:-1 tvg-id="1368" tvg-name="Colors SD | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Colors_SD.png" group-title="Entertainment",Colors SD | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -5685,7 +5685,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/News_State_MPCG_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=ca03fd99cf33533caecf065085c4dd69:2f6eeefb9d65dffabde6d7c1e15966a7
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeKeralamHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794490991~exp=1794494591~acl=/bpk-tv/ZeeKeralamHD_BTS/WDVLive/*~hmac=83e08b1b0f6665ea55ccb92e6983599b0be59980939e410d49567ba3257de7df
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeKeralamHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794505336~exp=1794508936~acl=/bpk-tv/ZeeKeralamHD_BTS/WDVLive/*~hmac=3e1246c4dcaa17fc37cccf0a4f7c756ab4357548ca6f63437a938320ec38d7cc
 
 #EXTINF:-1 tvg-id="1643" tvg-name="Harvest TV 24x7 | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Harvest_TV_24x7.png" group-title="Malayalam",Harvest TV 24x7 | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -5766,7 +5766,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/Rongeen_TV_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=67e52f4bdcfc525898be0446feb7f185:8cf5c24b168105bca24b358eb05f6df4
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/AndXploreHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794492738~exp=1794496338~acl=/bpk-tv/AndXploreHD_BTS/WDVLive/*~hmac=297163ac6cf3327e7a68cc76f556f865a7441a811ecfa4be7fef8a6278ddcddd
+https://jiotvpllive.cdn.jio.com/bpk-tv/AndXploreHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794504238~exp=1794507838~acl=/bpk-tv/AndXploreHD_BTS/WDVLive/*~hmac=1f695e478b685d5b7d04c370d6f91d10a0f9d97c720bbe24b4c42a5bcaa76023
 
 #EXTINF:-1 tvg-id="1669" tvg-name="Sun Bangla | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Sun_Bangla.png" group-title="Bengali",Sun Bangla | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -5793,7 +5793,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/C_News_Bharat_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=a4ca77c81bc556d994f7ecbee3bcbd20:dade64f6771f47a113f6cfdf67606cd0
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeClassicSD_BTS/WDVLive/index.mpd?__hdnea__=st=1794490992~exp=1794494592~acl=/bpk-tv/ZeeClassicSD_BTS/WDVLive/*~hmac=06a7dfbe0384ed338c7eaba7498300a710725ad14577f7c81399293939d8ba44
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeClassicSD_BTS/WDVLive/index.mpd?__hdnea__=st=1794505326~exp=1794508926~acl=/bpk-tv/ZeeClassicSD_BTS/WDVLive/*~hmac=328b10218a777de11ecd08634905aac9796e41bde7e3d9ada7e5a8bcf4dc967e
 
 #EXTINF:-1 tvg-id="1692" tvg-name="Badakhabar | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Badakhabar.png" group-title="Odia",Badakhabar | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -5911,7 +5911,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/Hornbill_TV_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=71b2f1f7ceed5d4ab62273dbdc16e3ac:2d42ff5481ea336970c75f938b2e1473
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeBiskope_BTS/WDVLive/index.mpd?__hdnea__=st=1794492141~exp=1794495741~acl=/bpk-tv/ZeeBiskope_BTS/WDVLive/*~hmac=4eef189a8412cd7f3676ecebe4f9a54c5fe90cf6dff3d3678750b69d8f847679
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeBiskope_BTS/WDVLive/index.mpd?__hdnea__=st=1794503294~exp=1794506894~acl=/bpk-tv/ZeeBiskope_BTS/WDVLive/*~hmac=9d8c946fac825a0875356b26ea194969a9e6d4e13e02a724067677b0a0fb26ff
 
 #EXTINF:-1 tvg-id="1746" tvg-name="Zee Power HD | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/ZeePowerHD.png" group-title="Kannada",Zee Power HD | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -5920,7 +5920,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeBiskope_BTS/WDVLive/index.mpd?__hdnea_
 #KODIPROP:inputstream.adaptive.license_key=4324ba5158d3536fa799f5a21a321bf5:688474553bec43448f55ec88c34c9bb1
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeePowerHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794491291~exp=1794494891~acl=/bpk-tv/ZeePowerHD_BTS/WDVLive/*~hmac=188b81a32b3ed4f260fcb90b3b8fedc2a68809208b73c58dd3b5e1926ad27b78
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeePowerHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794495107~exp=1794516707~acl=/bpk-tv/ZeePowerHD_BTS/WDVLive/*~hmac=796459ef8fa4b3fc50130cd6326b97996ea907f366019a8b5868ebb126ae71e9
 
 #EXTINF:-1 tvg-id="1747" tvg-name="India News Gujarat | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/India_News_Gujarat.png" group-title="Gujarati",India News Gujarat | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -6082,7 +6082,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/Green_Chillies_TV_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=5d495d29b3e754748389f04dab476c89:2509aac0c21ca795b28d3e3ed3ad96df
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/AndPictures_BTS/WDVLive/index.mpd?__hdnea__=st=1794492480~exp=1794496080~acl=/bpk-tv/AndPictures_BTS/WDVLive/*~hmac=0159fc5a6aa0a29495979425f45d8a2b29b88014e16d7f9e816e660ecf7bcf2c
+https://jiotvpllive.cdn.jio.com/bpk-tv/AndPictures_BTS/WDVLive/index.mpd?__hdnea__=st=1794505268~exp=1794508868~acl=/bpk-tv/AndPictures_BTS/WDVLive/*~hmac=57e1882729b8089b864846952109c1a9ddea7ec0ee1fde86c8f159e2c3af5637
 
 #EXTINF:-1 tvg-id="1847" tvg-name="Z10 TV | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Harpal_TV.png" group-title="Devotional",Z10 TV | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -6398,7 +6398,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/PMC_Telugu_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=7966a083736c5ff6b449767da10897bc:a11dff4dfcc5ebaff4640b8a5b2bd71e
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeBanglaHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794491292~exp=1794494892~acl=/bpk-tv/ZeeBanglaHD_BTS/WDVLive/*~hmac=8863aa26a5be506ba57653de521c051b1df5f25ad8684813c599ff0bfffbbfa4
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeBanglaHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794498626~exp=1794520226~acl=/bpk-tv/ZeeBanglaHD_BTS/WDVLive/*~hmac=6c64e1589bee1e41c74419421500a409c80384f5ca08996b327a57d17a44b083
 
 #EXTINF:-1 tvg-id="162" tvg-name="Sony Ten 1 HD | GmaxHub" tvg-logo="https://jiotvimages.cdn.jio.com/dare_images/images/Ten_HD.png" group-title="Sports",Sony Ten 1 HD | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -6443,7 +6443,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_Select_HD_1_BTS/WDVLive/index
 #KODIPROP:inputstream.adaptive.license_key=ea7985dacbb95f1c9d62e5a1675142e5:39d5910ca04841b5f32bf24623cdae58
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_Select_1_BTS/WDVLive/index.mpd?__hdnea__=st=1794471927~exp=1794493527~acl=/bpk-tv/Star_Sports_Select_1_BTS/WDVLive/*~hmac=b495d45a71801bcf06ee6be2b0fe3da82cab0a41144a2de44e2f7d7afae41995
+https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_Select_1_BTS/WDVLive/index.mpd?__hdnea__=st=1794494421~exp=1794516021~acl=/bpk-tv/Star_Sports_Select_1_BTS/WDVLive/*~hmac=925eaeb8aa3a12c2cf8cab4b68aaa59e5fde210b951d65feb7045c93655277c3
 
 #EXTINF:-1 tvg-id="461" tvg-name="Star Sports Select 2 HD | GmaxHub" tvg-logo="https://img.media.jio.com/tvpimages/98/79/302114_1749665414817_l_medium.jpg" group-title="Sports",Star Sports Select 2 HD | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -6452,7 +6452,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_Select_1_BTS/WDVLive/index.mp
 #KODIPROP:inputstream.adaptive.license_key=6017d0514d425fa38f6e80ba6dcc852f:0018944b00adf2078f62386f30c68b74
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_Select_HD_2_BTS/WDVLive/index.mpd?__hdnea__=st=1794471923~exp=1794493523~acl=/bpk-tv/Star_Sports_Select_HD_2_BTS/WDVLive/*~hmac=6a96a3c694ca55c5dce8be99f0aa6e14ff925fb677868fa10607eb2707da8aaa
+https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_Select_HD_2_BTS/WDVLive/index.mpd?__hdnea__=st=1794494422~exp=1794516022~acl=/bpk-tv/Star_Sports_Select_HD_2_BTS/WDVLive/*~hmac=e87fb14d9db3c3de62e04ecb75f563a5c2a955ac03098c99ab01f3a73e3ae051
 
 #EXTINF:-1 tvg-id="1114" tvg-name="Star Sports Select 2 | GmaxHub" tvg-logo="https://img.media.jio.com/tvpimages/98/48/301989_1749664475828_l_medium.jpg" group-title="Sports",Star Sports Select 2 | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -6461,7 +6461,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_Select_HD_2_BTS/WDVLive/index
 #KODIPROP:inputstream.adaptive.license_key=ec7d009d07aa5cbc81a441880530dfa5:8147983ad7402ebfc222d28b667a196f
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_Select_2_BTS/WDVLive/index.mpd?__hdnea__=st=1794476415~exp=1794498015~acl=/bpk-tv/Star_Sports_Select_2_BTS/WDVLive/*~hmac=f1bee10a4fe9062e64883cb20615111d198498067327b28f62ebc705c75295bc
+https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_Select_2_BTS/WDVLive/index.mpd?__hdnea__=st=1794500419~exp=1794522019~acl=/bpk-tv/Star_Sports_Select_2_BTS/WDVLive/*~hmac=6f3ad6c0ae96dc2b8e802a325bdc96273113a9329b375702045a1c52ec058589
 
 #EXTINF:-1 tvg-id="1142" tvg-name="Star Sports 1 | GmaxHub" tvg-logo="https://img.media.jio.com/tvpimages/56/92/302115_1749665579801_l_medium.jpg" group-title="Sports",Star Sports 1 | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -6488,7 +6488,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_HD1_Hindi_BTS/WDVLive/index.m
 #KODIPROP:inputstream.adaptive.license_key=8ea9b607549252068e260a5f4d7dd321:350c0aaffedf51cc1502e9543c7c885e
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_1_Hindi_BTS/WDVLive/index.mpd?__hdnea__=st=1794476309~exp=1794497909~acl=/bpk-tv/Star_Sports_1_Hindi_BTS/WDVLive/*~hmac=8e1b850d96263e6301f3e78fcfb7a8740ae0fd715eb7d17e9b77350e6c71f430
+https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_1_Hindi_BTS/WDVLive/index.mpd?__hdnea__=st=1794500421~exp=1794522021~acl=/bpk-tv/Star_Sports_1_Hindi_BTS/WDVLive/*~hmac=d6efe08339b80993ca3d1b1ac442df80a848ca5984dddb651c3ed881220624df
 
 #EXTINF:-1 tvg-id="1109" tvg-name="Star Sports 2 HD | GmaxHub" tvg-logo="https://img.media.jio.com/tvpimages/41/51/301983_1749666169105_l_medium.jpg" group-title="Sports",Star Sports 2 HD | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -6497,7 +6497,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_1_Hindi_BTS/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=9457eb90129456fa8ea95e10ba4ac51e:e620a970cea474c491ac78ae71a4d764
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_HD2_BTS/WDVLive/index.mpd?__hdnea__=st=1794481223~exp=1794502823~acl=/bpk-tv/Star_Sports_HD2_BTS/WDVLive/*~hmac=dc094615df5dbe671ea08299962f94bc5117a817a43b9f018c2302700d1cf656
+https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_HD2_BTS/WDVLive/index.mpd?__hdnea__=st=1794503114~exp=1794524714~acl=/bpk-tv/Star_Sports_HD2_BTS/WDVLive/*~hmac=6bf718f95f1d7d61ea60461c308eab7ebfbf7ae2e548f03aa73a1ff6ae028459
 
 #EXTINF:-1 tvg-id="1141" tvg-name="Star Sports 2 | GmaxHub" tvg-logo="https://img.media.jio.com/tvpimages/11/30/302116_1749666029079_l_medium.jpg" group-title="Sports",Star Sports 2 | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -6506,7 +6506,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_HD2_BTS/WDVLive/index.mpd?__h
 #KODIPROP:inputstream.adaptive.license_key=fc3aafe80845584199a637249fad2ffa:ca4474972fdb4bf8ecb164482853c692
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_2_BTS/WDVLive/index.mpd?__hdnea__=st=1794471921~exp=1794493521~acl=/bpk-tv/Star_Sports_2_BTS/WDVLive/*~hmac=29dd583b5a83400d853b0762a706b1b45d9a9ca972a995171022edcb0b043dd8
+https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_2_BTS/WDVLive/index.mpd?__hdnea__=st=1794496806~exp=1794518406~acl=/bpk-tv/Star_Sports_2_BTS/WDVLive/*~hmac=0bd75b521a0ae2fa303ecb63f92fc530e7f12f50d817f1cc24f46bff252032e2
 
 #EXTINF:-1 tvg-id="1984" tvg-name="Star Sports 2 Hindi HD | GmaxHub" tvg-logo="https://img.media.jio.com/tvpimages/56/36/301229_1742214332015_l_medium.jpg" group-title="Sports",Star Sports 2 Hindi HD | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -6515,7 +6515,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_2_BTS/WDVLive/index.mpd?__hdn
 #KODIPROP:inputstream.adaptive.license_key=bd1ea6a1c1fb5dcdb709434e0826bbc0:f57f22cba32739ce7beb1fab3f3d060b
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/StarSportsHD2Hin_BTS/WDVLive/index.mpd?__hdnea__=st=1794472555~exp=1794494155~acl=/bpk-tv/StarSportsHD2Hin_BTS/WDVLive/*~hmac=eee082007d3616136facfe73ef5f954ce78f3ae2551efb5035f3012527a870c4
+https://jiotvpllive.cdn.jio.com/bpk-tv/StarSportsHD2Hin_BTS/WDVLive/index.mpd?__hdnea__=st=1794494422~exp=1794516022~acl=/bpk-tv/StarSportsHD2Hin_BTS/WDVLive/*~hmac=3d1594340846c720b8fd4c46def485c6859a081d7eaf5077e369351f17f6a8e7
 
 #EXTINF:-1 tvg-id="1985" tvg-name="Star Sports 2 Hindi | GmaxHub" tvg-logo="https://img.media.jio.com/tvpimages/57/17/302124_1749130246443_l_medium.jpg" group-title="Sports",Star Sports 2 Hindi | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -6560,7 +6560,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_1_Tamil_BTS/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=49e84b9edfd85379b90c81b7d2d3d2bf:19c82d3ff094fa06af95820a1572ecb5
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_1_Telugu_HD_BTS/WDVLive/index.mpd?__hdnea__=st=1794474913~exp=1794496513~acl=/bpk-tv/Star_Sports_1_Telugu_HD_BTS/WDVLive/*~hmac=0484863b1c17fe6fe6203247676fb8432f83750fed0e2bfecd87655043ff84ee
+https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_1_Telugu_HD_BTS/WDVLive/index.mpd?__hdnea__=st=1794496809~exp=1794518409~acl=/bpk-tv/Star_Sports_1_Telugu_HD_BTS/WDVLive/*~hmac=1bc8d1c8327ed8f2bf7fd825f45934549ce008482c64f3f46892695a9827fece
 
 #EXTINF:-1 tvg-id="1651" tvg-name="Star Sports 1 Telugu | GmaxHub" tvg-logo="https://img.media.jio.com/tvpimages/26/67/302119_1749662981095_l_medium.jpg" group-title="Sports",Star Sports 1 Telugu | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -6587,7 +6587,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_1_Kannada_BTS/WDVLive/index.m
 #KODIPROP:inputstream.adaptive.license_key=7af2add2968a56309519ac2680c18f25:f992a14e0def17ccdfe16f58c4ce56c5
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_2_Kannada_BTS/WDVLive/index.mpd?__hdnea__=st=1794476115~exp=1794497715~acl=/bpk-tv/Star_Sports_2_Kannada_BTS/WDVLive/*~hmac=9be04a63e5b7ac470bd250b688bf011d363afc6047f168560d60a486c360c806
+https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_2_Kannada_BTS/WDVLive/index.mpd?__hdnea__=st=1794500422~exp=1794522022~acl=/bpk-tv/Star_Sports_2_Kannada_BTS/WDVLive/*~hmac=10ee1115c82d1e6293ff0d9fb4eb5ae40a48682dca8c6257f0cdec73a8cbbbc9
 
 #EXTINF:-1 tvg-id="3273" tvg-name="Star Sports 2 Tamil HD | GmaxHub" tvg-logo="https://img.media.jio.com/tvpimages/50/43/302120_1749664850896_l_medium.jpg" group-title="Sports",Star Sports 2 Tamil HD | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -6614,7 +6614,7 @@ https://jiotvpllive.cdn.jio.com/bpk-tv/StarSports2Tamil_BTS/WDVLive/index.mpd?__
 #KODIPROP:inputstream.adaptive.license_key=c8a2fb190fc957c1b8333af9a7a39d31:be7497b59d4ce9e33d29bfd1d38bad1d
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports2_Telugu_HD_BTS/WDVLive/index.mpd?__hdnea__=st=1794481223~exp=1794502823~acl=/bpk-tv/Star_Sports2_Telugu_HD_BTS/WDVLive/*~hmac=9756a2debff32c6d9f59afc1b686990993171c3de3f9cbd03f9b1739ea16fb27
+https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports2_Telugu_HD_BTS/WDVLive/index.mpd?__hdnea__=st=1794504614~exp=1794526214~acl=/bpk-tv/Star_Sports2_Telugu_HD_BTS/WDVLive/*~hmac=fc85bf9370a5675b8aea26ff5c77c2891e0abb78948d7e5b37d51e6eefe7459f
 
 #EXTINF:-1 tvg-id="2852" tvg-name="Star Sports 2 Telugu | GmaxHub" tvg-logo="https://img.media.jio.com/tvpimages/41/94/301562_1749665043898_l_medium.jpg" group-title="Sports",Star Sports 2 Telugu | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -7171,7 +7171,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/DD_North_East_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=90ec950a8375508ab41dfc6e8ca814bb:a37776912b51a5dc60fd21394cdab317
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeAnmolCinema2_BTS/WDVLive/index.mpd?__hdnea__=st=1794491891~exp=1794495491~acl=/bpk-tv/ZeeAnmolCinema2_BTS/WDVLive/*~hmac=065280557201fe71f66959b811915c88feb5fcfaa500d122bdc740cb7ed2c980
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeAnmolCinema2_BTS/WDVLive/index.mpd?__hdnea__=st=1794503293~exp=1794506893~acl=/bpk-tv/ZeeAnmolCinema2_BTS/WDVLive/*~hmac=760602f6e6b183446e08fd988169d6358512b15bf7b4f3117622188766a4f9cc
 
 #EXTINF:-1 tvg-id="2764" tvg-name="News State Bihar Jharkhand | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/NewsState_Bihar_JH.png" group-title="News",News State Bihar Jharkhand | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
@@ -7816,7 +7816,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/Indian_News_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=9ecfc67bf2dd54fa84495c4c299c51ec:85337048d7be42ef66f6198a99376fa7
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeThiraiHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794491292~exp=1794494892~acl=/bpk-tv/ZeeThiraiHD_BTS/WDVLive/*~hmac=7da1f315b2a0030d9a70f7df5656a12c1dbabb0513dce3734eb6ed03a10e00dd
+https://jiotvpllive.cdn.jio.com/bpk-tv/ZeeThiraiHD_BTS/WDVLive/index.mpd?__hdnea__=st=1794498627~exp=1794520227~acl=/bpk-tv/ZeeThiraiHD_BTS/WDVLive/*~hmac=e3ff3c704242336c069fd01e1dc718932360600e2751ed0492debb06eee88be4
 
 #EXTINF:-1 tvg-id="3053" tvg-name="TNP News | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/tnpnews.png" group-title="News",TNP News | GmaxHub
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
@@ -7998,7 +7998,7 @@ https://jiotvmblive.cdn.jio.com/bpk-tv/NDTV_Marathi_MOB/WDVLive/index.mpd
 #KODIPROP:inputstream.adaptive.license_key=e6afa4754bc15dd28ab6806f417d319d:6a74ef2884813547109ee96098610387
 #EXTVLCOPT:http-user-agent=plaYtv/7.1.3 (Linux;Android 13) ygx/824.1 ExoPlayerLib/824.0
 #EXTHTTP:{"Origin": "https://www.jiotv.com/", "Referer": "https://www.jiotv.com/"}
-https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Gold_2_HD_BTS/WDVLive/index.mpd?__hdnea__=st=1794491586~exp=1794495186~acl=/bpk-tv/Star_Gold_2_HD_BTS/WDVLive/*~hmac=20c265c62d54fd9813f865006c8fdd5556552cbdebf419c53d380d8072dd2f84
+https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Gold_2_HD_BTS/WDVLive/index.mpd?__hdnea__=st=1794499296~exp=1794520896~acl=/bpk-tv/Star_Gold_2_HD_BTS/WDVLive/*~hmac=12b6f4abf4e44b4e533744353cf6f1001cf22cf391f01016576ebb1a6c337335
 
 #EXTINF:-1 tvg-id="3097" tvg-name="Star Gold Romance | GmaxHub" tvg-logo="https://jiotv.catchup.cdn.jio.com/dare_images/images/Star_Gold_Romance.png" group-title="Movies",Star Gold Romance | GmaxHub
 #KODIPROP:inputstream=inputstream.adaptive
