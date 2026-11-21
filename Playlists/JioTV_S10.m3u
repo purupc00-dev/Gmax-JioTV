@@ -766,12 +766,16 @@ https://premiumplug.fun/tee/playlist.php/0-9-tvpictureshd.m3u8
 #EXTVLCOPT:http-user-agent=com.graymatrix.did;Android TV;5.82.6(203230929);Android(10);Xiaomi(Redmi Note 8 Pro)
 https://premiumplug.fun/tee/playlist.php/0-9-pictures.m3u8
 # ------------=== ⛨ 𝔼𝕩𝕥𝕣𝕒 | SonyLiv ===---------------
-#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000029480/1795172675588333_AsiaCup_RisingStar_BAN-vs-AFG_Live_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[ENG] - Bangladesh A vs Afghanistan A | GmaxHub
-https://sonyeventsglobal.akamaized.net/hls/live/2120303/criclive2111/ENG/std_lrh-800300010.m3u8?hdnea=exp=1795316895~acl=/*~id=28019852783662891860589944410163~hmac=bc5a4b57bbf0e97170eb5b6d39013c9861da9d6b97e3a2d749013498596e5883
-#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000029506/1795187845283930_ISL26_NorthEast-United-FC-vs-FC-GOA-_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[ENG] - NorthEast United FC vs FC Goa | GmaxHub
-https://sonyeventsglobal.akamaized.net/hls/live/2094589/Footlive2111/ENG/std_lrh-800300010.m3u8?hdnea=exp=1795316895~acl=/*~id=28019852783662891860589944410163~hmac=bc5a4b57bbf0e97170eb5b6d39013c9861da9d6b97e3a2d749013498596e5883
-#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000029506/1795187845283930_ISL26_NorthEast-United-FC-vs-FC-GOA-_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[HIN] - NorthEast United FC vs FC Goa | GmaxHub
-https://sonyeventsglobal.akamaized.net/hls/live/2094588/Footlive2111/HIN/std_lrh-800300010.m3u8?hdnea=exp=1795316895~acl=/*~id=28019852783662891860589944410163~hmac=bc5a4b57bbf0e97170eb5b6d39013c9861da9d6b97e3a2d749013498596e5883
+#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000029535/1795216895013771_UFC_Fight_Night_Prochazka_vs_Stirling_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[ENG] - UFC Fight Night - Prochazka vs Stirling | GmaxHub
+https://sonyeventsglobal.akamaized.net/hls/live/2120305/UFC_Proc2111/ENG/std_lrh-800300010.m3u8?hdnea=exp=1795337517~acl=/*~id=33815562349865624720149648338223~hmac=20ea081c4e2e0f09c5aac46a05ba54385e66848a0372c50c922f25d9544aa752
+#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000029535/1795216895013771_UFC_Fight_Night_Prochazka_vs_Stirling_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[HIN] - UFC Fight Night - Prochazka vs Stirling | GmaxHub
+https://sonyeventsglobal.akamaized.net/hls/live/2120302/UFC_Proc2111/HIN/std_lrh-800300010.m3u8?hdnea=exp=1795337517~acl=/*~id=33815562349865624720149648338223~hmac=20ea081c4e2e0f09c5aac46a05ba54385e66848a0372c50c922f25d9544aa752
+#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000029535/1795216895013771_UFC_Fight_Night_Prochazka_vs_Stirling_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[TAM] - UFC Fight Night - Prochazka vs Stirling | GmaxHub
+https://sonyeventsglobal.akamaized.net/hls/live/2005444/UFC_Proc2111/TAM/std_lrh-800300010.m3u8?hdnea=exp=1795337517~acl=/*~id=33815562349865624720149648338223~hmac=20ea081c4e2e0f09c5aac46a05ba54385e66848a0372c50c922f25d9544aa752
+#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000029535/1795216895013771_UFC_Fight_Night_Prochazka_vs_Stirling_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[TEL] - UFC Fight Night - Prochazka vs Stirling | GmaxHub
+https://sonyeventsglobal.akamaized.net/hls/live/2120304/UFC_Proc2111/TEL/std_lrh-800300010.m3u8?hdnea=exp=1795337517~acl=/*~id=33815562349865624720149648338223~hmac=20ea081c4e2e0f09c5aac46a05ba54385e66848a0372c50c922f25d9544aa752
+#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000029535/1795216895013771_UFC_Fight_Night_Prochazka_vs_Stirling_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[KAN] - UFC Fight Night - Prochazka vs Stirling | GmaxHub
+https://sonyeventsglobal.akamaized.net/hls/live/2120306/UFC_Proc2111/KAN/std_lrh-800300010.m3u8?hdnea=exp=1795337517~acl=/*~id=33815562349865624720149648338223~hmac=20ea081c4e2e0f09c5aac46a05ba54385e66848a0372c50c922f25d9544aa752
 # ------------=== VT OTT | CIO ===---------------
 #EXTM3U
 #
