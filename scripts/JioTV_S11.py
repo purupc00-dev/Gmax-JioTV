@@ -4,7 +4,7 @@ import os
 import sys
 
 # ---------- configuration ----------
-URL = "https://premiumplugx.com/jtv+/jtv+.php"
+URL = "https://jiobkl.ytzinadabaad.workers.dev/"
 OUTPUT_FILE = "Playlists/JioTV_S11.m3u"
 
 def generate_m3u():
