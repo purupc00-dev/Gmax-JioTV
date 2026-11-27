@@ -766,10 +766,18 @@ https://premiumplug.fun/tee/playlist.php/0-9-tvpictureshd.m3u8
 #EXTVLCOPT:http-user-agent=com.graymatrix.did;Android TV;5.82.6(203230929);Android(10);Xiaomi(Redmi Note 8 Pro)
 https://premiumplug.fun/tee/playlist.php/0-9-pictures.m3u8
 # ------------=== ⛨ 𝔼𝕩𝕥𝕣𝕒 | SonyLiv ===---------------
-#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000028403/1793601374540623_UEL26_MD5_Olympiacos-vs-Milan_live_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[ENG] - Olympiacos FC vs AC Milan - MD 5 | GmaxHub
-https://sonyeventsglobal.akamaized.net/hls/live/2120301/Footlive2611/ENG/std_lrh-800300010.m3u8?hdnea=exp=1795760116~acl=/*~id=98860169504029120146860723339249~hmac=ca904b3e4741e8933fb9d7a8c70424f5f915da15a2302c358ffb1b26fc517c7e
-#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000029126/1793611880670259_UEL26_MD5_Real-Club-Celta-vs-AFC-Bournemouth_live_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[ENG] - Celta vs Bournemouth | GmaxHub
-https://sonyeventsglobal.akamaized.net/hls/live/2120308/Footlive2611/ENG/std_lrh-800300010.m3u8?hdnea=exp=1795760116~acl=/*~id=98860169504029120146860723339249~hmac=ca904b3e4741e8933fb9d7a8c70424f5f915da15a2302c358ffb1b26fc517c7e
+#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000029839/179551441961579_NZ_vs_IND_2nd_Test_Day1_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[ENG] - 2nd Test - Day 1 | GmaxHub
+https://sonyeventsglobal.akamaized.net/hls/live/2119931/cricodi_2611/ENG/std_lrh-800300010.m3u8?hdnea=exp=1795786850~acl=/*~id=26118693920016665298681733654497~hmac=e37eb92a8a956b2e1a421410269003a6ebfd5a4183b95f4dd20e9e5ff3e26c84
+#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000029839/179551441961579_NZ_vs_IND_2nd_Test_Day1_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[HIN] - 2nd Test - Day 1 | GmaxHub
+https://sonyeventsglobal.akamaized.net/hls/live/2119921/cricodi_2611/HIN/std_lrh-800300010.m3u8?hdnea=exp=1795786850~acl=/*~id=26118693920016665298681733654497~hmac=e37eb92a8a956b2e1a421410269003a6ebfd5a4183b95f4dd20e9e5ff3e26c84
+#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000029839/179551441961579_NZ_vs_IND_2nd_Test_Day1_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[TAM] - 2nd Test - Day 1 | GmaxHub
+https://sonyeventsglobal.akamaized.net/hls/live/2119951/cricodi_2611/TAM/std_lrh-800300010.m3u8?hdnea=exp=1795786850~acl=/*~id=26118693920016665298681733654497~hmac=e37eb92a8a956b2e1a421410269003a6ebfd5a4183b95f4dd20e9e5ff3e26c84
+#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000029839/179551441961579_NZ_vs_IND_2nd_Test_Day1_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[TEL] - 2nd Test - Day 1 | GmaxHub
+https://sonyeventsglobal.akamaized.net/hls/live/2119941/cricodi_2611/TEL/std_lrh-800300010.m3u8?hdnea=exp=1795786850~acl=/*~id=26118693920016665298681733654497~hmac=e37eb92a8a956b2e1a421410269003a6ebfd5a4183b95f4dd20e9e5ff3e26c84
+#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000029839/179551441961579_NZ_vs_IND_2nd_Test_Day1_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[KAN] - 2nd Test - Day 1 | GmaxHub
+https://sonyeventsglobal.akamaized.net/hls/live/2119782/cricodi_2611/KAN/std_lrh-800300010.m3u8?hdnea=exp=1795786850~acl=/*~id=26118693920016665298681733654497~hmac=e37eb92a8a956b2e1a421410269003a6ebfd5a4183b95f4dd20e9e5ff3e26c84
+#EXTINF:-1 tvg-logo="https://origin-staticv2.sonyliv.com/videoasset_images/manage_file/1000029986/1795622243895554_DP_World_Tour_BMW_PGA_day2_landscape_thumb.jpg" group-title="⛨ 𝔼𝕩𝕥𝕣𝕒  | SonyLiv",[ENG] - BMW Australian PGA Championship - Day 2 | GmaxHub
+https://sonyeventsglobal.akamaized.net/hls/live/2118865/Golf_BMW2611/ENG/std_lrh-800300010.m3u8?hdnea=exp=1795786850~acl=/*~id=26118693920016665298681733654497~hmac=e37eb92a8a956b2e1a421410269003a6ebfd5a4183b95f4dd20e9e5ff3e26c84
 # ------------=== VT OTT | CIO ===---------------
 #EXTM3U
 #
